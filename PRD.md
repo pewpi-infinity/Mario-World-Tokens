@@ -47,6 +47,13 @@ This requires multi-role authentication (minters vs. users), token generation wi
 - **Progression**: Select token → View serial number, denomination, minting metadata → See complete ownership history → Identify potential collector value
 - **Success criteria**: All metadata displayed, no duplicate serials possible, rare patterns identifiable
 
+### AI-Powered Minting Strategy Recommendations
+- **Functionality**: Analyzes current token distribution, market conditions, and historical patterns to provide intelligent minting recommendations
+- **Purpose**: Helps minters make informed decisions about what denominations to mint based on circulation needs, user demand patterns, and economic balance
+- **Trigger**: Minter views the minting interface
+- **Progression**: System analyzes current state → AI generates recommendations with reasoning → Displays suggested denominations, quantities, and strategic insights → Minter can follow or override suggestions
+- **Success criteria**: Recommendations appear within 2 seconds, provide clear rationale, adapt to changing conditions, lead to more balanced token economy
+
 ## Edge Case Handling
 - **Duplicate Serial Numbers**: System generates cryptographically unique serials and validates before minting
 - **Offline Minting**: All transactions queue until GitHub sync available, preventing data loss

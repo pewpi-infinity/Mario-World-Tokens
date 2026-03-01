@@ -220,6 +220,7 @@ function App() {
               <div className="max-w-2xl mx-auto">
                 <MintingInterface
                   currentUser={user.login}
+                  allTokens={appState?.allTokens || []}
                   onMint={handleMint}
                 />
               </div>

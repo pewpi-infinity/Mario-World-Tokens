@@ -9,16 +9,23 @@ import { Textarea } from '@/components/ui/textarea'
 import { Printer } from '@phosphor-icons/react'
 import { generateSerialNumber } from '@/lib/currency'
 import { toast } from 'sonner'
+import { MintingRecommendations } from './MintingRecommendations'
 
 interface MintingInterfaceProps {
   currentUser: string
+  allTokens: MarioToken[]
   onMint: (token: MarioToken) => void
 }
 
-export function MintingInterface({ currentUser, onMint }: MintingInterfaceProps) {
+export function MintingInterface({ currentUser, allTokens, onMint }: MintingInterfaceProps) {
   const [denomination, setDenomination] = useState<Denomination>(1)
   const [location, setLocation] = useState('')
   const [designNotes, setDesignNotes] = useState('')
+
+  const handleRecommendationSelect = (recommendedDenomination: Denomination) => {
+    setDenomination(recommendedDenomination)
+    toast.success(`Selected recommended denomination: $${recommendedDenomination}`)
+  }
 
   const handleMint = () => {
     if (!location.trim()) {
@@ -48,64 +55,71 @@ export function MintingInterface({ currentUser, onMint }: MintingInterfaceProps)
   }
 
   return (
-    <Card className="border-2 shadow-lg">
-      <CardHeader className="bg-secondary text-secondary-foreground">
-        <CardTitle className="flex items-center gap-2">
-          <Printer size={24} weight="fill" />
-          Token Minting Press
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="pt-6 space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="denomination">Denomination</Label>
-          <Select
-            value={denomination.toString()}
-            onValueChange={(value) => setDenomination(parseInt(value) as Denomination)}
+    <div className="space-y-6">
+      <MintingRecommendations 
+        allTokens={allTokens} 
+        onRecommendationSelect={handleRecommendationSelect}
+      />
+
+      <Card className="border-2 shadow-lg">
+        <CardHeader className="bg-secondary text-secondary-foreground">
+          <CardTitle className="flex items-center gap-2">
+            <Printer size={24} weight="fill" />
+            Token Minting Press
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="pt-6 space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="denomination">Denomination</Label>
+            <Select
+              value={denomination.toString()}
+              onValueChange={(value) => setDenomination(parseInt(value) as Denomination)}
+            >
+              <SelectTrigger id="denomination">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1">$1</SelectItem>
+                <SelectItem value="5">$5</SelectItem>
+                <SelectItem value="10">$10</SelectItem>
+                <SelectItem value="20">$20</SelectItem>
+                <SelectItem value="50">$50</SelectItem>
+                <SelectItem value="100">$100</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="location">Minting Location</Label>
+            <Input
+              id="location"
+              placeholder="e.g., San Francisco, CA"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="design-notes">Design Notes</Label>
+            <Textarea
+              id="design-notes"
+              placeholder="e.g., Series 2025, Classic Green Design"
+              value={designNotes}
+              onChange={(e) => setDesignNotes(e.target.value)}
+              rows={3}
+            />
+          </div>
+
+          <Button
+            onClick={handleMint}
+            className="w-full"
+            size="lg"
           >
-            <SelectTrigger id="denomination">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="1">$1</SelectItem>
-              <SelectItem value="5">$5</SelectItem>
-              <SelectItem value="10">$10</SelectItem>
-              <SelectItem value="20">$20</SelectItem>
-              <SelectItem value="50">$50</SelectItem>
-              <SelectItem value="100">$100</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="location">Minting Location</Label>
-          <Input
-            id="location"
-            placeholder="e.g., San Francisco, CA"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="design-notes">Design Notes</Label>
-          <Textarea
-            id="design-notes"
-            placeholder="e.g., Series 2025, Classic Green Design"
-            value={designNotes}
-            onChange={(e) => setDesignNotes(e.target.value)}
-            rows={3}
-          />
-        </div>
-
-        <Button
-          onClick={handleMint}
-          className="w-full"
-          size="lg"
-        >
-          <Printer size={20} className="mr-2" weight="fill" />
-          Mint Token
-        </Button>
-      </CardContent>
-    </Card>
+            <Printer size={20} className="mr-2" weight="fill" />
+            Mint Token
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
   )
 }
