@@ -97,7 +97,15 @@ export function TreasuryCharts({ tokens, transactions }: TreasuryChartsProps) {
             <CardTitle>Notes by Denomination</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-[300px]">
+            <ChartContainer
+              config={{
+                count: {
+                  label: "Count",
+                  color: "oklch(0.45 0.14 155)",
+                },
+              }}
+              className="h-[300px]"
+            >
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={denominationData}>
                   <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
@@ -107,7 +115,7 @@ export function TreasuryCharts({ tokens, transactions }: TreasuryChartsProps) {
                   <Bar dataKey="count" radius={[8, 8, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
-            </div>
+            </ChartContainer>
           </CardContent>
         </Card>
 
@@ -144,7 +152,15 @@ export function TreasuryCharts({ tokens, transactions }: TreasuryChartsProps) {
             <CardTitle>Top Minters by Output Value</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-[300px]">
+            <ChartContainer
+              config={{
+                value: {
+                  label: "Value",
+                  color: "oklch(0.45 0.14 155)",
+                },
+              }}
+              className="h-[300px]"
+            >
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={minterData} layout="horizontal">
                   <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
@@ -160,7 +176,7 @@ export function TreasuryCharts({ tokens, transactions }: TreasuryChartsProps) {
                   <Bar dataKey="value" fill="oklch(0.45 0.14 155)" radius={[0, 8, 8, 0]} />
                 </BarChart>
               </ResponsiveContainer>
-            </div>
+            </ChartContainer>
           </CardContent>
         </Card>
       </div>
