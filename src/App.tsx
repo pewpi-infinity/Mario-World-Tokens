@@ -151,17 +151,17 @@ function App() {
     <div className="min-h-screen bg-background text-foreground">
       <header className="border-b-4 border-[oklch(0.75_0.18_85)] bg-gradient-to-r from-[oklch(0.58_0.24_330)] via-[oklch(0.65_0.25_265)] to-[oklch(0.70_0.24_190)] relative overflow-hidden">
         <div className="absolute inset-0 bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,oklch(1_0_0_/_0.05)_10px,oklch(1_0_0_/_0.05)_20px)]"></div>
-        <div className="container mx-auto px-4 py-6 relative z-10 space-y-4">
-          <div className="flex items-center justify-center gap-4">
-            <div className="bg-[oklch(0.75_0.18_85)] p-3 rounded-lg shadow-lg border-2 border-[oklch(0.85_0.20_85)]">
+        <div className="w-full px-2 sm:px-4 py-3 sm:py-6 relative z-10 space-y-2 sm:space-y-4">
+          <div className="flex items-center justify-center gap-2 sm:gap-4">
+            <div className="bg-[oklch(0.75_0.18_85)] p-2 sm:p-3 rounded-lg shadow-lg border-2 border-[oklch(0.85_0.20_85)] flex-shrink-0">
               <MarioLogo animated />
             </div>
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-white drop-shadow-lg pixel-font">
+            <div className="min-w-0">
+              <h1 className="text-sm sm:text-xl md:text-3xl font-bold text-white drop-shadow-lg pixel-font leading-tight">
                 FEDERAL RESERVE MARIO
               </h1>
-              <p className="text-sm md:text-base text-[oklch(0.75_0.18_85)] font-semibold drop-shadow">
-                People's Treasury Creation System 🪙
+              <p className="text-xs sm:text-sm md:text-base text-[oklch(0.75_0.18_85)] font-semibold drop-shadow truncate">
+                People's Treasury 🪙
               </p>
             </div>
           </div>
@@ -170,61 +170,62 @@ function App() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8 max-w-7xl">
+      <main className="w-full px-2 sm:px-4 py-4 sm:py-8 max-w-7xl mx-auto">
         <WalletBalance stats={treasuryStats} />
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-8">
-          <TabsList className="grid grid-cols-4 w-full max-w-2xl mx-auto bg-muted p-1">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-4 sm:mt-8">
+          <TabsList className="grid grid-cols-4 w-full max-w-2xl mx-auto bg-muted p-1 h-auto">
             <TabsTrigger
               value="treasury"
-              className="flex items-center gap-2 data-[state=active]:bg-[oklch(0.75_0.18_85)] data-[state=active]:text-[oklch(0.15_0.02_280)]"
+              className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 data-[state=active]:bg-[oklch(0.75_0.18_85)] data-[state=active]:text-[oklch(0.15_0.02_280)] px-1 sm:px-3 py-2 text-xs sm:text-sm"
             >
-              <Coins size={20} weight="fill" />
-              <span>Treasury</span>
+              <Coins size={16} className="sm:w-5 sm:h-5" weight="fill" />
+              <span className="hidden sm:inline">Treasury</span>
+              <span className="sm:hidden">Vault</span>
             </TabsTrigger>
             <TabsTrigger
               value="marketplace"
-              className="flex items-center gap-2 data-[state=active]:bg-[oklch(0.65_0.15_155)] data-[state=active]:text-white"
+              className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 data-[state=active]:bg-[oklch(0.65_0.15_155)] data-[state=active]:text-white px-1 sm:px-3 py-2 text-xs sm:text-sm"
             >
-              <Storefront size={20} weight="fill" />
+              <Storefront size={16} className="sm:w-5 sm:h-5" weight="fill" />
               <span>Market</span>
             </TabsTrigger>
             <TabsTrigger
               value="charts"
-              className="flex items-center gap-2 data-[state=active]:bg-[oklch(0.70_0.24_190)] data-[state=active]:text-white"
+              className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 data-[state=active]:bg-[oklch(0.70_0.24_190)] data-[state=active]:text-white px-1 sm:px-3 py-2 text-xs sm:text-sm"
             >
-              <TrendUp size={20} weight="fill" />
+              <TrendUp size={16} className="sm:w-5 sm:h-5" weight="fill" />
               <span>Charts</span>
             </TabsTrigger>
             <TabsTrigger
               value="ledger"
-              className="flex items-center gap-2 data-[state=active]:bg-[oklch(0.58_0.24_330)] data-[state=active]:text-white"
+              className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 data-[state=active]:bg-[oklch(0.58_0.24_330)] data-[state=active]:text-white px-1 sm:px-3 py-2 text-xs sm:text-sm"
             >
-              <Globe size={20} weight="fill" />
+              <Globe size={16} className="sm:w-5 sm:h-5" weight="fill" />
               <span>Ledger</span>
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="treasury" className="mt-8">
+          <TabsContent value="treasury" className="mt-4 sm:mt-8">
             {userCoins.length === 0 ? (
-              <Card className="p-12 text-center bg-card border-2 border-border">
+              <Card className="p-6 sm:p-12 text-center bg-card border-2 border-border">
                 <div className="max-w-md mx-auto">
-                  <Coins size={64} className="mx-auto mb-4 text-muted-foreground" weight="fill" />
-                  <h3 className="text-2xl font-bold mb-2">No Coins Yet</h3>
-                  <p className="text-muted-foreground mb-6">
+                  <Coins size={48} className="sm:w-16 sm:h-16 mx-auto mb-4 text-muted-foreground" weight="fill" />
+                  <h3 className="text-xl sm:text-2xl font-bold mb-2">No Coins Yet</h3>
+                  <p className="text-sm sm:text-base text-muted-foreground mb-6">
                     Start minting Mario Coins backed by your creative content. You are your own central bank!
                   </p>
                   <Button
                     size="lg"
                     onClick={() => setShowMinting(true)}
-                    className="bg-[oklch(0.75_0.18_85)] text-[oklch(0.15_0.02_280)] hover:bg-[oklch(0.80_0.20_85)]"
+                    className="bg-[oklch(0.75_0.18_85)] text-[oklch(0.15_0.02_280)] hover:bg-[oklch(0.80_0.20_85)] w-full sm:w-auto"
                   >
                     <span>🟡 Mint Your First Coin</span>
                   </Button>
                 </div>
               </Card>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
                 {userCoins.map((coin) => (
                   <TokenCard
                     key={coin.id}
@@ -238,7 +239,7 @@ function App() {
             )}
           </TabsContent>
 
-          <TabsContent value="marketplace" className="mt-8">
+          <TabsContent value="marketplace" className="mt-4 sm:mt-8">
             <Marketplace
               userCoins={userCoins}
               currentUser={currentUser}
@@ -246,11 +247,11 @@ function App() {
             />
           </TabsContent>
 
-          <TabsContent value="charts" className="mt-8">
+          <TabsContent value="charts" className="mt-4 sm:mt-8">
             <TreasuryCharts stats={treasuryStats} marioLogo={marioImage} />
           </TabsContent>
 
-          <TabsContent value="ledger" className="mt-8">
+          <TabsContent value="ledger" className="mt-4 sm:mt-8">
             <GlobalLedger globalCoins={globalCoins || []} />
           </TabsContent>
         </Tabs>

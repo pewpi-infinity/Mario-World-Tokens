@@ -122,10 +122,10 @@ export function TreasuryCharts({ stats, marioLogo }: TreasuryChartsProps) {
   }
 
   return (
-    <Card className="p-6 bg-card border-2 border-border">
-      <h3 className="text-2xl font-bold mb-6">Treasury Growth Over Time</h3>
-      <div ref={containerRef} className="relative">
-        <svg ref={svgRef}></svg>
+    <Card className="p-4 sm:p-6 bg-card border-2 border-border">
+      <h3 className="text-lg sm:text-2xl font-bold mb-4 sm:mb-6">Treasury Growth</h3>
+      <div ref={containerRef} className="relative w-full overflow-x-auto">
+        <svg ref={svgRef} className="min-w-full"></svg>
         {marioPosition.x > 0 && (
           <motion.div
             className="absolute pointer-events-none"
@@ -136,7 +136,7 @@ export function TreasuryCharts({ stats, marioLogo }: TreasuryChartsProps) {
             <motion.img
               src={marioLogo}
               alt="Mario"
-              className="w-10 h-10 object-contain"
+              className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
               animate={{ y: [0, -5, 0] }}
               transition={{ duration: 0.6, repeat: Infinity, ease: 'easeInOut' }}
             />
@@ -144,11 +144,11 @@ export function TreasuryCharts({ stats, marioLogo }: TreasuryChartsProps) {
         )}
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-4 mt-4 sm:mt-8">
         {Object.entries(stats.contentBreakdown).map(([type, count]) => (
-          <div key={type} className="bg-muted p-4 rounded-lg text-center">
-            <p className="text-sm text-muted-foreground capitalize">{type}</p>
-            <p className="text-2xl font-bold text-foreground">{count}</p>
+          <div key={type} className="bg-muted p-3 sm:p-4 rounded-lg text-center">
+            <p className="text-xs sm:text-sm text-muted-foreground capitalize truncate">{type}</p>
+            <p className="text-xl sm:text-2xl font-bold text-foreground">{count}</p>
           </div>
         ))}
       </div>
