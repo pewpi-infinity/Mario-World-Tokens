@@ -24,22 +24,26 @@ export function TokenCard({ token, onClick, selected }: TokenCardProps) {
     >
       <Card
         className={cn(
-          'p-6 cursor-pointer border-2 shadow-md hover:shadow-lg transition-shadow currency-pattern relative overflow-hidden',
-          selected && 'ring-2 ring-primary',
+          'p-6 cursor-pointer border-3 shadow-lg hover:shadow-xl transition-all currency-pattern relative overflow-hidden',
+          selected && 'ring-4 ring-accent shadow-accent/50',
           getDenominationColor(token.denomination)
         )}
         onClick={onClick}
       >
         {isRare && (
-          <div className="absolute top-2 right-2">
-            <Sparkle className="text-accent" size={20} weight="fill" />
-          </div>
+          <motion.div
+            className="absolute top-2 right-2"
+            animate={{ rotate: [0, 10, -10, 0], scale: [1, 1.1, 1] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          >
+            <Sparkle className="text-accent drop-shadow-lg" size={24} weight="fill" />
+          </motion.div>
         )}
 
         {hasSignificantValue && (
           <div className="absolute top-2 left-2">
-            <Badge variant="default" className="bg-accent text-accent-foreground text-xs px-2 py-0.5">
-              <TrendUp size={12} className="mr-1" weight="bold" />
+            <Badge className="bg-accent text-accent-foreground text-xs px-2 py-1 shadow-lg border-2 border-accent-foreground/20">
+              <TrendUp size={14} className="mr-1" weight="bold" />
               Valuable
             </Badge>
           </div>
@@ -47,10 +51,14 @@ export function TokenCard({ token, onClick, selected }: TokenCardProps) {
 
         <div className="flex items-start justify-between mb-4">
           <div>
-            <div className="text-3xl font-bold font-serif">
+            <motion.div
+              className="text-4xl font-bold font-serif drop-shadow-md"
+              initial={{ scale: 0.9 }}
+              animate={{ scale: 1 }}
+            >
               ${token.denomination}
-            </div>
-            <Badge variant="outline" className="mt-1">
+            </motion.div>
+            <Badge variant="outline" className="mt-2 border-current/30 backdrop-blur-sm">
               Federal Reserve Note
             </Badge>
           </div>
@@ -58,27 +66,27 @@ export function TokenCard({ token, onClick, selected }: TokenCardProps) {
 
         <div className="space-y-2">
           <div>
-            <div className="text-xs text-muted-foreground uppercase tracking-wide">Serial Number</div>
-            <div className="serial-number text-sm font-medium">
+            <div className="text-xs uppercase tracking-wider font-semibold opacity-80">Serial Number</div>
+            <div className="serial-number text-sm font-bold mt-1">
               {token.serialNumber}
             </div>
           </div>
 
           {noteValue && (
-            <div className="pt-2 border-t border-border/50">
+            <div className="pt-2 border-t border-current/20">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">Est. Value</span>
-                <span className="text-sm font-bold text-accent">${noteValue.totalValue.toFixed(2)}</span>
+                <span className="text-xs font-semibold opacity-80">Est. Value</span>
+                <span className="text-base font-bold">${noteValue.totalValue.toFixed(2)}</span>
               </div>
             </div>
           )}
 
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <MapPin size={12} />
+          <div className="flex items-center gap-1 text-xs opacity-80 font-medium">
+            <MapPin size={14} weight="fill" />
             <span>{token.location}</span>
           </div>
 
-          <div className="text-xs text-muted-foreground">
+          <div className="text-xs opacity-75">
             Minted {formatTimestamp(token.mintedAt)}
           </div>
         </div>

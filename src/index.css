@@ -16,26 +16,26 @@
 }
 
 :root {
-  --background: oklch(0.97 0.01 155);
-  --foreground: oklch(0.20 0.02 250);
-  --card: oklch(0.99 0.005 155);
-  --card-foreground: oklch(0.20 0.02 250);
-  --popover: oklch(0.99 0.005 155);
-  --popover-foreground: oklch(0.20 0.02 250);
-  --primary: oklch(0.45 0.14 155);
+  --background: oklch(0.55 0.08 245);
+  --foreground: oklch(0.98 0 0);
+  --card: oklch(0.60 0.10 25);
+  --card-foreground: oklch(0.98 0 0);
+  --popover: oklch(0.60 0.10 25);
+  --popover-foreground: oklch(0.98 0 0);
+  --primary: oklch(0.55 0.24 30);
   --primary-foreground: oklch(0.98 0 0);
-  --secondary: oklch(0.35 0.09 240);
+  --secondary: oklch(0.45 0.18 145);
   --secondary-foreground: oklch(0.98 0 0);
-  --muted: oklch(0.92 0.01 155);
-  --muted-foreground: oklch(0.50 0.02 250);
-  --accent: oklch(0.70 0.15 85);
-  --accent-foreground: oklch(0.25 0.08 250);
+  --muted: oklch(0.45 0.08 240);
+  --muted-foreground: oklch(0.85 0.05 60);
+  --accent: oklch(0.75 0.20 85);
+  --accent-foreground: oklch(0.20 0.05 90);
   --destructive: oklch(0.55 0.22 25);
   --destructive-foreground: oklch(0.98 0 0);
-  --border: oklch(0.85 0.02 155);
-  --input: oklch(0.85 0.02 155);
-  --ring: oklch(0.45 0.14 155);
-  --radius: 0.375rem;
+  --border: oklch(0.40 0.10 245);
+  --input: oklch(0.40 0.10 245);
+  --ring: oklch(0.75 0.20 85);
+  --radius: 0.5rem;
 }
 
 @theme {
@@ -77,7 +77,52 @@
     45deg,
     transparent,
     transparent 10px,
-    oklch(0.45 0.14 155 / 0.03) 10px,
-    oklch(0.45 0.14 155 / 0.03) 20px
+    oklch(0.95 0.08 85 / 0.15) 10px,
+    oklch(0.95 0.08 85 / 0.15) 20px
   );
+}
+
+.mario-bg {
+  background: linear-gradient(135deg, 
+    oklch(0.55 0.08 245) 0%, 
+    oklch(0.48 0.12 260) 50%, 
+    oklch(0.55 0.08 245) 100%);
+  position: relative;
+}
+
+.mario-bg::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    radial-gradient(circle at 20% 30%, oklch(0.75 0.20 85 / 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 70%, oklch(0.55 0.24 30 / 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, oklch(0.45 0.18 145 / 0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes run {
+  0% { transform: translateX(-50px); }
+  100% { transform: translateX(calc(100vw + 50px)); }
+}
+
+.mario-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.coin-spin {
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }

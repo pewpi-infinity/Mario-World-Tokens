@@ -15,6 +15,7 @@ import { TreasuryCharts } from '@/components/TreasuryCharts'
 import { AutoAssessment } from '@/components/AutoAssessment'
 import { Toaster } from '@/components/ui/sonner'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { motion } from 'framer-motion'
 
 function App() {
   const [user, setUser] = useState<{ login: string; avatarUrl: string } | null>(null)
@@ -121,31 +122,42 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b border-border bg-card">
+    <div className="min-h-screen mario-bg">
+      <header className="border-b-4 border-primary/30 bg-gradient-to-r from-[oklch(0.60_0.10_25)] to-[oklch(0.58_0.12_30)] shadow-lg">
         <div className="container mx-auto px-4 py-4 md:px-8">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Coins size={32} className="text-primary" weight="fill" />
+            <div className="flex items-center gap-4">
+              <motion.div
+                animate={{ rotate: [0, 10, -10, 0] }}
+                transition={{ duration: 2, repeat: Infinity }}
+                className="bg-accent p-3 rounded-xl shadow-lg"
+              >
+                <Coins size={40} className="text-accent-foreground" weight="fill" />
+              </motion.div>
               <div>
-                <h1 className="text-2xl md:text-3xl font-bold font-serif">Mario Tokens</h1>
-                <p className="text-sm text-muted-foreground">Federal Reserve Notes</p>
+                <h1 className="text-3xl md:text-4xl font-bold font-serif text-white drop-shadow-lg">Mario Tokens</h1>
+                <p className="text-sm text-white/90 font-medium">Federal Reserve Notes 🍄</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
               {isMinter && (
-                <Badge variant="secondary" className="hidden md:flex items-center gap-1">
+                <Badge className="hidden md:flex items-center gap-1 bg-accent text-accent-foreground border-2 border-accent-foreground/20">
                   <Seal size={16} weight="fill" />
                   Authorized Minter
                 </Badge>
               )}
-              <Avatar>
-                <AvatarImage src={user.avatarUrl} alt={user.login} />
-                <AvatarFallback>{user.login[0].toUpperCase()}</AvatarFallback>
-              </Avatar>
-              <div className="hidden md:block">
-                <div className="font-medium">{user.login}</div>
-                <div className="text-xs text-muted-foreground">@{user.login}</div>
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Avatar className="ring-4 ring-accent/50">
+                  <AvatarImage src={user.avatarUrl} alt={user.login} />
+                  <AvatarFallback className="bg-primary text-primary-foreground">{user.login[0].toUpperCase()}</AvatarFallback>
+                </Avatar>
+              </motion.div>
+              <div className="hidden md:block text-white">
+                <div className="font-bold">{user.login}</div>
+                <div className="text-xs opacity-90">@{user.login}</div>
               </div>
             </div>
           </div>
@@ -154,23 +166,23 @@ function App() {
 
       <main className="container mx-auto px-4 py-8 md:px-8">
         <Tabs defaultValue="wallet" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:w-auto">
-            <TabsTrigger value="wallet" className="flex items-center gap-2">
-              <Coins size={18} />
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:w-auto bg-card border-2 border-primary/20 p-1">
+            <TabsTrigger value="wallet" className="flex items-center gap-2 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
+              <Coins size={18} weight="fill" />
               <span className="hidden sm:inline">Wallet</span>
             </TabsTrigger>
             {isMinter && (
-              <TabsTrigger value="mint" className="flex items-center gap-2">
-                <Printer size={18} />
+              <TabsTrigger value="mint" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <Printer size={18} weight="fill" />
                 <span className="hidden sm:inline">Mint</span>
               </TabsTrigger>
             )}
-            <TabsTrigger value="treasury" className="flex items-center gap-2">
-              <ChartBar size={18} />
+            <TabsTrigger value="treasury" className="flex items-center gap-2 data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
+              <ChartBar size={18} weight="fill" />
               <span className="hidden sm:inline">Treasury</span>
             </TabsTrigger>
-            <TabsTrigger value="ledger" className="flex items-center gap-2">
-              <Scroll size={18} />
+            <TabsTrigger value="ledger" className="flex items-center gap-2 data-[state=active]:bg-gradient-to-br data-[state=active]:from-[oklch(0.65_0.25_25)] data-[state=active]:to-[oklch(0.55_0.25_25)] data-[state=active]:text-white">
+              <Scroll size={18} weight="fill" />
               <span className="hidden sm:inline">Ledger</span>
             </TabsTrigger>
           </TabsList>

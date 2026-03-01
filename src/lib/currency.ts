@@ -19,12 +19,12 @@ export function isRareSerial(serial: string): boolean {
 
 export function getDenominationColor(denomination: Denomination): string {
   const colors: Record<Denomination, string> = {
-    1: 'bg-emerald-50 border-emerald-300 text-emerald-900',
-    5: 'bg-blue-50 border-blue-300 text-blue-900',
-    10: 'bg-amber-50 border-amber-300 text-amber-900',
-    20: 'bg-teal-50 border-teal-300 text-teal-900',
-    50: 'bg-purple-50 border-purple-300 text-purple-900',
-    100: 'bg-rose-50 border-rose-300 text-rose-900',
+    1: 'bg-gradient-to-br from-[oklch(0.80_0.18_85)] to-[oklch(0.75_0.20_85)] border-[oklch(0.75_0.20_85)] text-[oklch(0.25_0.08_90)]',
+    5: 'bg-gradient-to-br from-[oklch(0.70_0.22_25)] to-[oklch(0.65_0.25_25)] border-[oklch(0.65_0.25_25)] text-white',
+    10: 'bg-gradient-to-br from-[oklch(0.60_0.18_145)] to-[oklch(0.55_0.20_145)] border-[oklch(0.55_0.20_145)] text-white',
+    20: 'bg-gradient-to-br from-[oklch(0.65_0.20_260)] to-[oklch(0.60_0.22_260)] border-[oklch(0.60_0.22_260)] text-white',
+    50: 'bg-gradient-to-br from-[oklch(0.75_0.16_330)] to-[oklch(0.70_0.18_330)] border-[oklch(0.70_0.18_330)] text-[oklch(0.25_0.08_330)]',
+    100: 'bg-gradient-to-br from-[oklch(0.70_0.18_60)] to-[oklch(0.65_0.20_60)] border-[oklch(0.65_0.20_60)] text-white',
   }
   return colors[denomination]
 }

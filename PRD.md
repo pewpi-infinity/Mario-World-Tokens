@@ -63,19 +63,22 @@ This requires multi-role authentication (minters vs. users), token generation wi
 - **Lost Wallets**: User's GitHub account is the recovery mechanism; tokens persist tied to username
 
 ## Design Direction
-The design should evoke the official gravitas and trustworthiness of government currency with rich greens, dignified blues, and precise typography that feels institutional yet modern. The interface should feel like a professional banking platform with clear hierarchy, serious color tones, and detailed record-keeping that communicates permanence and authority.
+The design should evoke a vibrant, playful Mario-themed aesthetic that makes financial transactions feel joyful and game-like, while maintaining the professionalism of a currency system. Think Super Mario World meets Federal Reserve - bright primary colors, animated characters presenting data, coin-collecting excitement, and a nostalgic retro gaming feel with modern polish.
 
 ## Color Selection
-A palette inspired by US currency with deep emerald greens and treasury blues, creating an atmosphere of financial authority and trust.
+A bold, saturated Mario-inspired palette featuring red, yellow, blue, and green as primary accent colors, set against a rich blue background reminiscent of Mario's sky levels.
 
-- **Primary Color**: Deep Emerald Green (oklch(0.45 0.14 155)) - Evokes US dollar bills and communicates established financial authority
-- **Secondary Colors**: Treasury Blue (oklch(0.35 0.09 240)) for minting operations and Navy (oklch(0.25 0.08 250)) for serious administrative functions
-- **Accent Color**: Gold (oklch(0.70 0.15 85)) - Highlights rare serials, collector tokens, and important actions
+- **Primary Color**: Mario Red (oklch(0.55 0.24 30)) - Main brand color for important actions and minting features, communicates energy and excitement like collecting coins
+- **Secondary Color**: Luigi Green (oklch(0.45 0.18 145)) - Supporting color for treasury and balance displays, represents growth and the classic Luigi aesthetic
+- **Accent Color**: Coin Yellow (oklch(0.75 0.20 85)) - Attention-grabbing highlight for valuable items, CTAs, and currency elements with a golden coin shimmer
+- **Background**: Sky Blue (oklch(0.55 0.08 245)) - Main page background with subtle gradient overlays creating a Mario sky atmosphere
+- **Card Background**: Brick Orange (oklch(0.60 0.10 25)) - Card containers with warmth reminiscent of Mario's brick blocks
 - **Foreground/Background Pairings**:
-  - Primary Green (oklch(0.45 0.14 155)): White text (oklch(0.98 0 0)) - Ratio 7.2:1 ✓
-  - Treasury Blue (oklch(0.35 0.09 240)): White text (oklch(0.98 0 0)) - Ratio 9.8:1 ✓
-  - Gold Accent (oklch(0.70 0.15 85)): Dark Navy (oklch(0.25 0.08 250)) - Ratio 6.1:1 ✓
-  - Background (oklch(0.97 0.01 155)): Foreground (oklch(0.20 0.02 250)) - Ratio 12.5:1 ✓
+  - Accent (Coin Yellow): Dark Brown text - Ratio 5.2:1 ✓
+  - Primary (Mario Red): White text - Ratio 5.8:1 ✓
+  - Secondary (Luigi Green): White text - Ratio 6.4:1 ✓
+  - Background (Sky Blue): White text - Ratio 4.6:1 ✓
+  - Card (Brick Orange): White text - Ratio 4.9:1 ✓
 
 ## Font Selection
 Typography should convey official documentation and financial precision with a monospace font for serial numbers and a serious serif for denominations.
@@ -90,14 +93,16 @@ Typography should convey official documentation and financial precision with a m
   - Button Labels: Inter SemiBold/16px/uppercase tracking
 
 ## Animations
-Animations should reinforce the weight and permanence of financial transactions with deliberate, physics-based movements.
+Animations should bring the Mario universe to life with bouncy, energetic movements and character-driven interactions. Mario and Luigi act as AI guides presenting data with personality.
 
-- Token minting: Smooth slide-in with subtle bounce (400ms) suggesting physical printing
-- Balance updates: Number counter animation that tallies up denominations
-- Token transfers: Gentle fade out from sender + fade in to recipient with 300ms overlap
-- Serial number reveals: Typewriter effect when viewing new tokens (50ms per character)
-- Ledger filtering: Smooth 250ms transitions when narrowing results
-- Hover states: Subtle 150ms lift on interactive cards suggesting touchable currency
+- Token minting: Coin-flip animation with bounce and sparkle effect (500ms)
+- Balance updates: Coin-counting animation with Mario coin sound aesthetic
+- Token transfers: Tokens hop from sender to recipient with arc motion (400ms)
+- Mario & Luigi characters: Gentle floating animation (infinite loop, 2s cycle) with occasional idle animations
+- Chart reveals: Staggered bar growth with playful spring physics (300ms per bar with 50ms delay)
+- Hover states: Subtle lift with shadow expansion (150ms) like Mario jumping
+- Rare token sparkle: Continuous twinkle animation with rotating sparkles
+- Tab transitions: Slide in from direction with slight overshoot bounce (250ms)
 
 ## Component Selection
 
