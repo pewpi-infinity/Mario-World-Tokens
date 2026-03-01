@@ -282,10 +282,18 @@ export function MintingInterface({ open, onClose, onMint, currentUser }: Minting
                   setDrawing(imageData)
                   setUploadedImage(null)
                   setUploadedVideo(null)
-                  toast.success('Drawing saved!')
+                  toast.success('🎨 Drawing attached to coin!')
                 }}
                 currentDrawing={drawing}
               />
+              {drawing && (
+                <div className="mt-4 p-3 bg-[oklch(0.75_0.18_85)]/10 border-2 border-[oklch(0.75_0.18_85)] rounded-lg">
+                  <p className="text-sm font-semibold text-[oklch(0.75_0.18_85)] flex items-center gap-2">
+                    <PenNib size={16} weight="fill" />
+                    Drawing is attached and ready to mint!
+                  </p>
+                </div>
+              )}
             </TabsContent>
 
             <TabsContent value="stickers" className="mt-4">

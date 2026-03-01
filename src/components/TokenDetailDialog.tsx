@@ -1,8 +1,9 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
+import { Button } from '@/components/ui/button'
 import { MarioCoin } from '@/lib/types'
-import { MusicNotes, Image, VideoCamera, PenNib, Users, FileText, Clock } from '@phosphor-icons/react'
+import { MusicNotes, Image, VideoCamera, PenNib, Users, FileText, Clock, ArrowLeft } from '@phosphor-icons/react'
 
 export interface TokenDetailDialogProps {
   coin: MarioCoin
@@ -30,6 +31,15 @@ export function TokenDetailDialog({ coin, open, onClose }: TokenDetailDialogProp
         </DialogHeader>
 
         <div className="space-y-6">
+          <Button
+            onClick={onClose}
+            variant="outline"
+            className="border-[oklch(0.75_0.18_85)] text-[oklch(0.75_0.18_85)] hover:bg-[oklch(0.75_0.18_85)] hover:text-[oklch(0.15_0.02_280)]"
+          >
+            <ArrowLeft size={20} weight="bold" />
+            <span className="ml-2">Back to Treasury</span>
+          </Button>
+          
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground">USD Value</p>
@@ -48,6 +58,25 @@ export function TokenDetailDialog({ coin, open, onClose }: TokenDetailDialogProp
               Content Attachment
             </h3>
             <div className="bg-muted p-4 rounded-lg">
+              {coin.content.data && (
+                <div className="mb-4">
+                  {coin.content.type === 'video' && (
+                    <video 
+                      src={coin.content.data} 
+                      controls 
+                      className="w-full rounded-lg"
+                      preload="metadata"
+                    />
+                  )}
+                  {(coin.content.type === 'image' || coin.content.data.startsWith('data:image')) && (
+                    <img 
+                      src={coin.content.data} 
+                      alt={coin.content.title}
+                      className="w-full rounded-lg"
+                    />
+                  )}
+                </div>
+              )}
               <p className="font-semibold text-lg mb-2">{coin.content.title}</p>
               <p className="text-muted-foreground">{coin.content.description}</p>
               {coin.content.url && (

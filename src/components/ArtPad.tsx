@@ -210,7 +210,7 @@ export function ArtPad({ onSave, currentDrawing }: ArtPadProps) {
               className="w-full bg-[oklch(0.75_0.18_85)] text-[oklch(0.15_0.02_280)] hover:bg-[oklch(0.80_0.20_85)]"
             >
               <CheckCircle size={20} weight="fill" />
-              Save Drawing
+              Attach Drawing to Coin
             </Button>
           )}
         </div>
