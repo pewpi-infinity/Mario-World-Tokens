@@ -246,7 +246,7 @@ Please provide a helpful, specific response that aligns with your role as ${curr
                 )}
               </CardHeader>
 
-              <ScrollArea className="flex-1 p-4 min-h-0" ref={scrollRef}>
+              <div className="flex-1 p-4 min-h-0 overflow-auto" ref={scrollRef}>
                 <div className="space-y-4">
                   {currentConversation.messages.length === 0 && (
                     <div className="text-center py-8 text-[oklch(0.65_0.02_280)]">
@@ -303,7 +303,7 @@ Please provide a helpful, specific response that aligns with your role as ${curr
                     </div>
                   )}
                 </div>
-              </ScrollArea>
+              </div>
 
               <div className="p-4 border-t border-[oklch(0.35_0.05_285)] flex-shrink-0">
                 <div className="flex gap-2">

@@ -263,7 +263,7 @@ export function MarioArtStudio({ open, onClose, onMintArt, currentUser }: MarioA
           </DialogHeader>
         </div>
 
-        <ScrollArea className="flex-1 px-4 sm:px-6 pb-4 sm:pb-6 min-h-0">
+        <div className="flex-1 px-4 sm:px-6 pb-4 sm:pb-6 min-h-0 overflow-auto">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
           <div className="lg:col-span-3">
             <Card className="bg-[oklch(0.25_0.03_285)] border-[oklch(0.35_0.05_285)] p-4">
@@ -378,7 +378,7 @@ export function MarioArtStudio({ open, onClose, onMintArt, currentUser }: MarioA
             </Card>
           </div>
         </div>
-        </ScrollArea>
+        </div>
 
         {showMintDialog && (
           <Dialog open={showMintDialog} onOpenChange={setShowMintDialog}>
