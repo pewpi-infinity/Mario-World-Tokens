@@ -5,6 +5,8 @@ import { Card } from '@/components/ui/card'
 import { Slider } from '@/components/ui/slider'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Label } from '@/components/ui/label'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import { 
   PaintBrush, 
   Eraser, 
@@ -12,13 +14,17 @@ import {
   Palette,
   Square,
   Circle,
-  Sticker
+  Sticker,
+  Coins
 } from '@phosphor-icons/react'
 import { toast } from 'sonner'
+import { MarioCoin } from '@/lib/types'
 
 interface MarioArtStudioProps {
   open: boolean
   onClose: () => void
+  onMintArt?: (coin: MarioCoin) => void
+  currentUser?: string
 }
 
 interface Pixel {
@@ -27,7 +33,7 @@ interface Pixel {
   color: string
 }
 
-export function MarioArtStudio({ open, onClose }: MarioArtStudioProps) {
+export function MarioArtStudio({ open, onClose, onMintArt, currentUser }: MarioArtStudioProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [isDrawing, setIsDrawing] = useState(false)
   const [currentColor, setCurrentColor] = useState('#FF0000')
@@ -35,6 +41,9 @@ export function MarioArtStudio({ open, onClose }: MarioArtStudioProps) {
   const [tool, setTool] = useState<'brush' | 'eraser' | 'fill'>('brush')
   const [pixels, setPixels] = useState<Pixel[]>([])
   const [selectedSticker, setSelectedSticker] = useState<string | null>(null)
+  const [showMintDialog, setShowMintDialog] = useState(false)
+  const [artTitle, setArtTitle] = useState('')
+  const [artDescription, setArtDescription] = useState('')
 
   const pixelSize = 8
   const canvasWidth = 800
@@ -192,6 +201,57 @@ export function MarioArtStudio({ open, onClose }: MarioArtStudioProps) {
     })
   }
 
+  const handleMintArt = () => {
+    if (pixels.length === 0) {
+      toast.error('Canvas is empty! Draw something first.')
+      return
+    }
+    setShowMintDialog(true)
+  }
+
+  const confirmMintArt = () => {
+    const canvas = canvasRef.current
+    if (!canvas || !onMintArt || !currentUser) return
+
+    if (!artTitle.trim()) {
+      toast.error('Please enter a title for your artwork')
+      return
+    }
+
+    const artDataUrl = canvas.toDataURL('image/png')
+    
+    const pixelCount = pixels.length
+    const uniqueColors = new Set(pixels.map(p => p.color)).size
+    const canvasCoverage = (pixelCount / ((canvasWidth / pixelSize) * (canvasHeight / pixelSize))) * 100
+    
+    const complexityScore = Math.min(100, (uniqueColors * 10) + (canvasCoverage * 0.5))
+    const baseValue = 10
+    const artValue = baseValue + (complexityScore * 0.5)
+
+    const newCoin: MarioCoin = {
+      id: `art-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      value: parseFloat(artValue.toFixed(2)),
+      mintedAt: Date.now(),
+      mintedBy: currentUser,
+      content: {
+        type: 'image',
+        title: artTitle.trim(),
+        description: artDescription.trim() || `8-bit pixel art with ${uniqueColors} colors and ${pixelCount} pixels`,
+        data: artDataUrl
+      },
+      transferHistory: []
+    }
+
+    onMintArt(newCoin)
+    setPixels([])
+    setArtTitle('')
+    setArtDescription('')
+    setShowMintDialog(false)
+    toast.success(`🟡 Art minted as Mario Coin worth $${artValue.toFixed(2)}!`, {
+      description: `Complexity: ${complexityScore.toFixed(0)}/100`
+    })
+  }
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-[95vw] max-h-[95vh] overflow-y-auto bg-gradient-to-br from-[oklch(0.22_0.03_285)] to-[oklch(0.18_0.02_290)] border-2 border-[oklch(0.75_0.18_85)]">
@@ -288,6 +348,15 @@ export function MarioArtStudio({ open, onClose }: MarioArtStudioProps) {
               </div>
 
               <div className="space-y-2">
+                {onMintArt && (
+                  <Button
+                    onClick={handleMintArt}
+                    className="w-full bg-[oklch(0.75_0.18_85)] text-[oklch(0.15_0.02_280)] hover:bg-[oklch(0.80_0.20_85)] font-bold"
+                  >
+                    <Coins weight="fill" className="mr-2" />
+                    🟡 Mint as Token
+                  </Button>
+                )}
                 <Button
                   onClick={downloadArt}
                   className="w-full bg-[oklch(0.65_0.15_155)] text-white"
@@ -306,6 +375,87 @@ export function MarioArtStudio({ open, onClose }: MarioArtStudioProps) {
             </Card>
           </div>
         </div>
+
+        {showMintDialog && (
+          <Dialog open={showMintDialog} onOpenChange={setShowMintDialog}>
+            <DialogContent className="bg-gradient-to-br from-[oklch(0.22_0.03_285)] to-[oklch(0.18_0.02_290)] border-2 border-[oklch(0.75_0.18_85)]">
+              <DialogHeader>
+                <DialogTitle className="text-2xl font-bold text-[oklch(0.75_0.18_85)] pixel-font">
+                  🟡 MINT ARTWORK AS TOKEN
+                </DialogTitle>
+              </DialogHeader>
+              
+              <div className="space-y-4">
+                <div className="bg-[oklch(0.25_0.03_285)] border-2 border-[oklch(0.35_0.05_285)] p-4 rounded-lg">
+                  <canvas
+                    ref={canvasRef}
+                    width={canvasWidth}
+                    height={canvasHeight}
+                    className="w-full h-auto border-2 border-[oklch(0.75_0.18_85)]"
+                    style={{ imageRendering: 'pixelated' }}
+                  />
+                </div>
+
+                <div className="space-y-3">
+                  <div>
+                    <Label htmlFor="art-title" className="text-[oklch(0.75_0.18_85)] font-bold mb-2 block">
+                      Artwork Title *
+                    </Label>
+                    <Input
+                      id="art-title"
+                      value={artTitle}
+                      onChange={(e) => setArtTitle(e.target.value)}
+                      placeholder="My Epic Mario Art"
+                      className="bg-[oklch(0.28_0.04_285)] border-[oklch(0.35_0.05_285)] text-white"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="art-description" className="text-[oklch(0.75_0.18_85)] font-bold mb-2 block">
+                      Description (optional)
+                    </Label>
+                    <Textarea
+                      id="art-description"
+                      value={artDescription}
+                      onChange={(e) => setArtDescription(e.target.value)}
+                      placeholder="Describe your masterpiece..."
+                      className="bg-[oklch(0.28_0.04_285)] border-[oklch(0.35_0.05_285)] text-white min-h-20"
+                    />
+                  </div>
+
+                  <div className="bg-[oklch(0.25_0.03_285)] border border-[oklch(0.35_0.05_285)] p-3 rounded">
+                    <p className="text-sm text-[oklch(0.65_0.02_280)]">
+                      💡 Token value is calculated based on:
+                    </p>
+                    <ul className="text-xs text-[oklch(0.65_0.02_280)] mt-2 space-y-1 ml-4">
+                      <li>• Number of pixels drawn</li>
+                      <li>• Variety of colors used</li>
+                      <li>• Canvas coverage</li>
+                      <li>• Overall complexity</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => setShowMintDialog(false)}
+                    variant="outline"
+                    className="flex-1 border-[oklch(0.35_0.05_285)]"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={confirmMintArt}
+                    className="flex-1 bg-[oklch(0.75_0.18_85)] text-[oklch(0.15_0.02_280)] hover:bg-[oklch(0.80_0.20_85)] font-bold"
+                  >
+                    <Coins weight="fill" className="mr-2" />
+                    Mint Token
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
       </DialogContent>
     </Dialog>
   )

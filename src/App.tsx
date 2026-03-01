@@ -264,6 +264,8 @@ function App() {
       <MarioArtStudio
         open={showArtStudio}
         onClose={() => setShowArtStudio(false)}
+        onMintArt={handleMint}
+        currentUser={currentUser}
       />
 
       <MarioRaceTrack
