@@ -10,7 +10,7 @@ import { TreasuryCharts } from '@/components/TreasuryCharts'
 import { GlobalLedger } from '@/components/GlobalLedger'
 import { TokenCard } from '@/components/TokenCard'
 import { Marketplace } from '@/components/Marketplace'
-import { MarioActionButtons } from '@/components/MarioActionButtons'
+import { AnimatedMarioButtons } from '@/components/AnimatedMarioButtons'
 import { MarioLogo } from '@/components/MarioLogo'
 import { UnifiedMusicStudio } from '@/components/UnifiedMusicStudio'
 import { CollaborativeMusicStudio } from '@/components/CollaborativeMusicStudio'
@@ -172,7 +172,24 @@ function App() {
             </div>
           </div>
           
-          <MarioActionButtons {...handleActionButtons} />
+          <AnimatedMarioButtons
+            onTimeCapsule={handleActionButtons.onTimeCapsule}
+            onMintToken={handleActionButtons.onMintToken}
+            onUpgradeToken={handleActionButtons.onUpgradeToken}
+            onVideoClip={handleActionButtons.onVideoClip}
+            onFilmRolling={handleActionButtons.onFilmRolling}
+            onSuperPower={handleActionButtons.onSuperPower}
+            onSocialShare={handleActionButtons.onSocialShare}
+            onMemoryPull={handleActionButtons.onMemoryPull}
+            onCreationZone={handleActionButtons.onCreationZone}
+            onFirePower={handleActionButtons.onFirePower}
+            onMusicCreation={handleActionButtons.onMusicCreation}
+            onCollabMusic={handleActionButtons.onCollabMusic}
+            onValueJump={handleActionButtons.onValueJump}
+            onLivingToken={handleActionButtons.onLivingToken}
+            onDoubleUp={handleActionButtons.onDoubleUp}
+            onAIAssistant={handleActionButtons.onAIAssistant}
+          />
         </div>
       </header>
 

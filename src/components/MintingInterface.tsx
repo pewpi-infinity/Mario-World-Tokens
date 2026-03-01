@@ -13,6 +13,7 @@ import { ArtPad } from '@/components/ArtPad'
 import { MarioStickers } from '@/components/MarioStickers'
 import { AIChatAssistant } from '@/components/AIChatAssistant'
 import { InfinitySpiritGenerator } from '@/components/InfinitySpiritGenerator'
+import { InfinityAIChat } from '@/components/InfinityAIChat'
 import { toast } from 'sonner'
 
 export interface MintingInterfaceProps {
@@ -43,6 +44,7 @@ export function MintingInterface({ open, onClose, onMint, currentUser }: Minting
   const [stickers, setStickers] = useState<string[]>([])
   const [isMinting, setIsMinting] = useState(false)
   const [showInfinitySpiritGenerator, setShowInfinitySpiritGenerator] = useState(false)
+  const [showAIChat, setShowAIChat] = useState(false)
 
   const handleMint = async () => {
     setIsMinting(true)
@@ -90,16 +92,30 @@ export function MintingInterface({ open, onClose, onMint, currentUser }: Minting
   const isValid = value && parseFloat(value) > 0 && title && description
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-2xl font-bold pixel-font">MINT NEW MARIO COIN</DialogTitle>
-          <DialogDescription>
-            Create your own currency backed by creative content. You are the mint!
-          </DialogDescription>
-        </DialogHeader>
+    <>
+      <Dialog open={open} onOpenChange={onClose}>
+        <DialogContent className="max-w-[98vw] sm:max-w-4xl h-[95vh] p-0 flex flex-col overflow-hidden">
+          <div className="p-4 sm:p-6 pb-2 border-b border-border flex-shrink-0">
+            <DialogHeader>
+              <DialogTitle className="text-lg sm:text-2xl font-bold pixel-font flex items-center justify-between">
+                <span>MINT NEW MARIO COIN</span>
+                <Button
+                  onClick={() => setShowAIChat(true)}
+                  size="sm"
+                  variant="outline"
+                  className="ml-2 text-xs sm:text-sm"
+                >
+                  ♾️ AI Help
+                </Button>
+              </DialogTitle>
+              <DialogDescription className="text-xs sm:text-sm">
+                Create your own currency backed by creative content. You are the mint!
+              </DialogDescription>
+            </DialogHeader>
+          </div>
 
-        <div className="space-y-6 mt-4">
+          <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 min-h-0">
+            <div className="space-y-4 sm:space-y-6">
           <div>
             <Label htmlFor="value" className="text-base font-semibold">USD Value</Label>
             <div className="relative mt-2">
@@ -281,27 +297,43 @@ export function MintingInterface({ open, onClose, onMint, currentUser }: Minting
             </TabsContent>
           </Tabs>
 
-          <div className="flex gap-3 pt-4">
-            <Button
-              variant="outline"
-              onClick={onClose}
-              className="flex-1"
-              type="button"
-              disabled={isMinting}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleMint}
-              disabled={!isValid || isMinting}
-              className="flex-1 bg-[oklch(0.75_0.18_85)] text-[oklch(0.15_0.02_280)] hover:bg-[oklch(0.80_0.20_85)] h-12 text-lg font-bold"
-              type="button"
-            >
-              {isMinting ? 'Minting...' : 'Mint Coin'}
-            </Button>
+            </div>
           </div>
-        </div>
-      </DialogContent>
-    </Dialog>
+
+          <div className="flex-shrink-0 p-4 sm:p-6 pt-3 border-t border-border bg-background/80 backdrop-blur-sm">
+            <div className="flex gap-2 sm:gap-3">
+              <Button
+                variant="outline"
+                onClick={onClose}
+                className="flex-1"
+                type="button"
+                disabled={isMinting}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleMint}
+                disabled={!isValid || isMinting}
+                className="flex-1 bg-[oklch(0.75_0.18_85)] text-[oklch(0.15_0.02_280)] hover:bg-[oklch(0.80_0.20_85)] h-10 sm:h-12 text-sm sm:text-lg font-bold"
+                type="button"
+              >
+                {isMinting ? 'Minting...' : 'Mint Coin'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <InfinityAIChat
+        open={showAIChat}
+        onClose={() => setShowAIChat(false)}
+        initialBot="token"
+      />
+
+      <InfinitySpiritGenerator
+        open={showInfinitySpiritGenerator}
+        onClose={() => setShowInfinitySpiritGenerator(false)}
+      />
+    </>
   )
 }
