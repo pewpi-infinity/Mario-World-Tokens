@@ -18,6 +18,7 @@ import { MarioArtStudio } from '@/components/MarioArtStudio'
 import { MarioRaceTrack } from '@/components/MarioRaceTrack'
 import { GameEmulatorBuilder } from '@/components/GameEmulatorBuilder'
 import { InfinityAIChat } from '@/components/InfinityAIChat'
+import { AIChatTerminal } from '@/components/AIChatTerminal'
 import { MarioCoin, TreasuryStats } from '@/lib/types'
 import { Toaster } from '@/components/ui/sonner'
 import { toast } from 'sonner'
@@ -35,6 +36,21 @@ function App() {
   const [showGameBuilder, setShowGameBuilder] = useState(false)
   const [showAIAssistant, setShowAIAssistant] = useState(false)
   const [currentUser] = useState(() => `user-${Math.random().toString(36).substr(2, 9)}`)
+  
+  const getCurrentContext = () => {
+    switch (activeTab) {
+      case 'treasury':
+        return 'Treasury - viewing and managing user coins'
+      case 'marketplace':
+        return 'Marketplace - trading and transferring tokens'
+      case 'charts':
+        return 'Charts - viewing treasury analytics and statistics'
+      case 'ledger':
+        return 'Global Ledger - viewing all transactions across the system'
+      default:
+        return 'Federal Reserve Mario - main dashboard'
+    }
+  }
 
   const userCoins = coins || []
 
@@ -325,6 +341,11 @@ function App() {
       />
 
       <Toaster />
+      
+      <AIChatTerminal 
+        botRole="builder" 
+        context={getCurrentContext()}
+      />
     </div>
   )
 }
