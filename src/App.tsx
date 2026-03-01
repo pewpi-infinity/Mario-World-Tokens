@@ -3,13 +3,15 @@ import { useKV } from '@github/spark/hooks'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Coins, TrendUp, Globe, Plus, Storefront } from '@phosphor-icons/react'
+import { Coins, TrendUp, Globe, Storefront } from '@phosphor-icons/react'
 import { MintingInterface } from '@/components/MintingInterface'
 import { WalletBalance } from '@/components/WalletBalance'
 import { TreasuryCharts } from '@/components/TreasuryCharts'
 import { GlobalLedger } from '@/components/GlobalLedger'
 import { TokenCard } from '@/components/TokenCard'
 import { Marketplace } from '@/components/Marketplace'
+import { MarioActionButtons } from '@/components/MarioActionButtons'
+import { MarioLogo } from '@/components/MarioLogo'
 import { MarioCoin, TreasuryStats } from '@/lib/types'
 import { Toaster } from '@/components/ui/sonner'
 import { toast } from 'sonner'
@@ -87,47 +89,69 @@ function App() {
     })
   }
 
+  const handleActionButtons = {
+    onTimeCapsule: (secret: string, releaseDate: Date) => {
+      toast.success(`🧱 Time Capsule Created! Opens ${releaseDate.toLocaleDateString()}`)
+    },
+    onMintToken: () => setShowMinting(true),
+    onUpgradeToken: (tokenId: string) => {
+      toast.info('⚪ Platinum upgrade initiated - AI analyzing token...')
+    },
+    onVideoClip: () => {
+      toast.success('🎬 AI just clipped a video of you in Mario World for a CentCom movie!')
+    },
+    onFilmRolling: () => {
+      toast.info('📽️ The film is rolling! This is going to be a cool process.')
+    },
+    onSuperPower: () => {
+      toast.success('👻 Super powers activated! Become a faster runner or ship in other realms!')
+    },
+    onSocialShare: (tokenId: string) => {
+      toast.success('🤑 Token shared to all logged and synced social media!')
+    },
+    onMemoryPull: (tokenId: string) => {
+      toast.info('🧲 Pulling token memory... Building new 🟡 and leaving platinum ⚪ behind')
+    },
+    onCreationZone: () => {
+      toast.success('👽 Creation Zone activated! Build anything you imagine!')
+    },
+    onFirePower: (offerId: string) => {
+      toast.success('🌻 Fire power denied the bad offer! 🔥')
+    },
+    onMusicCreation: () => {
+      toast.info('🎵 Music Creation Studio opening - all tools available!')
+    },
+    onValueJump: (fromValue: number, toValue: number) => {
+      toast.success(`🕹️ Token value jumped from $${fromValue} to $${toValue}!`)
+    },
+    onLivingToken: () => {
+      toast.success('⭐ Living Token created! Community + AI updates enabled')
+    },
+    onDoubleUp: () => {
+      toast.success('🍄 Luigi partner added! Currency doubled with partner system!')
+    }
+  }
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="border-b-4 border-[oklch(0.75_0.18_85)] bg-gradient-to-r from-[oklch(0.58_0.24_330)] via-[oklch(0.65_0.25_265)] to-[oklch(0.70_0.24_190)] relative overflow-hidden">
         <div className="absolute inset-0 bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,oklch(1_0_0_/_0.05)_10px,oklch(1_0_0_/_0.05)_20px)]"></div>
-        <div className="container mx-auto px-4 py-6 relative z-10">
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <div className="flex items-center gap-4">
-              <div className="bg-[oklch(0.75_0.18_85)] p-3 rounded-lg shadow-lg border-2 border-[oklch(0.85_0.20_85)] overflow-hidden">
-                <div className="w-12 h-12 relative">
-                  <img 
-                    src={marioImage} 
-                    alt="Mario Logo" 
-                    className="absolute object-cover"
-                    style={{
-                      width: '400%',
-                      height: '400%',
-                      top: '-110%',
-                      left: '-80%',
-                      objectPosition: 'center center'
-                    }}
-                  />
-                </div>
-              </div>
-              <div>
-                <h1 className="text-2xl md:text-3xl font-bold text-white drop-shadow-lg pixel-font">
-                  FEDERAL RESERVE MARIO
-                </h1>
-                <p className="text-sm md:text-base text-[oklch(0.75_0.18_85)] font-semibold drop-shadow">
-                  People's Treasury Creation System 🪙
-                </p>
-              </div>
+        <div className="container mx-auto px-4 py-6 relative z-10 space-y-4">
+          <div className="flex items-center justify-center gap-4">
+            <div className="bg-[oklch(0.75_0.18_85)] p-3 rounded-lg shadow-lg border-2 border-[oklch(0.85_0.20_85)]">
+              <MarioLogo animated />
             </div>
-            <Button
-              size="lg"
-              onClick={() => setShowMinting(true)}
-              className="bg-[oklch(0.75_0.18_85)] text-[oklch(0.15_0.02_280)] hover:bg-[oklch(0.80_0.20_85)] font-bold shadow-lg"
-            >
-              <Plus size={24} weight="bold" />
-              <span className="ml-2">Mint New Coin</span>
-            </Button>
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold text-white drop-shadow-lg pixel-font">
+                FEDERAL RESERVE MARIO
+              </h1>
+              <p className="text-sm md:text-base text-[oklch(0.75_0.18_85)] font-semibold drop-shadow">
+                People's Treasury Creation System 🪙
+              </p>
+            </div>
           </div>
+          
+          <MarioActionButtons {...handleActionButtons} />
         </div>
       </header>
 
@@ -180,8 +204,7 @@ function App() {
                     onClick={() => setShowMinting(true)}
                     className="bg-[oklch(0.75_0.18_85)] text-[oklch(0.15_0.02_280)] hover:bg-[oklch(0.80_0.20_85)]"
                   >
-                    <Plus size={24} weight="bold" />
-                    <span className="ml-2">Mint Your First Coin</span>
+                    <span>🟡 Mint Your First Coin</span>
                   </Button>
                 </div>
               </Card>
