@@ -145,6 +145,78 @@ export function ScienceLaboratory({ sciencePoints, onBack, onSpendPoints }: Scie
       cost: 115,
       icon: '🌈',
       category: 'physics'
+    },
+    {
+      id: 'cell-biology',
+      name: '🔬 Cell Biology & DNA',
+      description: 'Study cell structure, mitosis, and DNA replication. Understand life at the molecular level.',
+      cost: 100,
+      icon: '🧬',
+      category: 'chemistry'
+    },
+    {
+      id: 'ecosystem-study',
+      name: '🌿 Ecosystem Dynamics',
+      description: 'Build miniature ecosystems and study population interactions, energy flow, and biodiversity.',
+      cost: 90,
+      icon: '🌿',
+      category: 'chemistry'
+    },
+    {
+      id: 'photosynthesis-lab',
+      name: '🌱 Photosynthesis Engineering',
+      description: 'Optimize plant growth conditions. Measure oxygen production and chlorophyll efficiency.',
+      cost: 85,
+      icon: '🌱',
+      category: 'chemistry'
+    },
+    {
+      id: 'microbiology-culture',
+      name: '🦠 Microbiology Culture Lab',
+      description: 'Grow and study bacteria safely. Learn about antibiotics, fermentation, and beneficial microbes.',
+      cost: 95,
+      icon: '🦠',
+      category: 'chemistry'
+    },
+    {
+      id: 'solar-system',
+      name: '🪐 Solar System Mechanics',
+      description: 'Calculate planetary orbits using Kepler\'s laws. Understand gravity and celestial mechanics.',
+      cost: 110,
+      icon: '🪐',
+      category: 'physics'
+    },
+    {
+      id: 'telescope-astronomy',
+      name: '🔭 Telescope & Deep Sky',
+      description: 'Build a telescope and observe celestial objects. Study star types, nebulae, and galaxies.',
+      cost: 140,
+      icon: '🔭',
+      category: 'physics'
+    },
+    {
+      id: 'cosmology-universe',
+      name: '🌌 Cosmology & Universe',
+      description: 'Explore the Big Bang, expansion of universe, dark matter, and cosmic background radiation.',
+      cost: 150,
+      icon: '🌌',
+      category: 'physics'
+    },
+    {
+      id: 'exoplanet-detection',
+      name: '🌍 Exoplanet Detection',
+      description: 'Use transit method and radial velocity to find planets around other stars.',
+      cost: 130,
+      icon: '🛸',
+      category: 'physics'
+    },
+    {
+      id: 'rocket-physics',
+      name: '🚀 Rocket Science & Propulsion',
+      description: 'Calculate thrust, delta-v, and orbital mechanics. Understand real rocket engineering.',
+      cost: 125,
+      icon: '🚀',
+      category: 'engineering'
     }
   ]
 

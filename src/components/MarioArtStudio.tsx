@@ -64,7 +64,12 @@ export function MarioArtStudio({ open, onClose }: MarioArtStudioProps) {
     { id: 'mushroom', name: '🍄 Super Mushroom', data: generateMushroomPixels() },
     { id: 'fireflower', name: '🌻 Fire Flower', data: generateFireFlowerPixels() },
     { id: 'blueshell', name: '🐚 Blue Shell', data: generateBlueShellPixels() },
-    { id: 'questionblock', name: '❓ Question Block', data: generateQuestionBlockPixels() }
+    { id: 'questionblock', name: '❓ Question Block', data: generateQuestionBlockPixels() },
+    { id: 'pipe', name: '🟢 Warp Pipe', data: generatePipePixels() },
+    { id: 'ninja', name: '🥷 Solomon Ninja', data: generateNinjaPixels() },
+    { id: 'shyguy', name: '😷 Shy Guy', data: generateShyGuyPixels() },
+    { id: 'birdo', name: '🦖 Birdo', data: generateBirdoPixels() },
+    { id: 'bobomb', name: '💣 Bob-omb', data: generateBobombPixels() }
   ]
 
   useEffect(() => {
@@ -810,3 +815,154 @@ function generateQuestionBlockPixels(): Pixel[] {
   
   return pixels
 }
+
+function generatePipePixels(): Pixel[] {
+  const pixels: Pixel[] = []
+  const pattern = [
+    'GGGGGGGG',
+    'GGGGGGG#',
+    'GG    ##',
+    'GG    ##',
+    'GG    ##',
+    'GG    ##',
+    'GG    ##',
+    'GGGGGG##'
+  ]
+  
+  const colors: Record<string, string> = {
+    'G': '#00FF00',
+    '#': '#008000'
+  }
+  
+  pattern.forEach((row, y) => {
+    Array.from(row).forEach((char, x) => {
+      if (colors[char]) {
+        pixels.push({ x: x * 8, y: y * 8, color: colors[char] })
+      }
+    })
+  })
+  
+  return pixels
+}
+
+function generateNinjaPixels(): Pixel[] {
+  const pixels: Pixel[] = []
+  const pattern = [
+    '  ####  ',
+    ' #B##B# ',
+    '########',
+    '##RR##RR',
+    ' ######',
+    '  ####  ',
+    ' ##  ## ',
+    '##    ##'
+  ]
+  
+  const colors: Record<string, string> = {
+    '#': '#000000',
+    'B': '#0000FF',
+    'R': '#FF0000'
+  }
+  
+  pattern.forEach((row, y) => {
+    Array.from(row).forEach((char, x) => {
+      if (colors[char]) {
+        pixels.push({ x: x * 8, y: y * 8, color: colors[char] })
+      }
+    })
+  })
+  
+  return pixels
+}
+
+function generateShyGuyPixels(): Pixel[] {
+  const pixels: Pixel[] = []
+  const pattern = [
+    '  RRRR  ',
+    ' RRRRRR ',
+    'RRRRRRRR',
+    'RR####RR',
+    'RWWWWWWR',
+    'RWWWWWWR',
+    ' RRRRRR ',
+    ' WW  WW '
+  ]
+  
+  const colors: Record<string, string> = {
+    'R': '#FF0000',
+    '#': '#000000',
+    'W': '#FFFFFF'
+  }
+  
+  pattern.forEach((row, y) => {
+    Array.from(row).forEach((char, x) => {
+      if (colors[char]) {
+        pixels.push({ x: x * 8, y: y * 8, color: colors[char] })
+      }
+    })
+  })
+  
+  return pixels
+}
+
+function generateBirdoPixels(): Pixel[] {
+  const pixels: Pixel[] = []
+  const pattern = [
+    '  PPPP  ',
+    ' PPPPPP ',
+    'PPP##PPP',
+    'PPWW#WPP',
+    'PPPPPPRR',
+    ' PPPPRR ',
+    '  PPPP  ',
+    ' WW  WW '
+  ]
+  
+  const colors: Record<string, string> = {
+    'P': '#FF69B4',
+    '#': '#000000',
+    'W': '#FFFFFF',
+    'R': '#FF0000'
+  }
+  
+  pattern.forEach((row, y) => {
+    Array.from(row).forEach((char, x) => {
+      if (colors[char]) {
+        pixels.push({ x: x * 8, y: y * 8, color: colors[char] })
+      }
+    })
+  })
+  
+  return pixels
+}
+
+function generateBobombPixels(): Pixel[] {
+  const pixels: Pixel[] = []
+  const pattern = [
+    '  ####  ',
+    ' ###### ',
+    '########',
+    '##WW##WW',
+    '########',
+    ' ###### ',
+    '  ####  ',
+    ' OO  OO '
+  ]
+  
+  const colors: Record<string, string> = {
+    '#': '#000000',
+    'W': '#FFFFFF',
+    'O': '#FFA500'
+  }
+  
+  pattern.forEach((row, y) => {
+    Array.from(row).forEach((char, x) => {
+      if (colors[char]) {
+        pixels.push({ x: x * 8, y: y * 8, color: colors[char] })
+      }
+    })
+  })
+  
+  return pixels
+}
+

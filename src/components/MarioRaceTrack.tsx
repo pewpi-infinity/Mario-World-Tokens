@@ -20,6 +20,10 @@ interface Racer {
   position: number
   lap: number
   speed: number
+  velocity: number
+  acceleration: number
+  mass: number
+  friction: number
   powerup: string | null
 }
 
@@ -37,10 +41,10 @@ export function MarioRaceTrack({ open, onClose }: MarioRaceTrackProps) {
   const [raceTime, setRaceTime] = useState(0)
   const [showLab, setShowLab] = useState(false)
   const [racers, setRacers] = useState<Racer[]>([
-    { id: 'player', name: 'You (Mario)', emoji: '🏎️', position: 0, lap: 0, speed: 0, powerup: null },
-    { id: 'luigi', name: 'Luigi', emoji: '🏁', position: 0, lap: 0, speed: 0, powerup: null },
-    { id: 'peach', name: 'Peach', emoji: '👑', position: 0, lap: 0, speed: 0, powerup: null },
-    { id: 'bowser', name: 'Bowser', emoji: '🐢', position: 0, lap: 0, speed: 0, powerup: null }
+    { id: 'player', name: 'You (Mario)', emoji: '🏎️', position: 0, lap: 0, speed: 0, velocity: 0, acceleration: 0, mass: 100, friction: 0.95, powerup: null },
+    { id: 'luigi', name: 'Luigi', emoji: '🏁', position: 0, lap: 0, speed: 0, velocity: 0, acceleration: 0, mass: 95, friction: 0.96, powerup: null },
+    { id: 'peach', name: 'Peach', emoji: '👑', position: 0, lap: 0, speed: 0, velocity: 0, acceleration: 0, mass: 90, friction: 0.97, powerup: null },
+    { id: 'bowser', name: 'Bowser', emoji: '🐢', position: 0, lap: 0, speed: 0, velocity: 0, acceleration: 0, mass: 120, friction: 0.93, powerup: null }
   ])
 
   const raceIntervalRef = useRef<NodeJS.Timeout | null>(null)
@@ -58,8 +62,17 @@ export function MarioRaceTrack({ open, onClose }: MarioRaceTrackProps) {
       raceIntervalRef.current = setInterval(() => {
         setRacers(prevRacers => {
           return prevRacers.map(racer => {
-            const baseSpeed = racer.id === 'player' ? 3 + Math.random() * 2 : 2 + Math.random() * 3
-            const newPosition = racer.position + baseSpeed
+            let acc = racer.acceleration
+            
+            if (racer.id !== 'player') {
+              acc = (Math.random() - 0.4) * 2
+            }
+            
+            const force = acc * racer.mass
+            const newVelocity = (racer.velocity + force / racer.mass) * racer.friction
+            const clampedVelocity = Math.max(-5, Math.min(8, newVelocity))
+            
+            const newPosition = racer.position + clampedVelocity
             const newLap = racer.lap + Math.floor(newPosition / trackLength)
             const finalPosition = newPosition % trackLength
 
@@ -71,13 +84,15 @@ export function MarioRaceTrack({ open, onClose }: MarioRaceTrackProps) {
 
             return {
               ...racer,
-              position: finalPosition,
+              position: finalPosition < 0 ? trackLength + finalPosition : finalPosition,
               lap: Math.min(newLap, maxLaps),
-              speed: baseSpeed
+              velocity: clampedVelocity,
+              acceleration: racer.id === 'player' ? 0 : acc,
+              speed: Math.abs(clampedVelocity)
             }
           })
         })
-      }, 200)
+      }, 100)
     } else {
       if (raceIntervalRef.current) clearInterval(raceIntervalRef.current)
       if (timerRef.current) clearInterval(timerRef.current)
@@ -90,10 +105,10 @@ export function MarioRaceTrack({ open, onClose }: MarioRaceTrackProps) {
   }, [isRacing, raceTime])
 
   const startRace = () => {
-    setRacers(prevRacers => prevRacers.map(r => ({ ...r, position: 0, lap: 0, speed: 0, powerup: null })))
+    setRacers(prevRacers => prevRacers.map(r => ({ ...r, position: 0, lap: 0, speed: 0, velocity: 0, acceleration: 0, powerup: null })))
     setRaceTime(0)
     setIsRacing(true)
-    toast.success('🏁 Race Started! Use arrow keys to boost!')
+    toast.success('🏁 Race Started! Use arrow keys for acceleration/braking!')
   }
 
   const finishRace = (position: number, time: number) => {
@@ -125,15 +140,41 @@ export function MarioRaceTrack({ open, onClose }: MarioRaceTrackProps) {
     const handleKeyPress = (e: KeyboardEvent) => {
       if (!isRacing || !open) return
       
-      if (e.key === 'ArrowUp' || e.key === 'ArrowRight') {
+      setRacers(prev => prev.map(r => {
+        if (r.id !== 'player') return r
+        
+        let newAcc = r.acceleration
+        
+        if (e.key === 'ArrowUp') {
+          newAcc = 1.5
+        } else if (e.key === 'ArrowDown') {
+          newAcc = -1.2
+        } else if (e.key === 'ArrowLeft') {
+          newAcc = -0.3
+        } else if (e.key === 'ArrowRight') {
+          newAcc = 1.5
+        }
+        
+        return { ...r, acceleration: newAcc }
+      }))
+    }
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (!isRacing || !open) return
+      
+      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
         setRacers(prev => prev.map(r => 
-          r.id === 'player' ? { ...r, position: r.position + 5 } : r
+          r.id === 'player' ? { ...r, acceleration: 0 } : r
         ))
       }
     }
 
     window.addEventListener('keydown', handleKeyPress)
-    return () => window.removeEventListener('keydown', handleKeyPress)
+    window.addEventListener('keyup', handleKeyUp)
+    return () => {
+      window.removeEventListener('keydown', handleKeyPress)
+      window.removeEventListener('keyup', handleKeyUp)
+    }
   }, [isRacing, open])
 
   const sortedRacers = [...racers].sort((a, b) => {
@@ -183,8 +224,28 @@ export function MarioRaceTrack({ open, onClose }: MarioRaceTrackProps) {
                 )}
 
                 {isRacing && (
-                  <div className="text-center text-[oklch(0.75_0.18_85)] text-sm mb-4">
-                    ⬆️ Press Arrow Keys to Boost! ⬆️
+                  <div className="space-y-2">
+                    <div className="text-center text-[oklch(0.75_0.18_85)] text-sm">
+                      ⬆️ Accelerate | ⬇️ Brake | Physics Simulation Active!
+                    </div>
+                    <div className="bg-[oklch(0.18_0.02_280)] p-3 rounded text-xs space-y-1">
+                      <div className="flex justify-between">
+                        <span className="text-[oklch(0.65_0.02_280)]">Velocity:</span>
+                        <span className="text-white font-bold">{racers[0].velocity.toFixed(2)} units/s</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-[oklch(0.65_0.02_280)]">Acceleration:</span>
+                        <span className="text-white font-bold">{racers[0].acceleration.toFixed(2)} m/s²</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-[oklch(0.65_0.02_280)]">Mass:</span>
+                        <span className="text-white font-bold">{racers[0].mass} kg</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-[oklch(0.65_0.02_280)]">Friction:</span>
+                        <span className="text-white font-bold">{(racers[0].friction * 100).toFixed(0)}%</span>
+                      </div>
+                    </div>
                   </div>
                 )}
               </CardContent>

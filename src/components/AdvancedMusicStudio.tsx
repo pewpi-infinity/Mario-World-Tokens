@@ -175,14 +175,16 @@ export function AdvancedMusicStudio({ open, onClose }: AdvancedMusicStudioProps)
     
     const dataArray = new Uint8Array(analyserRef.current.frequencyBinCount)
     analyserRef.current.getByteFrequencyData(dataArray)
-    setFrequencyData(dataArray)
+    setFrequencyData(new Uint8Array(dataArray))
     
     const timeData = new Uint8Array(analyserRef.current.fftSize)
     analyserRef.current.getByteTimeDomainData(timeData)
     const normalized = Array.from(timeData.slice(0, 50)).map(v => (v - 128) / 128)
     setWaveformData(normalized)
     
-    animationFrameRef.current = requestAnimationFrame(updateVisualizer)
+    if (isRecording || isPlaying) {
+      animationFrameRef.current = requestAnimationFrame(updateVisualizer)
+    }
   }
 
   const playDrum = async (pad: DrumPad) => {
@@ -286,6 +288,12 @@ export function AdvancedMusicStudio({ open, onClose }: AdvancedMusicStudioProps)
       mediaRecorderRef.current = mediaRecorder
       audioChunksRef.current = []
 
+      if (audioContextRef.current && analyserRef.current) {
+        const source = audioContextRef.current.createMediaStreamSource(stream)
+        source.connect(analyserRef.current)
+        updateVisualizer()
+      }
+
       mediaRecorder.ondataavailable = (event) => {
         if (event.data.size > 0) {
           audioChunksRef.current.push(event.data)
@@ -296,12 +304,16 @@ export function AdvancedMusicStudio({ open, onClose }: AdvancedMusicStudioProps)
         const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' })
         setRecordedAudio(audioBlob)
         stream.getTracks().forEach(track => track.stop())
+        if (animationFrameRef.current) {
+          cancelAnimationFrame(animationFrameRef.current)
+          animationFrameRef.current = null
+        }
       }
 
       mediaRecorder.start(100)
       setIsRecording(true)
       setRecordingTime(0)
-      toast.success('🎤 Recording started!')
+      toast.success('🎤 Recording started! Voice analyzer active!')
     } catch (error) {
       toast.error('Unable to access microphone')
       console.error('Recording error:', error)
@@ -316,22 +328,34 @@ export function AdvancedMusicStudio({ open, onClose }: AdvancedMusicStudioProps)
     }
   }
 
-  const playRecording = () => {
-    if (recordedAudio) {
+  const playRecording = async () => {
+    if (recordedAudio && audioContextRef.current && analyserRef.current) {
       const audioUrl = URL.createObjectURL(recordedAudio)
       const audio = new Audio(audioUrl)
       audioPlayerRef.current = audio
       
+      if (audioContextRef.current.state === 'suspended') {
+        await audioContextRef.current.resume()
+      }
+      
+      const source = audioContextRef.current.createMediaElementSource(audio)
+      source.connect(analyserRef.current)
+      
       audio.volume = volume[0] / 100
       audio.play()
       setIsPlaying(true)
+      updateVisualizer()
       
       audio.onended = () => {
         setIsPlaying(false)
         URL.revokeObjectURL(audioUrl)
+        if (animationFrameRef.current) {
+          cancelAnimationFrame(animationFrameRef.current)
+          animationFrameRef.current = null
+        }
       }
       
-      toast.success('▶️ Playing recording')
+      toast.success('▶️ Playing recording with analyzer')
     }
   }
 
