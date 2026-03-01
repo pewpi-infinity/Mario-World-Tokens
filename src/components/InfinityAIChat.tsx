@@ -42,6 +42,54 @@ const BOT_ICONS: Record<AIBotRole, React.ReactNode> = {
   science: <Flask size={20} weight="fill" />
 }
 
+const SUGGESTED_PROMPTS: Record<AIBotRole, string[]> = {
+  infinity: [
+    "Coordinate all bots to add a new feature",
+    "Update the entire system theme",
+    "Synchronize changes across all modules"
+  ],
+  builder: [
+    "Add a new token type with custom properties",
+    "Create a different character logo option",
+    "Modify the minting interface layout"
+  ],
+  movement: [
+    "Improve Mario Kart racing physics",
+    "Add new character animations",
+    "Create a new mini-game"
+  ],
+  music: [
+    "Add a new instrument to the music studio",
+    "Create custom sound effects",
+    "Improve the collaborative recording system"
+  ],
+  art: [
+    "Design new Mario character sprites",
+    "Create custom sticker collections",
+    "Add new retro game characters"
+  ],
+  token: [
+    "Analyze my token's collectible value",
+    "Suggest token upgrade strategies",
+    "Track token provenance history"
+  ],
+  design: [
+    "Change the color scheme to blue tones",
+    "Redesign the treasury dashboard",
+    "Create a mobile-friendly layout"
+  ],
+  game: [
+    "Build a new game emulator",
+    "Add educational rewards to games",
+    "Create physics-based mini-games"
+  ],
+  science: [
+    "Create a physics experiment module",
+    "Design a chemistry lab interface",
+    "Add astronomy visualizations"
+  ]
+}
+
 export function InfinityAIChat({ open, onClose, initialBot = 'builder' }: InfinityAIChatProps) {
   const [selectedBot, setSelectedBot] = useState<AIBotRole>(initialBot)
   const [message, setMessage] = useState('')
@@ -96,15 +144,30 @@ export function InfinityAIChat({ open, onClose, initialBot = 'builder' }: Infini
     try {
       const systemPrompt = formatBotSystemPrompt(currentBot, {
         userMessage: message.trim(),
-        conversationHistory: updatedConversation.messages.slice(-5),
-        botCapabilities: AI_BOT_CONFIGS[selectedBot].capabilities
+        conversationHistory: updatedConversation.messages.slice(-5).map(m => ({
+          role: m.type === 'user' ? 'user' : 'assistant',
+          content: m.content
+        })),
+        botCapabilities: AI_BOT_CONFIGS[selectedBot].capabilities,
+        permissions: currentBot.permissions
       })
 
       const prompt = spark.llmPrompt`${systemPrompt}
 
 User Message: ${message.trim()}
 
-Please provide a helpful, specific response that aligns with your role as ${currentBot.name}. If the request requires file modifications, explain what you would change and why. If you need to coordinate with other AI bots, mention which ones and what they would handle.`
+You are ${currentBot.name} with the following permissions: ${currentBot.permissions.join(', ')}.
+
+Your task is to:
+1. Understand what the user wants to change, build, or modify
+2. Provide specific, actionable guidance on how to implement their request
+3. If you need to coordinate with other bots in the network, explain which bots would handle what
+4. Offer concrete examples, code snippets, or step-by-step instructions when relevant
+5. Be conversational and helpful, but focus on practical solutions
+
+If the user's request is within your domain (${AI_BOT_CONFIGS[selectedBot].capabilities.join(', ')}), provide detailed implementation guidance. If it spans multiple domains, suggest which other AI bots should be consulted.
+
+Respond in a friendly, helpful tone as if you're an expert assistant ready to help build and modify the Federal Reserve Mario system.`
 
       const response = await spark.llm(prompt, 'gpt-4o-mini')
 
@@ -253,11 +316,27 @@ Please provide a helpful, specific response that aligns with your role as ${curr
                       <Robot size={48} weight="fill" className="mx-auto mb-4 opacity-50" />
                       <p className="text-sm">Start a conversation with {currentBot.name}</p>
                       <p className="text-xs mt-2 opacity-75">This AI can help you with:</p>
-                      <div className="flex flex-wrap justify-center gap-2 mt-3">
+                      <div className="flex flex-wrap justify-center gap-2 mt-3 mb-4">
                         {AI_BOT_CONFIGS[selectedBot].capabilities.slice(0, 3).map((cap) => (
                           <Badge key={cap} variant="secondary" className="text-xs">
                             {cap}
                           </Badge>
+                        ))}
+                      </div>
+                      <p className="text-xs mt-4 mb-2 opacity-75">Try asking:</p>
+                      <div className="flex flex-col gap-2 max-w-md mx-auto">
+                        {SUGGESTED_PROMPTS[selectedBot].map((prompt) => (
+                          <Button
+                            key={prompt}
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setMessage(prompt)
+                            }}
+                            className="text-xs text-left h-auto py-2 px-3 bg-[oklch(0.20_0.02_280)] border-[oklch(0.35_0.05_285)] text-white hover:bg-[oklch(0.25_0.03_285)] hover:text-[oklch(0.75_0.18_85)] justify-start whitespace-normal"
+                          >
+                            {prompt}
+                          </Button>
                         ))}
                       </div>
                     </div>
