@@ -201,7 +201,15 @@ export function AutoAssessment({ tokens }: AutoAssessmentProps) {
                   <CardDescription>Breakdown of token rarity across treasury</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="h-[300px]">
+                  <ChartContainer
+                    config={{
+                      count: {
+                        label: "Count",
+                        color: "oklch(0.45 0.14 155)",
+                      },
+                    }}
+                    className="h-[300px]"
+                  >
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                         <Pie
@@ -220,7 +228,7 @@ export function AutoAssessment({ tokens }: AutoAssessmentProps) {
                         <ChartTooltip content={<ChartTooltipContent />} />
                       </PieChart>
                     </ResponsiveContainer>
-                  </div>
+                  </ChartContainer>
                 </CardContent>
               </Card>
 
@@ -230,7 +238,15 @@ export function AutoAssessment({ tokens }: AutoAssessmentProps) {
                   <CardDescription>Average contribution to collectible value</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="h-[300px]">
+                  <ChartContainer
+                    config={{
+                      value: {
+                        label: "Value",
+                        color: "oklch(0.45 0.14 155)",
+                      },
+                    }}
+                    className="h-[300px]"
+                  >
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={factorBreakdown}>
                         <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
@@ -240,7 +256,7 @@ export function AutoAssessment({ tokens }: AutoAssessmentProps) {
                         <Bar dataKey="value" fill="oklch(0.45 0.14 155)" radius={[8, 8, 0, 0]} />
                       </BarChart>
                     </ResponsiveContainer>
-                  </div>
+                  </ChartContainer>
                 </CardContent>
               </Card>
             </div>
