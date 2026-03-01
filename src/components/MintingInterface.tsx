@@ -5,8 +5,12 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { MarioCoin, ContentType } from '@/lib/types'
-import { MusicNotes, Image, VideoCamera, PenNib, Users, FileText } from '@phosphor-icons/react'
+import { MusicNotes, Image, VideoCamera, PenNib, Users, FileText, Link } from '@phosphor-icons/react'
+import { FileUploadPanel } from '@/components/FileUploadPanel'
+import { ArtPad } from '@/components/ArtPad'
+import { toast } from 'sonner'
 
 export interface MintingInterfaceProps {
   open: boolean
@@ -24,42 +28,106 @@ const contentTypes: { value: ContentType; label: string; icon: typeof MusicNotes
   { value: 'text', label: 'Text/Document', icon: FileText }
 ]
 
+async function moderateUrl(url: string): Promise<{ approved: boolean; reason?: string }> {
+  if (!url.trim()) return { approved: true }
+
+  try {
+    const prompt = window.spark.llmPrompt`You are a content moderator for a family-friendly currency minting platform. Analyze this URL to ensure it meets safety guidelines.
+
+Safety Guidelines (from the Bible and family values):
+- NO pornography or sexual content links
+- NO death, gore, or graphic violence sites
+- NO hateful content or extremist sites
+- NO dangerous activities or self-harm content
+- NO illegal substances or activities sites
+- FAMILY-FRIENDLY content only
+
+URL to check: ${url}
+
+Based on the URL domain and path, please respond with ONLY a JSON object in this exact format:
+{
+  "approved": true or false,
+  "reason": "brief explanation if not approved"
+}
+
+If the URL appears safe and family-friendly (or you cannot determine from the URL alone), set approved to true. If it clearly violates guidelines, set approved to false and provide a brief reason.`
+
+    const response = await window.spark.llm(prompt, 'gpt-4o-mini', true)
+    const result = JSON.parse(response)
+    
+    return {
+      approved: result.approved === true,
+      reason: result.reason || 'URL did not meet safety guidelines'
+    }
+  } catch (error) {
+    console.error('URL moderation error:', error)
+    return { approved: true }
+  }
+}
+
 export function MintingInterface({ open, onClose, onMint, currentUser }: MintingInterfaceProps) {
   const [value, setValue] = useState('1.00')
   const [contentType, setContentType] = useState<ContentType>('music')
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [url, setUrl] = useState('')
+  const [uploadedImage, setUploadedImage] = useState<{ data: string; fileName: string } | null>(null)
+  const [uploadedVideo, setUploadedVideo] = useState<{ data: string; fileName: string } | null>(null)
+  const [drawing, setDrawing] = useState('')
+  const [isMinting, setIsMinting] = useState(false)
 
-  const handleMint = () => {
-    const newCoin: MarioCoin = {
-      id: `mc-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      value: parseFloat(value) || 0,
-      mintedAt: Date.now(),
-      mintedBy: currentUser,
-      content: {
-        type: contentType,
-        title,
-        description,
-        url: url || undefined
-      },
-      transferHistory: []
+  const handleMint = async () => {
+    setIsMinting(true)
+
+    try {
+      if (url) {
+        const moderationResult = await moderateUrl(url)
+        if (!moderationResult.approved) {
+          toast.error(`URL moderation: ${moderationResult.reason}`)
+          setIsMinting(false)
+          return
+        }
+      }
+
+      let data = uploadedImage?.data || uploadedVideo?.data || drawing || undefined
+
+      const newCoin: MarioCoin = {
+        id: `mc-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        value: parseFloat(value) || 0,
+        mintedAt: Date.now(),
+        mintedBy: currentUser,
+        content: {
+          type: contentType,
+          title,
+          description,
+          url: url || undefined,
+          data
+        },
+        transferHistory: []
+      }
+
+      onMint(newCoin)
+      
+      setValue('1.00')
+      setContentType('music')
+      setTitle('')
+      setDescription('')
+      setUrl('')
+      setUploadedImage(null)
+      setUploadedVideo(null)
+      setDrawing('')
+    } catch (error) {
+      toast.error('Minting failed')
+    } finally {
+      setIsMinting(false)
     }
-
-    onMint(newCoin)
-    
-    setValue('1.00')
-    setContentType('music')
-    setTitle('')
-    setDescription('')
-    setUrl('')
   }
 
   const isValid = value && parseFloat(value) > 0 && title && description
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold pixel-font">MINT NEW MARIO COIN</DialogTitle>
           <DialogDescription>
@@ -131,18 +199,84 @@ export function MintingInterface({ open, onClose, onMint, currentUser }: Minting
             />
           </div>
 
-          <div>
-            <Label htmlFor="url" className="text-base font-semibold">Content URL (Optional)</Label>
-            <Input
-              id="url"
-              type="url"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              className="mt-2 h-12"
-              placeholder="https://..."
-            />
-            <p className="text-xs text-muted-foreground mt-1">Link to the content (Spotify, YouTube, social media, etc.)</p>
-          </div>
+          <Tabs defaultValue="link" className="w-full">
+            <TabsList className="grid grid-cols-4 w-full">
+              <TabsTrigger value="link">
+                <Link size={18} weight="bold" />
+                <span className="ml-2">Link</span>
+              </TabsTrigger>
+              <TabsTrigger value="image">
+                <Image size={18} weight="fill" />
+                <span className="ml-2">Image</span>
+              </TabsTrigger>
+              <TabsTrigger value="video">
+                <VideoCamera size={18} weight="fill" />
+                <span className="ml-2">Video</span>
+              </TabsTrigger>
+              <TabsTrigger value="art">
+                <PenNib size={18} weight="fill" />
+                <span className="ml-2">Art Pad</span>
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="link" className="mt-4">
+              <div>
+                <Label htmlFor="url" className="text-base font-semibold flex items-center gap-2">
+                  <Link size={18} weight="bold" />
+                  Content URL (AI Moderated)
+                </Label>
+                <Input
+                  id="url"
+                  type="url"
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                  className="mt-2 h-12"
+                  placeholder="https://..."
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Link to content (Spotify, YouTube, social media, etc.). AI will check for family-friendly content.
+                </p>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="image" className="mt-4">
+              <FileUploadPanel
+                type="image"
+                onFileSelect={(data, fileName) => {
+                  setUploadedImage({ data, fileName })
+                  setUploadedVideo(null)
+                  setDrawing('')
+                }}
+                currentFile={uploadedImage?.data}
+                currentFileName={uploadedImage?.fileName}
+              />
+            </TabsContent>
+
+            <TabsContent value="video" className="mt-4">
+              <FileUploadPanel
+                type="video"
+                onFileSelect={(data, fileName) => {
+                  setUploadedVideo({ data, fileName })
+                  setUploadedImage(null)
+                  setDrawing('')
+                }}
+                currentFile={uploadedVideo?.data}
+                currentFileName={uploadedVideo?.fileName}
+              />
+            </TabsContent>
+
+            <TabsContent value="art" className="mt-4">
+              <ArtPad
+                onSave={(imageData) => {
+                  setDrawing(imageData)
+                  setUploadedImage(null)
+                  setUploadedVideo(null)
+                  toast.success('Drawing saved!')
+                }}
+                currentDrawing={drawing}
+              />
+            </TabsContent>
+          </Tabs>
 
           <div className="flex gap-3 pt-4">
             <Button
@@ -150,16 +284,17 @@ export function MintingInterface({ open, onClose, onMint, currentUser }: Minting
               onClick={onClose}
               className="flex-1"
               type="button"
+              disabled={isMinting}
             >
               Cancel
             </Button>
             <Button
               onClick={handleMint}
-              disabled={!isValid}
+              disabled={!isValid || isMinting}
               className="flex-1 bg-[oklch(0.75_0.18_85)] text-[oklch(0.15_0.02_280)] hover:bg-[oklch(0.80_0.20_85)] h-12 text-lg font-bold"
               type="button"
             >
-              Mint Coin
+              {isMinting ? 'Minting...' : 'Mint Coin'}
             </Button>
           </div>
         </div>

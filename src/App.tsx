@@ -3,12 +3,13 @@ import { useKV } from '@github/spark/hooks'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Coins, TrendUp, Globe, Plus } from '@phosphor-icons/react'
+import { Coins, TrendUp, Globe, Plus, Storefront } from '@phosphor-icons/react'
 import { MintingInterface } from '@/components/MintingInterface'
 import { WalletBalance } from '@/components/WalletBalance'
 import { TreasuryCharts } from '@/components/TreasuryCharts'
 import { GlobalLedger } from '@/components/GlobalLedger'
 import { TokenCard } from '@/components/TokenCard'
+import { Marketplace } from '@/components/Marketplace'
 import { MarioCoin, TreasuryStats } from '@/lib/types'
 import { Toaster } from '@/components/ui/sonner'
 import { toast } from 'sonner'
@@ -60,6 +61,32 @@ function App() {
     }
   }, [userCoins.length, activeTab])
 
+  const handleTransfer = (from: string, to: string, coin: MarioCoin) => {
+    const updatedCoin = {
+      ...coin,
+      mintedBy: to,
+      transferHistory: [
+        ...coin.transferHistory,
+        {
+          from,
+          to,
+          timestamp: Date.now()
+        }
+      ]
+    }
+
+    if (from === currentUser) {
+      setCoins((current) => (current || []).filter(c => c.id !== coin.id))
+    } else {
+      setCoins((current) => [...(current || []), updatedCoin])
+    }
+
+    setGlobalCoins((current) => {
+      const updated = (current || []).map(c => c.id === coin.id ? updatedCoin : c)
+      return updated
+    })
+  }
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="border-b-4 border-[oklch(0.75_0.18_85)] bg-gradient-to-r from-[oklch(0.58_0.24_330)] via-[oklch(0.65_0.25_265)] to-[oklch(0.70_0.24_190)] relative overflow-hidden">
@@ -74,10 +101,10 @@ function App() {
                     alt="Mario Logo" 
                     className="absolute object-cover"
                     style={{
-                      width: '200%',
-                      height: '200%',
-                      top: '-70%',
-                      left: '-25%',
+                      width: '300%',
+                      height: '300%',
+                      top: '-85%',
+                      left: '-50%',
                       objectPosition: 'center center'
                     }}
                   />
@@ -108,27 +135,34 @@ function App() {
         <WalletBalance stats={treasuryStats} />
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-8">
-          <TabsList className="grid grid-cols-3 w-full max-w-md mx-auto bg-muted p-1">
+          <TabsList className="grid grid-cols-4 w-full max-w-2xl mx-auto bg-muted p-1">
             <TabsTrigger
               value="treasury"
               className="flex items-center gap-2 data-[state=active]:bg-[oklch(0.75_0.18_85)] data-[state=active]:text-[oklch(0.15_0.02_280)]"
             >
               <Coins size={20} weight="fill" />
-              <span>My Treasury</span>
+              <span>Treasury</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="marketplace"
+              className="flex items-center gap-2 data-[state=active]:bg-[oklch(0.65_0.15_155)] data-[state=active]:text-white"
+            >
+              <Storefront size={20} weight="fill" />
+              <span>Market</span>
             </TabsTrigger>
             <TabsTrigger
               value="charts"
-              className="flex items-center gap-2 data-[state=active]:bg-[oklch(0.65_0.15_155)] data-[state=active]:text-white"
+              className="flex items-center gap-2 data-[state=active]:bg-[oklch(0.70_0.24_190)] data-[state=active]:text-white"
             >
               <TrendUp size={20} weight="fill" />
               <span>Charts</span>
             </TabsTrigger>
             <TabsTrigger
               value="ledger"
-              className="flex items-center gap-2 data-[state=active]:bg-[oklch(0.70_0.24_190)] data-[state=active]:text-white"
+              className="flex items-center gap-2 data-[state=active]:bg-[oklch(0.58_0.24_330)] data-[state=active]:text-white"
             >
               <Globe size={20} weight="fill" />
-              <span>Global Ledger</span>
+              <span>Ledger</span>
             </TabsTrigger>
           </TabsList>
 
@@ -164,6 +198,14 @@ function App() {
                 ))}
               </div>
             )}
+          </TabsContent>
+
+          <TabsContent value="marketplace" className="mt-8">
+            <Marketplace
+              userCoins={userCoins}
+              currentUser={currentUser}
+              onTransferComplete={handleTransfer}
+            />
           </TabsContent>
 
           <TabsContent value="charts" className="mt-8">
