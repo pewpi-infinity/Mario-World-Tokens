@@ -209,7 +209,7 @@ Respond in a friendly, helpful tone as if you're an expert assistant ready to he
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-[98vw] sm:max-w-4xl h-[95vh] p-0 flex flex-col bg-gradient-to-br from-[oklch(0.22_0.03_285)] to-[oklch(0.18_0.02_290)] border-2 border-[oklch(0.75_0.18_85)]">
+      <DialogContent className="max-w-[98vw] sm:max-w-4xl max-h-[95vh] p-0 flex flex-col bg-gradient-to-br from-[oklch(0.22_0.03_285)] to-[oklch(0.18_0.02_290)] border-2 border-[oklch(0.75_0.18_85)] overflow-hidden">
         <div className="p-4 sm:p-6 pb-2 flex-shrink-0">
           <DialogHeader>
             <DialogTitle className="text-xl sm:text-2xl font-bold text-[oklch(0.75_0.18_85)] flex items-center gap-2">
@@ -222,7 +222,7 @@ Respond in a friendly, helpful tone as if you're an expert assistant ready to he
           </DialogHeader>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-4 flex-1 overflow-hidden px-4 sm:px-6 pb-4 sm:pb-6 min-h-0">
+        <div className="flex flex-col sm:flex-row gap-4 flex-1 overflow-y-auto px-4 sm:px-6 pb-4 sm:pb-6 min-h-0">
           <div className="w-full sm:w-64 flex-shrink-0 min-h-0 flex flex-col">
             <Card className="bg-[oklch(0.18_0.02_280)] border-[oklch(0.35_0.05_285)] h-full flex flex-col min-h-0">
               <CardHeader className="pb-3 flex-shrink-0">

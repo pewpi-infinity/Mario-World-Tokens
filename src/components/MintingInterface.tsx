@@ -45,6 +45,44 @@ export function MintingInterface({ open, onClose, onMint, currentUser }: Minting
   const [isMinting, setIsMinting] = useState(false)
   const [showInfinitySpiritGenerator, setShowInfinitySpiritGenerator] = useState(false)
   const [showAIChat, setShowAIChat] = useState(false)
+  const [aiSuggestions, setAiSuggestions] = useState<string[]>([])
+  const [isGeneratingSuggestions, setIsGeneratingSuggestions] = useState(false)
+
+  const handleGenerateSuggestions = async () => {
+    if (!description.trim()) {
+      toast.error('Add a description first to get AI suggestions')
+      return
+    }
+
+    setIsGeneratingSuggestions(true)
+    try {
+      const prompt = window.spark.llmPrompt`You are an AI assistant helping users mint valuable Mario coins in the Federal Reserve Mario system.
+
+Based on this token description: "${description}"
+Content type: ${contentType}
+Title: ${title || 'Not provided yet'}
+
+Provide 3 helpful, specific suggestions to improve this token:
+1. Content enhancement suggestion
+2. Value positioning suggestion  
+3. Additional element to add (sticker, art, link, etc.)
+
+Format as a JSON object with a "suggestions" array of 3 concise strings.`
+
+      const response = await window.spark.llm(prompt, 'gpt-4o-mini', true)
+      const parsed = JSON.parse(response)
+      
+      if (parsed.suggestions && Array.isArray(parsed.suggestions)) {
+        setAiSuggestions(parsed.suggestions)
+        toast.success('AI suggestions generated!')
+      }
+    } catch (error) {
+      toast.error('Failed to generate suggestions')
+      console.error('AI suggestion error:', error)
+    } finally {
+      setIsGeneratingSuggestions(false)
+    }
+  }
 
   const handleMint = async () => {
     setIsMinting(true)
@@ -82,6 +120,7 @@ export function MintingInterface({ open, onClose, onMint, currentUser }: Minting
       setUploadedVideo(null)
       setDrawing('')
       setStickers([])
+      setAiSuggestions([])
     } catch (error) {
       toast.error('Minting failed')
     } finally {
@@ -177,6 +216,33 @@ export function MintingInterface({ open, onClose, onMint, currentUser }: Minting
               className="mt-2 min-h-[100px]"
               placeholder="Describe what backs this coin. Include details about the content, its value, or your connection to it."
             />
+            <Button
+              onClick={handleGenerateSuggestions}
+              disabled={!description.trim() || isGeneratingSuggestions}
+              size="sm"
+              variant="outline"
+              className="mt-2 text-xs bg-gradient-to-r from-[oklch(0.75_0.18_85)] to-[oklch(0.70_0.24_190)] text-[oklch(0.15_0.02_280)] hover:opacity-90 border-none"
+              type="button"
+            >
+              <Sparkle size={16} weight="fill" className="mr-2" />
+              {isGeneratingSuggestions ? 'Generating...' : '✨ Get AI Suggestions'}
+            </Button>
+            {aiSuggestions.length > 0 && (
+              <div className="mt-3 p-3 sm:p-4 bg-gradient-to-br from-[oklch(0.75_0.18_85)]/10 to-[oklch(0.70_0.24_190)]/10 border-2 border-[oklch(0.75_0.18_85)]/30 rounded-lg">
+                <p className="text-sm font-semibold text-[oklch(0.75_0.18_85)] mb-2 flex items-center gap-2">
+                  <Sparkle size={16} weight="fill" />
+                  AI Suggestions to Enhance Your Token:
+                </p>
+                <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm">
+                  {aiSuggestions.map((suggestion, i) => (
+                    <li key={i} className="flex items-start gap-2">
+                      <span className="text-[oklch(0.75_0.18_85)] font-bold mt-0.5">{i + 1}.</span>
+                      <span className="text-foreground">{suggestion}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
 
           <Tabs defaultValue="link" className="w-full">

@@ -19,7 +19,7 @@ import { MarioArtStudio } from '@/components/MarioArtStudio'
 import { MarioRaceTrack } from '@/components/MarioRaceTrack'
 import { GameEmulatorBuilder } from '@/components/GameEmulatorBuilder'
 import { InfinityAIChat } from '@/components/InfinityAIChat'
-import { AIChatTerminal } from '@/components/AIChatTerminal'
+import { HomepageAIDesigner } from '@/components/HomepageAIDesigner'
 import { MarioCoin, TreasuryStats } from '@/lib/types'
 import { Toaster } from '@/components/ui/sonner'
 import { toast } from 'sonner'
@@ -315,10 +315,7 @@ function App() {
 
       <Toaster />
       
-      <AIChatTerminal 
-        botRole="builder" 
-        context={getCurrentContext()}
-      />
+      <HomepageAIDesigner />
     </div>
   )
 }
