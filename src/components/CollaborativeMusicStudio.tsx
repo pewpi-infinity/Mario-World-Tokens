@@ -678,37 +678,38 @@ export function CollaborativeMusicStudio({ open, onClose, onMintMusic, currentUs
       leaveSession()
       onClose()
     }}>
-      <DialogContent className="max-w-[98vw] h-[95vh] p-0 flex flex-col overflow-hidden bg-gradient-to-br from-[oklch(0.22_0.03_285)] to-[oklch(0.18_0.02_290)] border-2 border-[oklch(0.75_0.18_85)]">
-        <div className="p-4 sm:p-6 pb-2 flex-shrink-0">
+      <DialogContent className="max-w-[100vw] sm:max-w-[98vw] h-[100dvh] sm:h-[95vh] p-0 flex flex-col overflow-hidden bg-gradient-to-br from-[oklch(0.22_0.03_285)] to-[oklch(0.18_0.02_290)] border-2 border-[oklch(0.75_0.18_85)]">
+        <div className="p-3 sm:p-4 md:p-6 pb-2 flex-shrink-0 border-b border-[oklch(0.35_0.05_285)]">
           <DialogHeader>
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-              <DialogTitle className="text-xl sm:text-2xl md:text-3xl font-bold text-[oklch(0.75_0.18_85)] flex items-center gap-2 sm:gap-3">
-                <MusicNotes weight="fill" className="text-2xl sm:text-3xl md:text-4xl" />
-                <span className="truncate">Collaborative - {sessionId}</span>
+              <DialogTitle className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-[oklch(0.75_0.18_85)] flex items-center gap-2">
+                <MusicNotes weight="fill" className="text-xl sm:text-2xl md:text-3xl flex-shrink-0" />
+                <span className="truncate text-base sm:text-lg md:text-xl lg:text-2xl">Collab - {sessionId.split('-')[1]}</span>
               </DialogTitle>
               <Button
                 onClick={leaveSession}
                 variant="outline"
                 size="sm"
-                className="border-[oklch(0.58_0.24_330)] text-[oklch(0.58_0.24_330)] flex-shrink-0"
+                className="border-[oklch(0.58_0.24_330)] text-[oklch(0.58_0.24_330)] flex-shrink-0 text-xs sm:text-sm"
               >
-                <SignOut weight="fill" className="mr-2" />
-                Leave
+                <SignOut weight="fill" className="mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Leave</span>
+                <span className="sm:hidden">Exit</span>
               </Button>
             </div>
-            <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-2 flex-wrap mt-2">
               {session?.users.map((user) => (
                 <Badge
                   key={user.id}
-                  className="px-2 sm:px-3 py-1 text-white flex items-center gap-2 text-xs"
+                  className="px-2 py-1 text-white flex items-center gap-1 sm:gap-2 text-xs"
                   style={{ backgroundColor: user.color }}
                 >
-                  <Avatar className="w-4 h-4 sm:w-5 sm:h-5">
+                  <Avatar className="w-4 h-4">
                     <AvatarFallback style={{ backgroundColor: user.color, fontSize: '8px' }}>
                       {user.name[0].toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="hidden sm:inline">{user.name}</span>
+                  <span className="text-xs">{user.name}</span>
                   {user.isRecording && <Circle weight="fill" className="text-red-500 animate-pulse" size={8} />}
                 </Badge>
               ))}
@@ -716,8 +717,10 @@ export function CollaborativeMusicStudio({ open, onClose, onMintMusic, currentUs
           </DialogHeader>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-4 flex-1 overflow-hidden px-4 sm:px-6 pb-4 sm:pb-6 min-h-0">
-          <div className="w-full sm:w-72 space-y-4 overflow-y-auto flex-shrink-0 max-h-[40vh] sm:max-h-full">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden min-h-0 overscroll-contain" style={{ WebkitOverflowScrolling: 'touch' }}>
+          <div className="p-3 sm:p-4 md:p-6">
+        <div className="flex flex-col gap-4 w-full">
+          <div className="w-full space-y-4 flex-shrink-0 order-2 lg:order-1 lg:max-w-xs">
             <Card className="bg-[oklch(0.18_0.02_280)] border-[oklch(0.35_0.05_285)]">
               <CardContent className="p-4 space-y-4">
                 <div className="text-center">
@@ -845,28 +848,27 @@ export function CollaborativeMusicStudio({ open, onClose, onMintMusic, currentUs
             </Card>
           </div>
 
-          <div className="flex-1 overflow-hidden min-h-0 flex flex-col">
-            <Tabs defaultValue="piano" className="h-full flex flex-col min-h-0">
-              <TabsList className="grid grid-cols-4 w-full bg-[oklch(0.28_0.04_285)] flex-shrink-0">
-                <TabsTrigger value="piano" className="data-[state=active]:bg-[oklch(0.75_0.18_85)] data-[state=active]:text-[oklch(0.15_0.02_280)]">
-                  🎹 Piano
+          <div className="flex-1 w-full order-1 lg:order-2">
+            <Tabs defaultValue="piano" className="h-full flex flex-col">
+              <TabsList className="grid grid-cols-4 w-full bg-[oklch(0.28_0.04_285)] mb-4 flex-shrink-0">
+                <TabsTrigger value="piano" className="data-[state=active]:bg-[oklch(0.75_0.18_85)] data-[state=active]:text-[oklch(0.15_0.02_280)] text-xs sm:text-sm">
+                  🎹 <span className="hidden sm:inline">Piano</span>
                 </TabsTrigger>
-                <TabsTrigger value="drums" className="data-[state=active]:bg-[oklch(0.58_0.24_330)] data-[state=active]:text-white">
-                  🥁 Drums
+                <TabsTrigger value="drums" className="data-[state=active]:bg-[oklch(0.58_0.24_330)] data-[state=active]:text-white text-xs sm:text-sm">
+                  🥁 <span className="hidden sm:inline">Drums</span>
                 </TabsTrigger>
-                <TabsTrigger value="sequencer" className="data-[state=active]:bg-[oklch(0.65_0.15_155)] data-[state=active]:text-white">
-                  🎛️ Sequencer
+                <TabsTrigger value="sequencer" className="data-[state=active]:bg-[oklch(0.65_0.15_155)] data-[state=active]:text-white text-xs sm:text-sm">
+                  🎛️ <span className="hidden sm:inline">Seq</span>
                 </TabsTrigger>
-                <TabsTrigger value="visualizer" className="data-[state=active]:bg-[oklch(0.68_0.18_110)] data-[state=active]:text-white">
-                  📊 Analyzer
+                <TabsTrigger value="visualizer" className="data-[state=active]:bg-[oklch(0.68_0.18_110)] data-[state=active]:text-white text-xs sm:text-sm">
+                  📊 <span className="hidden sm:inline">Audio</span>
                 </TabsTrigger>
               </TabsList>
 
-              <ScrollArea className="flex-1 mt-4 min-h-0">
-                <TabsContent value="piano" className="p-4 m-0">
-                  <Card className="bg-[oklch(0.25_0.03_285)] border-[oklch(0.35_0.05_285)]">
-                    <CardContent className="pt-6">
-                      <div className="flex gap-0 justify-center relative" style={{ height: '220px' }}>
+                <TabsContent value="piano" className="m-0 flex-1">
+                  <Card className="bg-[oklch(0.25_0.03_285)] border-[oklch(0.35_0.05_285)] h-full">
+                    <CardContent className="pt-6 overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
+                      <div className="flex gap-0 justify-center relative min-w-max mx-auto" style={{ height: '220px', width: 'fit-content' }}>
                         {pianoKeys.map((key) => (
                           key.white ? (
                             <button
@@ -1050,8 +1052,9 @@ export function CollaborativeMusicStudio({ open, onClose, onMintMusic, currentUs
                     </CardContent>
                   </Card>
                 </TabsContent>
-              </ScrollArea>
             </Tabs>
+          </div>
+        </div>
           </div>
         </div>
       </DialogContent>

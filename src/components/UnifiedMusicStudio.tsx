@@ -404,22 +404,23 @@ export function UnifiedMusicStudio({ open, onClose, onMintMusic, currentUser }: 
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-[98vw] h-[95vh] p-0 flex flex-col overflow-hidden bg-gradient-to-br from-[oklch(0.22_0.03_285)] to-[oklch(0.18_0.02_290)] border-2 border-[oklch(0.75_0.18_85)]">
-        <div className="p-4 sm:p-6 pb-2 flex-shrink-0">
+      <DialogContent className="max-w-[100vw] sm:max-w-[98vw] h-[100dvh] sm:h-[95vh] p-0 flex flex-col overflow-hidden bg-gradient-to-br from-[oklch(0.22_0.03_285)] to-[oklch(0.18_0.02_290)] border-2 border-[oklch(0.75_0.18_85)]">
+        <div className="p-3 sm:p-4 md:p-6 pb-2 flex-shrink-0 border-b border-[oklch(0.35_0.05_285)]">
           <DialogHeader>
-            <DialogTitle className="text-xl sm:text-2xl md:text-3xl font-bold text-[oklch(0.75_0.18_85)] flex items-center gap-2 md:gap-3">
-              <MusicNotes weight="fill" className="text-2xl sm:text-3xl md:text-4xl" />
-              <span className="text-lg sm:text-2xl md:text-3xl">Mario Music Studio 🎵</span>
+            <DialogTitle className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-[oklch(0.75_0.18_85)] flex items-center gap-2">
+              <MusicNotes weight="fill" className="text-xl sm:text-2xl md:text-3xl flex-shrink-0" />
+              <span className="truncate">Mario Music Studio 🎵</span>
             </DialogTitle>
-            <DialogDescription className="text-[oklch(0.65_0.02_280)] text-xs sm:text-sm md:text-base">
+            <DialogDescription className="text-[oklch(0.65_0.02_280)] text-xs sm:text-sm">
               Full music production suite - drums, piano, synth, vocals & mint tokens
             </DialogDescription>
           </DialogHeader>
         </div>
 
-        <ScrollArea className="flex-1 px-4 sm:px-6 pb-4 sm:pb-6 min-h-0">
-        <div className="flex flex-col lg:flex-row gap-4 min-h-full">
-          <div className="w-full lg:w-64 space-y-4 flex-shrink-0">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden min-h-0 overscroll-contain" style={{ WebkitOverflowScrolling: 'touch' }}>
+          <div className="p-3 sm:p-4 md:p-6">
+        <div className="flex flex-col gap-4 w-full">
+          <div className="w-full space-y-4 flex-shrink-0 order-2 lg:order-1 lg:max-w-xs">
             <Card className="bg-[oklch(0.18_0.02_280)] border-[oklch(0.35_0.05_285)]">
               <CardContent className="p-4 space-y-4">
                 <div className="text-center">
@@ -525,31 +526,30 @@ export function UnifiedMusicStudio({ open, onClose, onMintMusic, currentUser }: 
             </Card>
           </div>
 
-          <div className="flex-1 overflow-hidden">
+          <div className="flex-1 w-full order-1 lg:order-2">
             <Tabs defaultValue="piano" className="h-full flex flex-col">
-              <TabsList className="grid grid-cols-5 w-full bg-[oklch(0.28_0.04_285)]">
-                <TabsTrigger value="piano" className="data-[state=active]:bg-[oklch(0.75_0.18_85)] data-[state=active]:text-[oklch(0.15_0.02_280)]">
-                  🎹 Piano
+              <TabsList className="grid grid-cols-5 w-full bg-[oklch(0.28_0.04_285)] mb-4 flex-shrink-0">
+                <TabsTrigger value="piano" className="data-[state=active]:bg-[oklch(0.75_0.18_85)] data-[state=active]:text-[oklch(0.15_0.02_280)] text-xs sm:text-sm">
+                  🎹 <span className="hidden sm:inline">Piano</span>
                 </TabsTrigger>
-                <TabsTrigger value="guitar" className="data-[state=active]:bg-[oklch(0.70_0.24_190)] data-[state=active]:text-white">
-                  🎸 Guitar
+                <TabsTrigger value="guitar" className="data-[state=active]:bg-[oklch(0.70_0.24_190)] data-[state=active]:text-white text-xs sm:text-sm">
+                  🎸 <span className="hidden sm:inline">Guitar</span>
                 </TabsTrigger>
-                <TabsTrigger value="drums" className="data-[state=active]:bg-[oklch(0.58_0.24_330)] data-[state=active]:text-white">
-                  🥁 Drums
+                <TabsTrigger value="drums" className="data-[state=active]:bg-[oklch(0.58_0.24_330)] data-[state=active]:text-white text-xs sm:text-sm">
+                  🥁 <span className="hidden sm:inline">Drums</span>
                 </TabsTrigger>
-                <TabsTrigger value="sequencer" className="data-[state=active]:bg-[oklch(0.65_0.15_155)] data-[state=active]:text-white">
-                  🎛️ Sequencer
+                <TabsTrigger value="sequencer" className="data-[state=active]:bg-[oklch(0.65_0.15_155)] data-[state=active]:text-white text-xs sm:text-sm">
+                  🎛️ <span className="hidden sm:inline">Seq</span>
                 </TabsTrigger>
-                <TabsTrigger value="visualizer" className="data-[state=active]:bg-[oklch(0.68_0.18_110)] data-[state=active]:text-white">
-                  📊 Analyzer
+                <TabsTrigger value="visualizer" className="data-[state=active]:bg-[oklch(0.68_0.18_110)] data-[state=active]:text-white text-xs sm:text-sm">
+                  📊 <span className="hidden sm:inline">Audio</span>
                 </TabsTrigger>
               </TabsList>
 
-              <ScrollArea className="flex-1 mt-4">
-                <TabsContent value="piano" className="p-4 m-0">
-                  <Card className="bg-[oklch(0.25_0.03_285)] border-[oklch(0.35_0.05_285)]">
-                    <CardContent className="pt-6">
-                      <div className="flex gap-0 justify-center relative" style={{ height: '220px' }}>
+                <TabsContent value="piano" className="m-0 flex-1">
+                  <Card className="bg-[oklch(0.25_0.03_285)] border-[oklch(0.35_0.05_285)] h-full">
+                    <CardContent className="pt-6 overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
+                      <div className="flex gap-0 justify-center relative min-w-max mx-auto" style={{ height: '220px', width: 'fit-content' }}>
                         {pianoKeys.map((key) => (
                           key.white ? (
                             <button
@@ -755,11 +755,11 @@ export function UnifiedMusicStudio({ open, onClose, onMintMusic, currentUser }: 
                     </CardContent>
                   </Card>
                 </TabsContent>
-              </ScrollArea>
             </Tabs>
           </div>
         </div>
-        </ScrollArea>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   )
