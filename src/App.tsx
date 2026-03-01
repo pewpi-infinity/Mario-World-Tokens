@@ -17,6 +17,7 @@ import { CollaborativeMusicStudio } from '@/components/CollaborativeMusicStudio'
 import { MarioArtStudio } from '@/components/MarioArtStudio'
 import { MarioRaceTrack } from '@/components/MarioRaceTrack'
 import { GameEmulatorBuilder } from '@/components/GameEmulatorBuilder'
+import { InfinityAIChat } from '@/components/InfinityAIChat'
 import { MarioCoin, TreasuryStats } from '@/lib/types'
 import { Toaster } from '@/components/ui/sonner'
 import { toast } from 'sonner'
@@ -32,6 +33,7 @@ function App() {
   const [showArtStudio, setShowArtStudio] = useState(false)
   const [showRaceTrack, setShowRaceTrack] = useState(false)
   const [showGameBuilder, setShowGameBuilder] = useState(false)
+  const [showAIAssistant, setShowAIAssistant] = useState(false)
   const [currentUser] = useState(() => `user-${Math.random().toString(36).substr(2, 9)}`)
 
   const userCoins = coins || []
@@ -144,6 +146,10 @@ function App() {
     },
     onDoubleUp: () => {
       toast.success('🍄 Luigi partner added! Currency doubled with partner system!')
+    },
+    onAIAssistant: () => {
+      setShowAIAssistant(true)
+      toast.success('♾️ Infinity AI Network activated!')
     }
   }
 
@@ -293,6 +299,12 @@ function App() {
       <GameEmulatorBuilder
         open={showGameBuilder}
         onClose={() => setShowGameBuilder(false)}
+      />
+
+      <InfinityAIChat
+        open={showAIAssistant}
+        onClose={() => setShowAIAssistant(false)}
+        initialBot="builder"
       />
 
       <Toaster />

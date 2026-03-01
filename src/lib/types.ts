@@ -45,3 +45,65 @@ export interface MintingEvent {
   value: number;
   totalValue: number;
 }
+
+export type AIBotRole = 
+  | 'infinity'
+  | 'builder'
+  | 'music'
+  | 'movement'
+  | 'art'
+  | 'token'
+  | 'design'
+  | 'game'
+  | 'science';
+
+export type AIPermission = 
+  | 'read-all'
+  | 'write-all'
+  | 'read-files'
+  | 'write-files'
+  | 'read-tokens'
+  | 'write-tokens'
+  | 'read-music'
+  | 'write-music'
+  | 'read-art'
+  | 'write-art'
+  | 'read-design'
+  | 'write-design';
+
+export interface AIBot {
+  id: string;
+  role: AIBotRole;
+  name: string;
+  description: string;
+  permissions: AIPermission[];
+  parentBotId?: string;
+  childBotIds: string[];
+  isActive: boolean;
+  lastActivity: number;
+}
+
+export interface AIMessage {
+  id: string;
+  botId: string;
+  userId?: string;
+  content: string;
+  timestamp: number;
+  type: 'user' | 'bot' | 'system';
+}
+
+export interface AIConversation {
+  id: string;
+  botId: string;
+  userId: string;
+  messages: AIMessage[];
+  context?: Record<string, any>;
+  createdAt: number;
+  updatedAt: number;
+}
+
+export interface AIBotConfig {
+  bot: AIBot;
+  systemPrompt: string;
+  capabilities: string[];
+}

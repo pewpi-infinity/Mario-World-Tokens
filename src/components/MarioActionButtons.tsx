@@ -22,6 +22,7 @@ interface MarioActionButtonsProps {
   onValueJump: (fromValue: number, toValue: number) => void
   onLivingToken: () => void
   onDoubleUp: () => void
+  onAIAssistant: () => void
 }
 
 export function MarioActionButtons({
@@ -39,7 +40,8 @@ export function MarioActionButtons({
   onCollabMusic,
   onValueJump,
   onLivingToken,
-  onDoubleUp
+  onDoubleUp,
+  onAIAssistant
 }: MarioActionButtonsProps) {
   const [activeDialog, setActiveDialog] = useState<string | null>(null)
   const [timeCapsuleSecret, setTimeCapsuleSecret] = useState('')
@@ -59,7 +61,8 @@ export function MarioActionButtons({
     { emoji: '🎵', label: 'Music Studio', action: () => setActiveDialog('musicChoice') },
     { emoji: '🕹️', label: 'Value Jump', action: () => setActiveDialog('valueJump') },
     { emoji: '⭐', label: 'Living Token', action: () => onLivingToken() },
-    { emoji: '🍄', label: 'Double Up', action: () => onDoubleUp() }
+    { emoji: '🍄', label: 'Double Up', action: () => onDoubleUp() },
+    { emoji: '♾️', label: 'AI Network', action: () => onAIAssistant() }
   ]
 
   const handleTimeCapsuleSubmit = () => {
