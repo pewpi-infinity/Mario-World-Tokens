@@ -207,7 +207,7 @@ export function MintingInterface({ open, onClose, onMint, currentUser }: Minting
               <div>
                 <Label htmlFor="url" className="text-base font-semibold flex items-center gap-2">
                   <Link size={18} weight="bold" />
-                  Content URL (AI Moderated)
+                  Content URL
                 </Label>
                 <Input
                   id="url"
@@ -218,7 +218,7 @@ export function MintingInterface({ open, onClose, onMint, currentUser }: Minting
                   placeholder="https://..."
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                  Link to content (Spotify, YouTube, social media, etc.). AI will check for family-friendly content.
+                  Link to content (Spotify, YouTube, social media, etc.)
                 </p>
               </div>
             </TabsContent>

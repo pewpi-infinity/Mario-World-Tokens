@@ -42,23 +42,12 @@ export function FileUploadPanel({ type, onFileSelect, currentFile, currentFileNa
     const reader = new FileReader()
     reader.onload = async (e) => {
       const base64Data = e.target?.result as string
-      
-      const moderationResult = await moderateContent(base64Data, file.name, type)
-      
-      if (!moderationResult.approved) {
-        toast.error(`Content moderation: ${moderationResult.reason}`)
-        setIsProcessing(false)
-        if (fileInputRef.current) {
-          fileInputRef.current.value = ''
-        }
-        return
-      }
 
       setPreview(base64Data)
       setFileName(file.name)
       onFileSelect(base64Data, file.name)
       setIsProcessing(false)
-      toast.success('File uploaded and approved!')
+      toast.success('File uploaded successfully!')
     }
 
     reader.onerror = () => {
@@ -151,44 +140,4 @@ export function FileUploadPanel({ type, onFileSelect, currentFile, currentFileNa
       </div>
     </Card>
   )
-}
-
-async function moderateContent(base64Data: string, fileName: string, type: 'image' | 'video'): Promise<{ approved: boolean; reason?: string }> {
-  try {
-    const prompt = spark.llmPrompt`You are a content moderator for a family-friendly currency minting platform. Analyze this ${type} file to ensure it meets safety guidelines.
-
-Safety Guidelines (from the Bible and family values):
-- NO pornography or sexual content
-- NO death, gore, or graphic violence
-- NO hateful symbols or imagery
-- NO dangerous activities or self-harm
-- NO illegal substances or activities
-- FAMILY-FRIENDLY content only
-
-File name: ${fileName}
-File type: ${type}
-File data preview: ${base64Data.substring(0, 100)}...
-
-Please respond with ONLY a JSON object in this exact format:
-{
-  "approved": true or false,
-  "reason": "brief explanation if not approved"
-}
-
-If the content is safe and family-friendly, set approved to true. If it violates any guidelines, set approved to false and provide a brief reason.`
-
-    const response = await spark.llm(prompt, 'gpt-4o-mini', true)
-    const result = JSON.parse(response)
-    
-    return {
-      approved: result.approved === true,
-      reason: result.reason || 'Content did not meet safety guidelines'
-    }
-  } catch (error) {
-    console.error('Moderation error:', error)
-    return {
-      approved: true,
-      reason: undefined
-    }
-  }
 }

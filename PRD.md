@@ -53,6 +53,7 @@ A decentralized token creation and treasury management system where users mint M
 - **Trigger**: During minting or when viewing coin details
 - **Progression**: User selects content type → Uploads or describes content → Content displays with coin → Others can view attached content
 - **Success criteria**: Supports 5+ content types, rich previews, descriptions stored with coins
+- **Content Policy**: All content uploads (images, videos) are accepted without client-side moderation. Content moderation is handled at deployment level only, allowing maximum user freedom while delegating safety controls to infrastructure level
 
 ### Transfer & Receipt System
 - **Functionality**: Transfer coins to others and generate printable receipts
