@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { MarioToken, Transaction } from '@/lib/types'
+import { MarioToken, Transaction, NoteProvenance } from '@/lib/types'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -17,9 +17,10 @@ interface TokenDetailDialogProps {
   transactions: Transaction[]
   open: boolean
   onOpenChange: (open: boolean) => void
+  onProvenanceUpdate: (tokenId: string, provenance: NoteProvenance) => void
 }
 
-export function TokenDetailDialog({ token, transactions, open, onOpenChange }: TokenDetailDialogProps) {
+export function TokenDetailDialog({ token, transactions, open, onOpenChange, onProvenanceUpdate }: TokenDetailDialogProps) {
   const [assessingProvenance, setAssessingProvenance] = useState(false)
   const [receiptTransaction, setReceiptTransaction] = useState<Transaction | null>(null)
   const [receiptDialogOpen, setReceiptDialogOpen] = useState(false)
@@ -36,13 +37,13 @@ export function TokenDetailDialog({ token, transactions, open, onOpenChange }: T
 
   const handleAssessProvenance = async () => {
     setAssessingProvenance(true)
-    toast.loading('Assessing note provenance...')
+    const loadingToast = toast.loading('Assessing note provenance...')
     try {
       const provenance = await assessNoteProvenance(token)
-      token.provenance = provenance
-      toast.success('Provenance assessment complete!')
+      onProvenanceUpdate(token.id, provenance)
+      toast.success('Provenance assessment complete!', { id: loadingToast })
     } catch (error) {
-      toast.error('Failed to assess provenance')
+      toast.error('Failed to assess provenance', { id: loadingToast })
     } finally {
       setAssessingProvenance(false)
     }

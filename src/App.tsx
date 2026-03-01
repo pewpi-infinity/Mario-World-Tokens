@@ -95,6 +95,20 @@ function App() {
     setDetailDialogOpen(true)
   }
 
+  const handleProvenanceUpdate = (tokenId: string, provenance: any) => {
+    setAppState((currentState) => {
+      const state = currentState || { allTokens: [], allTransactions: [], minters: [] }
+      return {
+        ...state,
+        allTokens: state.allTokens.map(token =>
+          token.id === tokenId
+            ? { ...token, provenance }
+            : token
+        )
+      }
+    })
+  }
+
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -232,6 +246,7 @@ function App() {
         transactions={appState?.allTransactions || []}
         open={detailDialogOpen}
         onOpenChange={setDetailDialogOpen}
+        onProvenanceUpdate={handleProvenanceUpdate}
       />
 
       <Toaster />
