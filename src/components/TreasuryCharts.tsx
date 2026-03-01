@@ -179,7 +179,15 @@ export function TreasuryCharts({ tokens, transactions }: TreasuryChartsProps) {
             />
           </CardHeader>
           <CardContent>
-            <div className="h-[300px]">
+            <ChartContainer
+              config={{
+                value: {
+                  label: "Value",
+                  color: "oklch(0.55 0.24 30)",
+                },
+              }}
+              className="h-[300px]"
+            >
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -199,7 +207,7 @@ export function TreasuryCharts({ tokens, transactions }: TreasuryChartsProps) {
                   <ChartTooltip content={<ChartTooltipContent />} />
                 </PieChart>
               </ResponsiveContainer>
-            </div>
+            </ChartContainer>
           </CardContent>
         </Card>
 
