@@ -146,8 +146,8 @@ Please provide a helpful, specific response that aligns with your role as ${curr
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-[98vw] sm:max-w-4xl max-h-[98vh] p-0 overflow-hidden bg-gradient-to-br from-[oklch(0.22_0.03_285)] to-[oklch(0.18_0.02_290)] border-2 border-[oklch(0.75_0.18_85)]">
-        <div className="p-4 sm:p-6 pb-2">
+      <DialogContent className="max-w-[98vw] sm:max-w-4xl h-[95vh] p-0 flex flex-col bg-gradient-to-br from-[oklch(0.22_0.03_285)] to-[oklch(0.18_0.02_290)] border-2 border-[oklch(0.75_0.18_85)]">
+        <div className="p-4 sm:p-6 pb-2 flex-shrink-0">
           <DialogHeader>
             <DialogTitle className="text-xl sm:text-2xl font-bold text-[oklch(0.75_0.18_85)] flex items-center gap-2">
               <Infinity weight="fill" className="text-2xl sm:text-3xl" />
@@ -159,17 +159,17 @@ Please provide a helpful, specific response that aligns with your role as ${curr
           </DialogHeader>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-4 flex-1 overflow-hidden px-4 sm:px-6 pb-4 sm:pb-6">
-          <div className="w-full sm:w-64 flex-shrink-0">
-            <Card className="bg-[oklch(0.18_0.02_280)] border-[oklch(0.35_0.05_285)] h-full">
-              <CardHeader className="pb-3">
+        <div className="flex flex-col sm:flex-row gap-4 flex-1 overflow-hidden px-4 sm:px-6 pb-4 sm:pb-6 min-h-0">
+          <div className="w-full sm:w-64 flex-shrink-0 min-h-0 flex flex-col">
+            <Card className="bg-[oklch(0.18_0.02_280)] border-[oklch(0.35_0.05_285)] h-full flex flex-col min-h-0">
+              <CardHeader className="pb-3 flex-shrink-0">
                 <CardTitle className="text-sm text-[oklch(0.75_0.18_85)] flex items-center gap-2">
                   <GitBranch weight="fill" />
                   AI Bot Network
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-2">
-                <ScrollArea className="h-[300px] sm:h-[calc(98vh-300px)]">
+              <CardContent className="p-2 flex-1 min-h-0">
+                <ScrollArea className="h-full">
                   <div className="space-y-2">
                     {Object.values(AI_BOT_CONFIGS).map((config) => (
                       <Button
@@ -210,9 +210,9 @@ Please provide a helpful, specific response that aligns with your role as ${curr
             </Card>
           </div>
 
-          <div className="flex-1 flex flex-col overflow-hidden">
-            <Card className="bg-[oklch(0.18_0.02_280)] border-[oklch(0.35_0.05_285)] flex-1 flex flex-col overflow-hidden">
-              <CardHeader className="pb-3 border-b border-[oklch(0.35_0.05_285)]">
+          <div className="flex-1 flex flex-col overflow-hidden min-h-0">
+            <Card className="bg-[oklch(0.18_0.02_280)] border-[oklch(0.35_0.05_285)] flex-1 flex flex-col overflow-hidden min-h-0">
+              <CardHeader className="pb-3 border-b border-[oklch(0.35_0.05_285)] flex-shrink-0">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-lg bg-[oklch(0.75_0.18_85)] flex items-center justify-center text-[oklch(0.15_0.02_280)]">
@@ -246,7 +246,7 @@ Please provide a helpful, specific response that aligns with your role as ${curr
                 )}
               </CardHeader>
 
-              <ScrollArea className="flex-1 p-4" ref={scrollRef}>
+              <ScrollArea className="flex-1 p-4 min-h-0" ref={scrollRef}>
                 <div className="space-y-4">
                   {currentConversation.messages.length === 0 && (
                     <div className="text-center py-8 text-[oklch(0.65_0.02_280)]">
@@ -305,7 +305,7 @@ Please provide a helpful, specific response that aligns with your role as ${curr
                 </div>
               </ScrollArea>
 
-              <div className="p-4 border-t border-[oklch(0.35_0.05_285)]">
+              <div className="p-4 border-t border-[oklch(0.35_0.05_285)] flex-shrink-0">
                 <div className="flex gap-2">
                   <Input
                     value={message}

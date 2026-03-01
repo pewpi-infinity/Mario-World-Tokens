@@ -254,13 +254,16 @@ export function MarioArtStudio({ open, onClose, onMintArt, currentUser }: MarioA
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-[95vw] max-h-[95vh] overflow-y-auto bg-gradient-to-br from-[oklch(0.22_0.03_285)] to-[oklch(0.18_0.02_290)] border-2 border-[oklch(0.75_0.18_85)]">
-        <DialogHeader>
-          <DialogTitle className="text-3xl font-bold text-[oklch(0.75_0.18_85)] flex items-center gap-3 pixel-font">
-            🎨 MARIO ART STUDIO
-          </DialogTitle>
-        </DialogHeader>
+      <DialogContent className="max-w-[95vw] h-[95vh] p-0 flex flex-col overflow-hidden bg-gradient-to-br from-[oklch(0.22_0.03_285)] to-[oklch(0.18_0.02_290)] border-2 border-[oklch(0.75_0.18_85)]">
+        <div className="p-4 sm:p-6 pb-2 flex-shrink-0">
+          <DialogHeader>
+            <DialogTitle className="text-xl sm:text-2xl md:text-3xl font-bold text-[oklch(0.75_0.18_85)] flex items-center gap-2 sm:gap-3 pixel-font">
+              🎨 MARIO ART STUDIO
+            </DialogTitle>
+          </DialogHeader>
+        </div>
 
+        <ScrollArea className="flex-1 px-4 sm:px-6 pb-4 sm:pb-6 min-h-0">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
           <div className="lg:col-span-3">
             <Card className="bg-[oklch(0.25_0.03_285)] border-[oklch(0.35_0.05_285)] p-4">
@@ -375,6 +378,7 @@ export function MarioArtStudio({ open, onClose, onMintArt, currentUser }: MarioA
             </Card>
           </div>
         </div>
+        </ScrollArea>
 
         {showMintDialog && (
           <Dialog open={showMintDialog} onOpenChange={setShowMintDialog}>

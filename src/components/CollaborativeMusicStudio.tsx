@@ -678,43 +678,46 @@ export function CollaborativeMusicStudio({ open, onClose, onMintMusic, currentUs
       leaveSession()
       onClose()
     }}>
-      <DialogContent className="max-w-[98vw] max-h-[98vh] overflow-hidden bg-gradient-to-br from-[oklch(0.22_0.03_285)] to-[oklch(0.18_0.02_290)] border-2 border-[oklch(0.75_0.18_85)]">
-        <DialogHeader>
-          <div className="flex items-center justify-between">
-            <DialogTitle className="text-3xl font-bold text-[oklch(0.75_0.18_85)] flex items-center gap-3">
-              <MusicNotes weight="fill" className="text-4xl" />
-              Collaborative Studio - {sessionId}
-            </DialogTitle>
-            <Button
-              onClick={leaveSession}
-              variant="outline"
-              className="border-[oklch(0.58_0.24_330)] text-[oklch(0.58_0.24_330)]"
-            >
-              <SignOut weight="fill" className="mr-2" />
-              Leave Session
-            </Button>
-          </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            {session?.users.map((user) => (
-              <Badge
-                key={user.id}
-                className="px-3 py-1 text-white flex items-center gap-2"
-                style={{ backgroundColor: user.color }}
+      <DialogContent className="max-w-[98vw] h-[95vh] p-0 flex flex-col overflow-hidden bg-gradient-to-br from-[oklch(0.22_0.03_285)] to-[oklch(0.18_0.02_290)] border-2 border-[oklch(0.75_0.18_85)]">
+        <div className="p-4 sm:p-6 pb-2 flex-shrink-0">
+          <DialogHeader>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+              <DialogTitle className="text-xl sm:text-2xl md:text-3xl font-bold text-[oklch(0.75_0.18_85)] flex items-center gap-2 sm:gap-3">
+                <MusicNotes weight="fill" className="text-2xl sm:text-3xl md:text-4xl" />
+                <span className="truncate">Collaborative - {sessionId}</span>
+              </DialogTitle>
+              <Button
+                onClick={leaveSession}
+                variant="outline"
+                size="sm"
+                className="border-[oklch(0.58_0.24_330)] text-[oklch(0.58_0.24_330)] flex-shrink-0"
               >
-                <Avatar className="w-5 h-5">
-                  <AvatarFallback style={{ backgroundColor: user.color, fontSize: '10px' }}>
-                    {user.name[0].toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                {user.name}
-                {user.isRecording && <Circle weight="fill" className="text-red-500 animate-pulse" size={8} />}
-              </Badge>
-            ))}
-          </div>
-        </DialogHeader>
+                <SignOut weight="fill" className="mr-2" />
+                Leave
+              </Button>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              {session?.users.map((user) => (
+                <Badge
+                  key={user.id}
+                  className="px-2 sm:px-3 py-1 text-white flex items-center gap-2 text-xs"
+                  style={{ backgroundColor: user.color }}
+                >
+                  <Avatar className="w-4 h-4 sm:w-5 sm:h-5">
+                    <AvatarFallback style={{ backgroundColor: user.color, fontSize: '8px' }}>
+                      {user.name[0].toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="hidden sm:inline">{user.name}</span>
+                  {user.isRecording && <Circle weight="fill" className="text-red-500 animate-pulse" size={8} />}
+                </Badge>
+              ))}
+            </div>
+          </DialogHeader>
+        </div>
 
-        <div className="flex gap-4 h-[calc(98vh-180px)]">
-          <div className="w-72 space-y-4 overflow-y-auto">
+        <div className="flex flex-col sm:flex-row gap-4 flex-1 overflow-hidden px-4 sm:px-6 pb-4 sm:pb-6 min-h-0">
+          <div className="w-full sm:w-72 space-y-4 overflow-y-auto flex-shrink-0 max-h-[40vh] sm:max-h-full">
             <Card className="bg-[oklch(0.18_0.02_280)] border-[oklch(0.35_0.05_285)]">
               <CardContent className="p-4 space-y-4">
                 <div className="text-center">
@@ -842,9 +845,9 @@ export function CollaborativeMusicStudio({ open, onClose, onMintMusic, currentUs
             </Card>
           </div>
 
-          <div className="flex-1 overflow-hidden">
-            <Tabs defaultValue="piano" className="h-full flex flex-col">
-              <TabsList className="grid grid-cols-4 w-full bg-[oklch(0.28_0.04_285)]">
+          <div className="flex-1 overflow-hidden min-h-0 flex flex-col">
+            <Tabs defaultValue="piano" className="h-full flex flex-col min-h-0">
+              <TabsList className="grid grid-cols-4 w-full bg-[oklch(0.28_0.04_285)] flex-shrink-0">
                 <TabsTrigger value="piano" className="data-[state=active]:bg-[oklch(0.75_0.18_85)] data-[state=active]:text-[oklch(0.15_0.02_280)]">
                   🎹 Piano
                 </TabsTrigger>
@@ -859,7 +862,7 @@ export function CollaborativeMusicStudio({ open, onClose, onMintMusic, currentUs
                 </TabsTrigger>
               </TabsList>
 
-              <ScrollArea className="flex-1 mt-4">
+              <ScrollArea className="flex-1 mt-4 min-h-0">
                 <TabsContent value="piano" className="p-4 m-0">
                   <Card className="bg-[oklch(0.25_0.03_285)] border-[oklch(0.35_0.05_285)]">
                     <CardContent className="pt-6">
