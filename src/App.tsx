@@ -13,6 +13,7 @@ import { Marketplace } from '@/components/Marketplace'
 import { MarioActionButtons } from '@/components/MarioActionButtons'
 import { MarioLogo } from '@/components/MarioLogo'
 import { UnifiedMusicStudio } from '@/components/UnifiedMusicStudio'
+import { CollaborativeMusicStudio } from '@/components/CollaborativeMusicStudio'
 import { MarioArtStudio } from '@/components/MarioArtStudio'
 import { MarioRaceTrack } from '@/components/MarioRaceTrack'
 import { GameEmulatorBuilder } from '@/components/GameEmulatorBuilder'
@@ -27,6 +28,7 @@ function App() {
   const [activeTab, setActiveTab] = useState('treasury')
   const [showMinting, setShowMinting] = useState(false)
   const [showMusicStudio, setShowMusicStudio] = useState(false)
+  const [showCollabMusic, setShowCollabMusic] = useState(false)
   const [showArtStudio, setShowArtStudio] = useState(false)
   const [showRaceTrack, setShowRaceTrack] = useState(false)
   const [showGameBuilder, setShowGameBuilder] = useState(false)
@@ -128,7 +130,7 @@ function App() {
       toast.success('🌻 Fire power denied the bad offer! 🔥')
     },
     onMusicCreation: () => {
-      setShowMusicStudio(true)
+      setShowCollabMusic(true)
     },
     onValueJump: (fromValue: number, toValue: number) => {
       setShowGameBuilder(true)
@@ -261,6 +263,13 @@ function App() {
       <UnifiedMusicStudio
         open={showMusicStudio}
         onClose={() => setShowMusicStudio(false)}
+        onMintMusic={handleMint}
+        currentUser={currentUser}
+      />
+
+      <CollaborativeMusicStudio
+        open={showCollabMusic}
+        onClose={() => setShowCollabMusic(false)}
         onMintMusic={handleMint}
         currentUser={currentUser}
       />
