@@ -18,6 +18,7 @@ interface MarioActionButtonsProps {
   onCreationZone: () => void
   onFirePower: (offerId: string) => void
   onMusicCreation: () => void
+  onCollabMusic: () => void
   onValueJump: (fromValue: number, toValue: number) => void
   onLivingToken: () => void
   onDoubleUp: () => void
@@ -35,6 +36,7 @@ export function MarioActionButtons({
   onCreationZone,
   onFirePower,
   onMusicCreation,
+  onCollabMusic,
   onValueJump,
   onLivingToken,
   onDoubleUp
@@ -54,7 +56,7 @@ export function MarioActionButtons({
     { emoji: '🧲', label: 'Memory Pull', action: () => setActiveDialog('memoryPull') },
     { emoji: '👽', label: 'Creation Zone', action: () => onCreationZone() },
     { emoji: '🌻', label: 'Fire Power', action: () => setActiveDialog('firePower') },
-    { emoji: '🎵', label: 'Music Studio', action: () => onMusicCreation() },
+    { emoji: '🎵', label: 'Music Studio', action: () => setActiveDialog('musicChoice') },
     { emoji: '🕹️', label: 'Value Jump', action: () => setActiveDialog('valueJump') },
     { emoji: '⭐', label: 'Living Token', action: () => onLivingToken() },
     { emoji: '🍄', label: 'Double Up', action: () => onDoubleUp() }
@@ -73,15 +75,16 @@ export function MarioActionButtons({
 
   return (
     <>
-      <div className="grid grid-cols-7 lg:grid-cols-14 gap-1.5 sm:gap-2 p-2 sm:p-4 bg-gradient-to-r from-[oklch(0.58_0.24_330)] via-[oklch(0.65_0.25_265)] to-[oklch(0.70_0.24_190)] rounded-lg border-4 border-[oklch(0.75_0.18_85)]">
+      <div className="grid grid-cols-7 md:grid-cols-14 gap-1 md:gap-2 p-2 md:p-3">
         {buttons.map((btn, idx) => (
           <Button
             key={idx}
             onClick={btn.action}
-            className="text-2xl sm:text-3xl md:text-4xl p-2 sm:p-3 md:p-4 bg-[oklch(0.75_0.18_85)] hover:bg-[oklch(0.80_0.20_85)] border-2 border-[oklch(0.85_0.20_85)] shadow-lg hover:shadow-xl transition-all hover:scale-110 pixel-pop aspect-square flex items-center justify-center"
+            className="text-xl sm:text-2xl md:text-3xl lg:text-4xl p-1.5 sm:p-2 md:p-3 bg-[oklch(0.75_0.18_85)] hover:bg-[oklch(0.80_0.20_85)] border-2 border-[oklch(0.85_0.20_85)] shadow-lg hover:shadow-xl transition-all hover:scale-110 pixel-pop aspect-square flex items-center justify-center min-h-[2.5rem] sm:min-h-[3rem] md:min-h-[3.5rem]"
             title={btn.label}
+            aria-label={btn.label}
           >
-            <span className="leading-none">{btn.emoji}</span>
+            <span className="leading-none block">{btn.emoji}</span>
           </Button>
         ))}
       </div>
@@ -240,6 +243,41 @@ export function MarioActionButtons({
                 </Button>
               ))}
             </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={activeDialog === 'musicChoice'} onOpenChange={(open) => !open && setActiveDialog(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-2xl">🎵 Music Studio</DialogTitle>
+            <DialogDescription>
+              Choose your music creation mode
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <Button
+              onClick={() => {
+                setActiveDialog(null)
+                onMusicCreation()
+              }}
+              className="h-auto p-6 flex flex-col items-center gap-2 bg-[oklch(0.75_0.18_85)] hover:bg-[oklch(0.80_0.20_85)] text-[oklch(0.15_0.02_280)]"
+            >
+              <div className="text-4xl">🎹</div>
+              <div className="font-bold text-lg">Solo Studio</div>
+              <div className="text-sm opacity-80">Record music with all instruments & effects</div>
+            </Button>
+            <Button
+              onClick={() => {
+                setActiveDialog(null)
+                onCollabMusic()
+              }}
+              className="h-auto p-6 flex flex-col items-center gap-2 bg-[oklch(0.70_0.24_190)] hover:bg-[oklch(0.75_0.26_190)] text-white"
+            >
+              <div className="text-4xl">👥</div>
+              <div className="font-bold text-lg">Collab Session</div>
+              <div className="text-sm opacity-90">Create music with friends in real-time</div>
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

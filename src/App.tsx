@@ -130,6 +130,9 @@ function App() {
       toast.success('🌻 Fire power denied the bad offer! 🔥')
     },
     onMusicCreation: () => {
+      setShowMusicStudio(true)
+    },
+    onCollabMusic: () => {
       setShowCollabMusic(true)
     },
     onValueJump: (fromValue: number, toValue: number) => {

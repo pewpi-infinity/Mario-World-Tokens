@@ -404,18 +404,21 @@ export function UnifiedMusicStudio({ open, onClose, onMintMusic, currentUser }: 
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-[98vw] max-h-[98vh] overflow-hidden bg-gradient-to-br from-[oklch(0.22_0.03_285)] to-[oklch(0.18_0.02_290)] border-2 border-[oklch(0.75_0.18_85)]">
-        <DialogHeader>
-          <DialogTitle className="text-3xl font-bold text-[oklch(0.75_0.18_85)] flex items-center gap-3">
-            <MusicNotes weight="fill" className="text-4xl" />
-            Unified Mario Music Studio Pro 🎵
-          </DialogTitle>
-          <DialogDescription className="text-[oklch(0.65_0.02_280)] text-base">
-            Full music production suite - play drums, piano, guitar, synth together + record vocals + mint as Mario Coins
-          </DialogDescription>
-        </DialogHeader>
+      <DialogContent className="max-w-[98vw] max-h-[98vh] p-0 overflow-hidden bg-gradient-to-br from-[oklch(0.22_0.03_285)] to-[oklch(0.18_0.02_290)] border-2 border-[oklch(0.75_0.18_85)]">
+        <div className="p-6 pb-2">
+          <DialogHeader>
+            <DialogTitle className="text-2xl md:text-3xl font-bold text-[oklch(0.75_0.18_85)] flex items-center gap-2 md:gap-3">
+              <MusicNotes weight="fill" className="text-3xl md:text-4xl" />
+              <span className="text-lg sm:text-2xl md:text-3xl">Mario Music Studio 🎵</span>
+            </DialogTitle>
+            <DialogDescription className="text-[oklch(0.65_0.02_280)] text-sm md:text-base">
+              Full music production suite - drums, piano, synth, vocals & mint tokens
+            </DialogDescription>
+          </DialogHeader>
+        </div>
 
-        <div className="flex gap-4 h-[calc(98vh-180px)]">
+        <ScrollArea className="h-[calc(98vh-140px)] px-6 pb-6">
+        <div className="flex flex-col lg:flex-row gap-4">
           <div className="w-64 space-y-4">
             <Card className="bg-[oklch(0.18_0.02_280)] border-[oklch(0.35_0.05_285)]">
               <CardContent className="p-4 space-y-4">
@@ -756,6 +759,7 @@ export function UnifiedMusicStudio({ open, onClose, onMintMusic, currentUser }: 
             </Tabs>
           </div>
         </div>
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   )
