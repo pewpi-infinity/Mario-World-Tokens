@@ -101,10 +101,10 @@ function App() {
                     alt="Mario Logo" 
                     className="absolute object-cover"
                     style={{
-                      width: '300%',
-                      height: '300%',
-                      top: '-85%',
-                      left: '-50%',
+                      width: '400%',
+                      height: '400%',
+                      top: '-110%',
+                      left: '-80%',
                       objectPosition: 'center center'
                     }}
                   />

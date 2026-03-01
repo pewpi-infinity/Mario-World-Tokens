@@ -7,9 +7,10 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { MarioCoin, ContentType } from '@/lib/types'
-import { MusicNotes, Image, VideoCamera, PenNib, Users, FileText, Link } from '@phosphor-icons/react'
+import { MusicNotes, Image, VideoCamera, PenNib, Users, FileText, Link, Sticker } from '@phosphor-icons/react'
 import { FileUploadPanel } from '@/components/FileUploadPanel'
 import { ArtPad } from '@/components/ArtPad'
+import { MarioStickers } from '@/components/MarioStickers'
 import { toast } from 'sonner'
 
 export interface MintingInterfaceProps {
@@ -74,6 +75,7 @@ export function MintingInterface({ open, onClose, onMint, currentUser }: Minting
   const [uploadedImage, setUploadedImage] = useState<{ data: string; fileName: string } | null>(null)
   const [uploadedVideo, setUploadedVideo] = useState<{ data: string; fileName: string } | null>(null)
   const [drawing, setDrawing] = useState('')
+  const [stickers, setStickers] = useState<string[]>([])
   const [isMinting, setIsMinting] = useState(false)
 
   const handleMint = async () => {
@@ -91,6 +93,8 @@ export function MintingInterface({ open, onClose, onMint, currentUser }: Minting
 
       let data = uploadedImage?.data || uploadedVideo?.data || drawing || undefined
 
+      const serialNumber = `MC-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`
+
       const newCoin: MarioCoin = {
         id: `mc-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         value: parseFloat(value) || 0,
@@ -101,9 +105,11 @@ export function MintingInterface({ open, onClose, onMint, currentUser }: Minting
           title,
           description,
           url: url || undefined,
-          data
+          data,
+          stickers: stickers.length > 0 ? stickers : undefined
         },
-        transferHistory: []
+        transferHistory: [],
+        serialNumber
       }
 
       onMint(newCoin)
@@ -116,6 +122,7 @@ export function MintingInterface({ open, onClose, onMint, currentUser }: Minting
       setUploadedImage(null)
       setUploadedVideo(null)
       setDrawing('')
+      setStickers([])
     } catch (error) {
       toast.error('Minting failed')
     } finally {
@@ -200,7 +207,7 @@ export function MintingInterface({ open, onClose, onMint, currentUser }: Minting
           </div>
 
           <Tabs defaultValue="link" className="w-full">
-            <TabsList className="grid grid-cols-4 w-full">
+            <TabsList className="grid grid-cols-5 w-full">
               <TabsTrigger value="link">
                 <Link size={18} weight="bold" />
                 <span className="ml-2">Link</span>
@@ -216,6 +223,10 @@ export function MintingInterface({ open, onClose, onMint, currentUser }: Minting
               <TabsTrigger value="art">
                 <PenNib size={18} weight="fill" />
                 <span className="ml-2">Art Pad</span>
+              </TabsTrigger>
+              <TabsTrigger value="stickers">
+                <Sticker size={18} weight="fill" />
+                <span className="ml-2">Stickers</span>
               </TabsTrigger>
             </TabsList>
 
@@ -275,6 +286,33 @@ export function MintingInterface({ open, onClose, onMint, currentUser }: Minting
                 }}
                 currentDrawing={drawing}
               />
+            </TabsContent>
+
+            <TabsContent value="stickers" className="mt-4">
+              <MarioStickers
+                onStickerSelect={(stickerData) => {
+                  setStickers((current) => [...current, stickerData])
+                  toast.success('Sticker added to coin!')
+                }}
+              />
+              {stickers.length > 0 && (
+                <div className="mt-4 p-4 bg-muted rounded-lg">
+                  <Label className="text-sm font-semibold mb-2 block">Added Stickers ({stickers.length})</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {stickers.map((sticker, i) => (
+                      <div key={i} className="relative group">
+                        <img src={sticker} alt="Sticker" className="w-16 h-16 pixel-pop" />
+                        <button
+                          onClick={() => setStickers((current) => current.filter((_, index) => index !== i))}
+                          className="absolute -top-2 -right-2 w-6 h-6 bg-destructive text-destructive-foreground rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-xs"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </TabsContent>
           </Tabs>
 

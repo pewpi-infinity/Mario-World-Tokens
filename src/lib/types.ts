@@ -12,6 +12,7 @@ export interface ContentAttachment {
   description: string;
   url?: string;
   data?: string;
+  stickers?: string[];
 }
 
 export interface MarioCoin {
@@ -21,6 +22,7 @@ export interface MarioCoin {
   mintedBy: string;
   content: ContentAttachment;
   transferHistory: Transfer[];
+  serialNumber?: string;
 }
 
 export interface Transfer {
@@ -28,6 +30,7 @@ export interface Transfer {
   to: string;
   timestamp: number;
   note?: string;
+  receiptPrinted?: boolean;
 }
 
 export interface TreasuryStats {

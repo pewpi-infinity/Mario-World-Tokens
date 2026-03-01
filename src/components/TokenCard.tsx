@@ -3,8 +3,9 @@ import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { MarioCoin } from '@/lib/types'
-import { Coins, MusicNotes, Image, VideoCamera, PenNib, Users, FileText, ArrowsLeftRight, Eye } from '@phosphor-icons/react'
+import { Coins, MusicNotes, Image, VideoCamera, PenNib, Users, FileText, ArrowsLeftRight, Eye, Receipt } from '@phosphor-icons/react'
 import { TokenDetailDialog } from '@/components/TokenDetailDialog'
+import { ReceiptPrinter } from '@/components/ReceiptPrinter'
 
 export interface TokenCardProps {
   coin: MarioCoin
@@ -22,7 +23,11 @@ const contentIcons = {
 
 export function TokenCard({ coin, onTransfer }: TokenCardProps) {
   const [showDetails, setShowDetails] = useState(false)
+  const [showReceipt, setShowReceipt] = useState(false)
   const ContentIcon = contentIcons[coin.content.type] || FileText
+
+  const hasMediaPreview = (coin.content.type === 'video' && coin.content.data) || 
+                          (coin.content.type === 'image' && coin.content.data)
 
   return (
     <>
@@ -35,6 +40,26 @@ export function TokenCard({ coin, onTransfer }: TokenCardProps) {
             {coin.content.type}
           </Badge>
         </div>
+
+        {hasMediaPreview && (
+          <div className="mb-4 rounded-lg overflow-hidden bg-muted">
+            {coin.content.type === 'video' && coin.content.data && (
+              <video 
+                src={coin.content.data} 
+                controls 
+                className="w-full h-32 object-cover"
+                preload="metadata"
+              />
+            )}
+            {coin.content.type === 'image' && coin.content.data && (
+              <img 
+                src={coin.content.data} 
+                alt={coin.content.title}
+                className="w-full h-32 object-cover"
+              />
+            )}
+          </div>
+        )}
 
         <div className="mb-4">
           <p className="text-3xl font-bold text-foreground tabular-nums">${coin.value.toFixed(2)}</p>
@@ -51,6 +76,19 @@ export function TokenCard({ coin, onTransfer }: TokenCardProps) {
           </div>
         </div>
 
+        {coin.content.stickers && coin.content.stickers.length > 0 && (
+          <div className="flex gap-2 mb-4 flex-wrap">
+            {coin.content.stickers.slice(0, 3).map((sticker, i) => (
+              <img key={i} src={sticker} alt="Sticker" className="w-8 h-8 pixel-pop" />
+            ))}
+            {coin.content.stickers.length > 3 && (
+              <div className="w-8 h-8 bg-muted rounded flex items-center justify-center text-xs">
+                +{coin.content.stickers.length - 3}
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="flex gap-2">
           <Button
             variant="outline"
@@ -60,6 +98,14 @@ export function TokenCard({ coin, onTransfer }: TokenCardProps) {
           >
             <Eye size={16} weight="bold" />
             <span className="ml-2">Details</span>
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowReceipt(true)}
+            className="border-[oklch(0.65_0.15_155)] text-[oklch(0.65_0.15_155)] hover:bg-[oklch(0.65_0.15_155)] hover:text-white"
+          >
+            <Receipt size={16} weight="bold" />
           </Button>
           <Button
             variant="outline"
@@ -77,6 +123,13 @@ export function TokenCard({ coin, onTransfer }: TokenCardProps) {
         coin={coin}
         open={showDetails}
         onClose={() => setShowDetails(false)}
+      />
+
+      <ReceiptPrinter
+        coin={coin}
+        open={showReceipt}
+        onClose={() => setShowReceipt(false)}
+        type="minting"
       />
     </>
   )
