@@ -94,7 +94,9 @@ export function MusicStudio({ open, onClose, onSaveRecording }: MusicStudioProps
   }
 
   useEffect(() => {
-    audioContextRef.current = new AudioContext()
+    if (!audioContextRef.current) {
+      audioContextRef.current = new AudioContext()
+    }
     
     return () => {
       if (audioContextRef.current) {
@@ -224,8 +226,12 @@ export function MusicStudio({ open, onClose, onSaveRecording }: MusicStudioProps
     setWaveformData(filteredData)
   }
 
-  const playNote = (note: string, octave: number) => {
+  const playNote = async (note: string, octave: number) => {
     if (!audioContextRef.current) return
+    
+    if (audioContextRef.current.state === 'suspended') {
+      await audioContextRef.current.resume()
+    }
     
     const noteKey = `${note}${octave}`
     const frequency = noteFrequencies[noteKey]
