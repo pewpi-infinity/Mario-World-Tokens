@@ -238,37 +238,41 @@ export function MusicStudio({ open, onClose, onSaveRecording }: MusicStudioProps
     
     if (!frequency) return
 
-    const oscillator = audioContextRef.current.createOscillator()
-    const gainNode = audioContextRef.current.createGain()
+    const audioContext = audioContextRef.current
+    const oscillator = audioContext.createOscillator()
+    const gainNode = audioContext.createGain()
     
     oscillator.connect(gainNode)
-    gainNode.connect(audioContextRef.current.destination)
+    gainNode.connect(audioContext.destination)
     
     oscillator.frequency.value = frequency
     
     switch (selectedInstrument) {
       case 'piano':
-        oscillator.type = 'sine'
+        oscillator.type = 'triangle'
+        gainNode.gain.setValueAtTime(0.3 * (volume[0] / 100), audioContext.currentTime)
+        gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 1.5)
         break
       case 'synth':
         oscillator.type = 'square'
+        gainNode.gain.setValueAtTime(0.2 * (volume[0] / 100), audioContext.currentTime)
+        gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.8)
         break
       case 'guitar':
         oscillator.type = 'sawtooth'
+        gainNode.gain.setValueAtTime(0.15 * (volume[0] / 100), audioContext.currentTime)
+        gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 1.2)
         break
     }
     
-    gainNode.gain.setValueAtTime(volume[0] / 100, audioContextRef.current.currentTime)
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContextRef.current.currentTime + 1)
-    
-    oscillator.start()
-    oscillator.stop(audioContextRef.current.currentTime + 1)
+    oscillator.start(audioContext.currentTime)
+    oscillator.stop(audioContext.currentTime + 2)
     
     oscillatorsRef.current.set(noteKey, oscillator)
     
     setTimeout(() => {
       oscillatorsRef.current.delete(noteKey)
-    }, 1000)
+    }, 2000)
   }
 
   const stopAllNotes = () => {

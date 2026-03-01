@@ -12,7 +12,9 @@ import { TokenCard } from '@/components/TokenCard'
 import { Marketplace } from '@/components/Marketplace'
 import { MarioActionButtons } from '@/components/MarioActionButtons'
 import { MarioLogo } from '@/components/MarioLogo'
-import { MusicStudio } from '@/components/MusicStudio'
+import { AdvancedMusicStudio } from '@/components/AdvancedMusicStudio'
+import { MarioArtStudio } from '@/components/MarioArtStudio'
+import { MarioRaceTrack } from '@/components/MarioRaceTrack'
 import { MarioCoin, TreasuryStats } from '@/lib/types'
 import { Toaster } from '@/components/ui/sonner'
 import { toast } from 'sonner'
@@ -24,6 +26,8 @@ function App() {
   const [activeTab, setActiveTab] = useState('treasury')
   const [showMinting, setShowMinting] = useState(false)
   const [showMusicStudio, setShowMusicStudio] = useState(false)
+  const [showArtStudio, setShowArtStudio] = useState(false)
+  const [showRaceTrack, setShowRaceTrack] = useState(false)
   const [currentUser] = useState(() => `user-${Math.random().toString(36).substr(2, 9)}`)
 
   const userCoins = coins || []
@@ -115,6 +119,7 @@ function App() {
       toast.info('🧲 Pulling token memory... Building new 🟡 and leaving platinum ⚪ behind')
     },
     onCreationZone: () => {
+      setShowArtStudio(true)
       toast.success('👽 Creation Zone activated! Build anything you imagine!')
     },
     onFirePower: (offerId: string) => {
@@ -124,7 +129,8 @@ function App() {
       setShowMusicStudio(true)
     },
     onValueJump: (fromValue: number, toValue: number) => {
-      toast.success(`🕹️ Token value jumped from $${fromValue} to $${toValue}!`)
+      setShowRaceTrack(true)
+      toast.success(`🕹️ Race to win Science Points & access the Laboratory!`)
     },
     onLivingToken: () => {
       toast.success('⭐ Living Token created! Community + AI updates enabled')
@@ -250,9 +256,19 @@ function App() {
         currentUser={currentUser}
       />
 
-      <MusicStudio
+      <AdvancedMusicStudio
         open={showMusicStudio}
         onClose={() => setShowMusicStudio(false)}
+      />
+
+      <MarioArtStudio
+        open={showArtStudio}
+        onClose={() => setShowArtStudio(false)}
+      />
+
+      <MarioRaceTrack
+        open={showRaceTrack}
+        onClose={() => setShowRaceTrack(false)}
       />
 
       <Toaster />
