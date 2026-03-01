@@ -25,7 +25,7 @@ export function TokenDetailDialog({ coin, open, onClose }: TokenDetailDialogProp
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold">Mario Coin Details</DialogTitle>
         </DialogHeader>

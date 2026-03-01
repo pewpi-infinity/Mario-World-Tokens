@@ -21,7 +21,7 @@ export function PrintableReceipt({ transaction, token, open, onOpenChange }: Pri
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl print:shadow-none print:border-0">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto print:shadow-none print:border-0">
         <DialogHeader className="print:hidden">
           <DialogTitle>Transaction Receipt</DialogTitle>
         </DialogHeader>

@@ -84,7 +84,7 @@ export function ReceiptPrinter({ coin, transfer, open, onClose, type }: ReceiptP
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="pixel-font text-xl">PRINTABLE RECEIPT</DialogTitle>
         </DialogHeader>
