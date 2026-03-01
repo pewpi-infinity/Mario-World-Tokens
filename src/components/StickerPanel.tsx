@@ -1,6 +1,7 @@
 import { Sticker } from '@/lib/types'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { Label as UILabel } from '@/components/ui/label'
 import { Trash } from '@phosphor-icons/react'
 
 interface StickerPanelProps {
@@ -39,7 +40,7 @@ export function StickerPanel({ stickers, onStickersChange }: StickerPanelProps) 
     <div className="space-y-4">
       <div>
         <div className="flex items-center justify-between mb-3">
-          <Label className="text-sm font-semibold">Add Stickers</Label>
+          <UILabel className="text-sm font-semibold">Add Stickers</UILabel>
           {stickers.length > 0 && (
             <Button
               variant="ghost"
@@ -76,7 +77,7 @@ export function StickerPanel({ stickers, onStickersChange }: StickerPanelProps) 
 
       {stickers.length > 0 && (
         <div>
-          <Label className="text-sm font-semibold mb-3 block">Active Stickers</Label>
+          <UILabel className="text-sm font-semibold mb-3 block">Active Stickers</UILabel>
           <ScrollArea className="h-32">
             <div className="space-y-2">
               {stickers.map((sticker) => (
@@ -101,8 +102,4 @@ export function StickerPanel({ stickers, onStickersChange }: StickerPanelProps) 
       )}
     </div>
   )
-}
-
-function Label({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <div className={className}>{children}</div>
 }
