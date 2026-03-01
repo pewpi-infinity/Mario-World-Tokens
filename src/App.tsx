@@ -12,6 +12,7 @@ import { TokenCard } from '@/components/TokenCard'
 import { Marketplace } from '@/components/Marketplace'
 import { MarioActionButtons } from '@/components/MarioActionButtons'
 import { MarioLogo } from '@/components/MarioLogo'
+import { MusicStudio } from '@/components/MusicStudio'
 import { MarioCoin, TreasuryStats } from '@/lib/types'
 import { Toaster } from '@/components/ui/sonner'
 import { toast } from 'sonner'
@@ -22,6 +23,7 @@ function App() {
   const [globalCoins, setGlobalCoins] = useKV<MarioCoin[]>('global-mario-coins', [])
   const [activeTab, setActiveTab] = useState('treasury')
   const [showMinting, setShowMinting] = useState(false)
+  const [showMusicStudio, setShowMusicStudio] = useState(false)
   const [currentUser] = useState(() => `user-${Math.random().toString(36).substr(2, 9)}`)
 
   const userCoins = coins || []
@@ -119,7 +121,7 @@ function App() {
       toast.success('🌻 Fire power denied the bad offer! 🔥')
     },
     onMusicCreation: () => {
-      toast.info('🎵 Music Creation Studio opening - all tools available!')
+      setShowMusicStudio(true)
     },
     onValueJump: (fromValue: number, toValue: number) => {
       toast.success(`🕹️ Token value jumped from $${fromValue} to $${toValue}!`)
@@ -246,6 +248,11 @@ function App() {
         onClose={() => setShowMinting(false)}
         onMint={handleMint}
         currentUser={currentUser}
+      />
+
+      <MusicStudio
+        open={showMusicStudio}
+        onClose={() => setShowMusicStudio(false)}
       />
 
       <Toaster />
