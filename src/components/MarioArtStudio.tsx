@@ -53,8 +53,18 @@ export function MarioArtStudio({ open, onClose }: MarioArtStudioProps) {
     { id: 'peach', name: '👑 Peach', data: generatePeachPixels() },
     { id: 'toad', name: '🍄 Toad', data: generateToadPixels() },
     { id: 'yoshi', name: '🦎 Yoshi', data: generateYoshiPixels() },
+    { id: 'wario', name: '💛 Wario', data: generateWarioPixels() },
+    { id: 'waluigi', name: '💜 Waluigi', data: generateWaluigiPixels() },
+    { id: 'donkey', name: '🦍 Donkey Kong', data: generateDonkeyKongPixels() },
+    { id: 'koopa', name: '🐢 Koopa Troopa', data: generateKoopaPixels() },
+    { id: 'goomba', name: '🍄 Goomba', data: generateGoombaPixels() },
+    { id: 'boo', name: '👻 Boo', data: generateBooPixels() },
     { id: 'coin', name: '🟡 Coin', data: generateCoinPixels() },
-    { id: 'star', name: '⭐ Star', data: generateStarPixels() }
+    { id: 'star', name: '⭐ Star Power', data: generateStarPixels() },
+    { id: 'mushroom', name: '🍄 Super Mushroom', data: generateMushroomPixels() },
+    { id: 'fireflower', name: '🌻 Fire Flower', data: generateFireFlowerPixels() },
+    { id: 'blueshell', name: '🐚 Blue Shell', data: generateBlueShellPixels() },
+    { id: 'questionblock', name: '❓ Question Block', data: generateQuestionBlockPixels() }
   ]
 
   useEffect(() => {
@@ -511,6 +521,289 @@ function generateStarPixels(): Pixel[] {
     Array.from(row).forEach((char, x) => {
       if (char === 'Y') {
         pixels.push({ x: x * 8, y: y * 8, color: '#FFFF00' })
+      }
+    })
+  })
+  
+  return pixels
+}
+
+function generateWarioPixels(): Pixel[] {
+  const pixels: Pixel[] = []
+  const pattern = [
+    '   YYYY   ',
+    '  YYYYYY  ',
+    '  PPP##P  ',
+    ' P#P##P## ',
+    ' P#PP##P##',
+    ' P###PPP## ',
+    '   ##P##   ',
+    '  PPPPPP   ',
+    ' PYYPPYYP ',
+    'PYYYYYYPP',
+    '##PYYPP## ',
+    '###PPPP### '
+  ]
+  
+  const colors: Record<string, string> = {
+    'Y': '#FFFF00',
+    'P': '#964B00',
+    '#': '#FFD700'
+  }
+  
+  pattern.forEach((row, y) => {
+    Array.from(row).forEach((char, x) => {
+      if (colors[char]) {
+        pixels.push({ x: x * 8, y: y * 8, color: colors[char] })
+      }
+    })
+  })
+  
+  return pixels
+}
+
+function generateWaluigiPixels(): Pixel[] {
+  const pixels = generateWarioPixels()
+  return pixels.map(p => ({
+    ...p,
+    color: p.color === '#FFFF00' ? '#800080' : p.color
+  }))
+}
+
+function generateDonkeyKongPixels(): Pixel[] {
+  const pixels: Pixel[] = []
+  const pattern = [
+    '  BBBBBB  ',
+    ' BB####BB ',
+    'BB##EE##BB',
+    'BB#EEEE#BB',
+    'BBEEEEEEEE',
+    ' BB####BB ',
+    '  BBBBBB  ',
+    ' RR    RR '
+  ]
+  
+  const colors: Record<string, string> = {
+    'B': '#8B4513',
+    '#': '#000000',
+    'E': '#FFD700',
+    'R': '#FF0000'
+  }
+  
+  pattern.forEach((row, y) => {
+    Array.from(row).forEach((char, x) => {
+      if (colors[char]) {
+        pixels.push({ x: x * 8, y: y * 8, color: colors[char] })
+      }
+    })
+  })
+  
+  return pixels
+}
+
+function generateKoopaPixels(): Pixel[] {
+  const pixels: Pixel[] = []
+  const pattern = [
+    '  GGGG  ',
+    ' GGGGGG ',
+    'GG##GG##',
+    'GG####GG',
+    ' YYYYYY ',
+    ' YOYOYY ',
+    '  YYYY  ',
+    ' WW  WW '
+  ]
+  
+  const colors: Record<string, string> = {
+    'G': '#00FF00',
+    '#': '#000000',
+    'Y': '#FFD700',
+    'O': '#FFA500',
+    'W': '#FFFFFF'
+  }
+  
+  pattern.forEach((row, y) => {
+    Array.from(row).forEach((char, x) => {
+      if (colors[char]) {
+        pixels.push({ x: x * 8, y: y * 8, color: colors[char] })
+      }
+    })
+  })
+  
+  return pixels
+}
+
+function generateGoombaPixels(): Pixel[] {
+  const pixels: Pixel[] = []
+  const pattern = [
+    '  BBBB  ',
+    ' BBBBBB ',
+    'BB####BB',
+    'BB#WW#BB',
+    'BBBBBBBB',
+    'BB####BB',
+    'BBBBBBBB',
+    ' WW  WW '
+  ]
+  
+  const colors: Record<string, string> = {
+    'B': '#8B4513',
+    '#': '#000000',
+    'W': '#FFFFFF'
+  }
+  
+  pattern.forEach((row, y) => {
+    Array.from(row).forEach((char, x) => {
+      if (colors[char]) {
+        pixels.push({ x: x * 8, y: y * 8, color: colors[char] })
+      }
+    })
+  })
+  
+  return pixels
+}
+
+function generateBooPixels(): Pixel[] {
+  const pixels: Pixel[] = []
+  const pattern = [
+    '  WWWWW  ',
+    ' WWWWWWW ',
+    'WWWWWWWWW',
+    'WW##W##WW',
+    'WW#WW#WWW',
+    'WWWWWWWWW',
+    'WW#####WW',
+    ' WWWWWWW ',
+    '  W W W  '
+  ]
+  
+  pattern.forEach((row, y) => {
+    Array.from(row).forEach((char, x) => {
+      if (char === 'W') {
+        pixels.push({ x: x * 8, y: y * 8, color: '#FFFFFF' })
+      } else if (char === '#') {
+        pixels.push({ x: x * 8, y: y * 8, color: '#000000' })
+      }
+    })
+  })
+  
+  return pixels
+}
+
+function generateMushroomPixels(): Pixel[] {
+  const pixels: Pixel[] = []
+  const pattern = [
+    '  RRRR  ',
+    ' RWRWRW ',
+    'RWRWRWRW',
+    'RRRRRRRR',
+    ' YYYYYY ',
+    ' YY##YY ',
+    '  YYYY  ',
+    '   YY   '
+  ]
+  
+  const colors: Record<string, string> = {
+    'R': '#FF0000',
+    'W': '#FFFFFF',
+    'Y': '#FFD700',
+    '#': '#000000'
+  }
+  
+  pattern.forEach((row, y) => {
+    Array.from(row).forEach((char, x) => {
+      if (colors[char]) {
+        pixels.push({ x: x * 8, y: y * 8, color: colors[char] })
+      }
+    })
+  })
+  
+  return pixels
+}
+
+function generateFireFlowerPixels(): Pixel[] {
+  const pixels: Pixel[] = []
+  const pattern = [
+    ' R  O  R ',
+    'RYY YY YR',
+    ' RYYOYYRO',
+    '  YYYYYYY ',
+    '   GGGG  ',
+    '   GGGG  ',
+    '  GGGGGG ',
+    '  GG  GG '
+  ]
+  
+  const colors: Record<string, string> = {
+    'R': '#FF0000',
+    'O': '#FFA500',
+    'Y': '#FFFF00',
+    'G': '#00FF00'
+  }
+  
+  pattern.forEach((row, y) => {
+    Array.from(row).forEach((char, x) => {
+      if (colors[char]) {
+        pixels.push({ x: x * 8, y: y * 8, color: colors[char] })
+      }
+    })
+  })
+  
+  return pixels
+}
+
+function generateBlueShellPixels(): Pixel[] {
+  const pixels: Pixel[] = []
+  const pattern = [
+    '  BBBB  ',
+    ' BBBBBB ',
+    'BBWWWWBB',
+    'BBWBBWBB',
+    'BBBBBBBB',
+    ' BBBBBB ',
+    '  BBBB  ',
+    '  W  W  '
+  ]
+  
+  const colors: Record<string, string> = {
+    'B': '#0000FF',
+    'W': '#FFFFFF'
+  }
+  
+  pattern.forEach((row, y) => {
+    Array.from(row).forEach((char, x) => {
+      if (colors[char]) {
+        pixels.push({ x: x * 8, y: y * 8, color: colors[char] })
+      }
+    })
+  })
+  
+  return pixels
+}
+
+function generateQuestionBlockPixels(): Pixel[] {
+  const pixels: Pixel[] = []
+  const pattern = [
+    'YYYYYYYY',
+    'Y######Y',
+    'Y##??##Y',
+    'Y#????#Y',
+    'Y##??##Y',
+    'Y###?##Y',
+    'Y######Y',
+    'YYYYYYYY'
+  ]
+  
+  const colors: Record<string, string> = {
+    'Y': '#FFD700',
+    '#': '#FFA500',
+    '?': '#FFFFFF'
+  }
+  
+  pattern.forEach((row, y) => {
+    Array.from(row).forEach((char, x) => {
+      if (colors[char]) {
+        pixels.push({ x: x * 8, y: y * 8, color: colors[char] })
       }
     })
   })
