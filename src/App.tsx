@@ -12,6 +12,7 @@ import { TransferDialog } from '@/components/TransferDialog'
 import { GlobalLedger } from '@/components/GlobalLedger'
 import { TokenDetailDialog } from '@/components/TokenDetailDialog'
 import { TreasuryCharts } from '@/components/TreasuryCharts'
+import { AutoAssessment } from '@/components/AutoAssessment'
 import { Toaster } from '@/components/ui/sonner'
 import { ScrollArea } from '@/components/ui/scroll-area'
 
@@ -233,6 +234,7 @@ function App() {
           </TabsContent>
 
           <TabsContent value="treasury" className="space-y-6">
+            <AutoAssessment tokens={appState?.allTokens || []} />
             <TreasuryCharts
               tokens={appState?.allTokens || []}
               transactions={appState?.allTransactions || []}
