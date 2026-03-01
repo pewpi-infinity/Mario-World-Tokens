@@ -67,8 +67,21 @@ function App() {
         <div className="container mx-auto px-4 py-6 relative z-10">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center gap-4">
-              <div className="bg-[oklch(0.75_0.18_85)] p-3 rounded-lg shadow-lg border-2 border-[oklch(0.85_0.20_85)]">
-                <img src={marioImage} alt="Mario Logo" className="w-12 h-12 object-contain" />
+              <div className="bg-[oklch(0.75_0.18_85)] p-3 rounded-lg shadow-lg border-2 border-[oklch(0.85_0.20_85)] overflow-hidden">
+                <div className="w-12 h-12 relative">
+                  <img 
+                    src={marioImage} 
+                    alt="Mario Logo" 
+                    className="absolute object-cover"
+                    style={{
+                      width: '200%',
+                      height: '200%',
+                      top: '-70%',
+                      left: '-25%',
+                      objectPosition: 'center center'
+                    }}
+                  />
+                </div>
               </div>
               <div>
                 <h1 className="text-2xl md:text-3xl font-bold text-white drop-shadow-lg pixel-font">
