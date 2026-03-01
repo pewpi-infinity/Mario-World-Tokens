@@ -1,11 +1,16 @@
+import { useState } from 'react'
 import { MarioToken, Transaction } from '@/lib/types'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { MapPin, Seal, Sparkle, User, ListNumbers, ArrowRight, Clock, Printer } from '@phosphor-icons/react'
-import { formatTimestamp, isRareSerial, getDenominationColor } from '@/lib/currency'
+import { Progress } from '@/components/ui/progress'
+import { MapPin, Seal, Sparkle, User, ListNumbers, ArrowRight, Clock, Printer, Receipt, TrendUp, Palette, Buildings } from '@phosphor-icons/react'
+import { formatTimestamp, isRareSerial, getDenominationColor, assessNoteProvenance, calculateNoteValue } from '@/lib/currency'
+import { PrintableReceipt } from './PrintableReceipt'
+import { toast } from 'sonner'
 
 interface TokenDetailDialogProps {
   token: MarioToken | null
@@ -15,6 +20,10 @@ interface TokenDetailDialogProps {
 }
 
 export function TokenDetailDialog({ token, transactions, open, onOpenChange }: TokenDetailDialogProps) {
+  const [assessingProvenance, setAssessingProvenance] = useState(false)
+  const [receiptTransaction, setReceiptTransaction] = useState<Transaction | null>(null)
+  const [receiptDialogOpen, setReceiptDialogOpen] = useState(false)
+
   if (!token) return null
 
   const tokenTransactions = transactions
@@ -23,26 +32,48 @@ export function TokenDetailDialog({ token, transactions, open, onOpenChange }: T
   
   const isRare = isRareSerial(token.serialNumber)
   const transferCount = tokenTransactions.length
+  const noteValue = token.provenance ? calculateNoteValue(token) : null
+
+  const handleAssessProvenance = async () => {
+    setAssessingProvenance(true)
+    toast.loading('Assessing note provenance...')
+    try {
+      const provenance = await assessNoteProvenance(token)
+      token.provenance = provenance
+      toast.success('Provenance assessment complete!')
+    } catch (error) {
+      toast.error('Failed to assess provenance')
+    } finally {
+      setAssessingProvenance(false)
+    }
+  }
+
+  const handlePrintReceipt = (transaction: Transaction) => {
+    setReceiptTransaction(transaction)
+    setReceiptDialogOpen(true)
+  }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            Token Details
-            {isRare && (
-              <Badge variant="default" className="bg-accent text-accent-foreground">
-                <Sparkle size={14} className="mr-1" weight="fill" />
-                Rare Serial
-              </Badge>
-            )}
-          </DialogTitle>
-        </DialogHeader>
+    <>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              Token Details
+              {isRare && (
+                <Badge variant="default" className="bg-accent text-accent-foreground">
+                  <Sparkle size={14} className="mr-1" weight="fill" />
+                  Rare Serial
+                </Badge>
+              )}
+            </DialogTitle>
+          </DialogHeader>
 
-        <Tabs defaultValue="details" className="flex-1 overflow-hidden flex flex-col">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="details">Details</TabsTrigger>
-            <TabsTrigger value="history" className="flex items-center gap-2">
+          <Tabs defaultValue="details" className="flex-1 overflow-hidden flex flex-col">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="details">Details</TabsTrigger>
+              <TabsTrigger value="provenance">Value</TabsTrigger>
+              <TabsTrigger value="history" className="flex items-center gap-2">
               History
               {transferCount > 0 && (
                 <Badge variant="secondary" className="ml-1 h-5 px-1.5">
@@ -125,6 +156,105 @@ export function TokenDetailDialog({ token, transactions, open, onOpenChange }: T
             </ScrollArea>
           </TabsContent>
 
+          <TabsContent value="provenance" className="flex-1 overflow-auto mt-4">
+            <ScrollArea className="h-[500px] pr-4">
+              <div className="space-y-6">
+                {!token.provenance ? (
+                  <div className="text-center py-12">
+                    <TrendUp size={64} className="mx-auto text-muted-foreground mb-4" />
+                    <p className="text-lg font-medium mb-2">Provenance Not Assessed</p>
+                    <p className="text-sm text-muted-foreground mb-6">
+                      Assess this note's artistic value, historical significance, and collectible potential
+                    </p>
+                    <Button onClick={handleAssessProvenance} disabled={assessingProvenance}>
+                      <Sparkle size={18} className="mr-2" weight="fill" />
+                      {assessingProvenance ? 'Assessing...' : 'Assess Provenance'}
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="bg-gradient-to-br from-accent/10 to-primary/10 p-6 rounded-lg border-2 border-accent/30">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-lg font-bold font-serif">Note Valuation</h3>
+                        {noteValue && (
+                          <div className="text-right">
+                            <p className="text-xs text-muted-foreground">Estimated Value</p>
+                            <p className="text-2xl font-bold text-accent">${noteValue.totalValue.toFixed(2)}</p>
+                          </div>
+                        )}
+                      </div>
+                      {noteValue && (
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <p className="text-muted-foreground">Face Value</p>
+                            <p className="font-medium">${noteValue.baseValue}</p>
+                          </div>
+                          <div>
+                            <p className="text-muted-foreground">Collectible Premium</p>
+                            <p className="font-medium text-accent">${noteValue.collectibleValue.toFixed(2)}</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Palette size={20} className="text-primary" />
+                        <h4 className="font-semibold">Artistic Value</h4>
+                      </div>
+                      <Progress value={token.provenance.artisticValue} className="h-2" />
+                      <p className="text-sm text-muted-foreground">{token.provenance.artisticValue}/100</p>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Buildings size={20} className="text-primary" />
+                        <h4 className="font-semibold">Historical Significance</h4>
+                      </div>
+                      <Progress value={token.provenance.historicalSignificance} className="h-2" />
+                      <p className="text-sm text-muted-foreground">{token.provenance.historicalSignificance}/100</p>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <TrendUp size={20} className="text-primary" />
+                        <h4 className="font-semibold">Cultural Impact</h4>
+                      </div>
+                      <Progress value={token.provenance.culturalImpact} className="h-2" />
+                      <p className="text-sm text-muted-foreground">{token.provenance.culturalImpact}/100</p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="p-4 bg-muted rounded-lg">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Seal size={16} />
+                          <p className="text-sm font-medium">Famous Minter</p>
+                        </div>
+                        <p className={`text-lg font-bold ${token.provenance.famousMinter ? 'text-accent' : 'text-muted-foreground'}`}>
+                          {token.provenance.famousMinter ? 'Yes' : 'No'}
+                        </p>
+                      </div>
+                      <div className="p-4 bg-muted rounded-lg">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Sparkle size={16} />
+                          <p className="text-sm font-medium">Unique Design</p>
+                        </div>
+                        <p className={`text-lg font-bold ${token.provenance.uniqueDesign ? 'text-accent' : 'text-muted-foreground'}`}>
+                          {token.provenance.uniqueDesign ? 'Yes' : 'No'}
+                        </p>
+                      </div>
+                    </div>
+
+                    <Button onClick={handleAssessProvenance} variant="outline" className="w-full" disabled={assessingProvenance}>
+                      <Sparkle size={18} className="mr-2" weight="fill" />
+                      Reassess Provenance
+                    </Button>
+                  </>
+                )}
+              </div>
+            </ScrollArea>
+          </TabsContent>
+
           <TabsContent value="history" className="flex-1 overflow-hidden mt-4">
             <ScrollArea className="h-[500px] pr-4">
               <div className="space-y-4">
@@ -170,6 +300,13 @@ export function TokenDetailDialog({ token, transactions, open, onOpenChange }: T
                                 <Badge variant="default" className="text-xs">Latest</Badge>
                               )}
                             </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handlePrintReceipt(tx)}
+                            >
+                              <Receipt size={16} />
+                            </Button>
                           </div>
                           <div className="flex items-center gap-2 text-sm mb-3">
                             <span className="font-medium break-all">{tx.from}</span>
@@ -197,5 +334,13 @@ export function TokenDetailDialog({ token, transactions, open, onOpenChange }: T
         </Tabs>
       </DialogContent>
     </Dialog>
+
+    <PrintableReceipt
+      transaction={receiptTransaction!}
+      token={token}
+      open={receiptDialogOpen}
+      onOpenChange={setReceiptDialogOpen}
+    />
+  </>
   )
 }

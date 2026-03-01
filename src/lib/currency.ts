@@ -1,4 +1,4 @@
-import { Denomination, MarioToken } from './types'
+import { Denomination, MarioToken, NoteProvenance } from './types'
 
 export function generateSerialNumber(): string {
   const timestamp = Date.now().toString(36).toUpperCase()
@@ -57,4 +57,82 @@ export function formatTimestamp(timestamp: number): string {
 
 export function validateGitHubUsername(username: string): boolean {
   return /^[a-zA-Z0-9]([a-zA-Z0-9-]{0,38}[a-zA-Z0-9])?$/.test(username)
+}
+
+export async function assessNoteProvenance(token: MarioToken): Promise<NoteProvenance> {
+  const promptText = `Analyze this Federal Reserve Note for collectible value and significance.
+
+Token Details:
+- Serial Number: ${token.serialNumber}
+- Denomination: $${token.denomination}
+- Minted By: ${token.mintedBy}
+- Location: ${token.location}
+- Design Notes: ${token.designNotes}
+- Minted At: ${new Date(token.mintedAt).toLocaleString()}
+
+Assess the following on a scale of 0-100:
+1. Artistic Value: Quality and uniqueness of the design
+2. Historical Significance: Historical context and importance
+3. Famous Minter: Whether the minter is notable or famous (0 for no, 100 for yes)
+4. Unique Design: Creativity and originality of the design approach
+5. Cultural Impact: Potential cultural or community significance
+
+Return a JSON object with these exact properties: artisticValue, historicalSignificance, famousMinter (0 or 100), uniqueDesign, culturalImpact`
+
+  try {
+    const result = await window.spark.llm(promptText, 'gpt-4o-mini', true)
+    const parsed = JSON.parse(result)
+    
+    return {
+      artisticValue: Math.min(100, Math.max(0, parsed.artisticValue || 0)),
+      historicalSignificance: Math.min(100, Math.max(0, parsed.historicalSignificance || 0)),
+      famousMinter: parsed.famousMinter >= 50,
+      uniqueDesign: parsed.uniqueDesign >= 70,
+      culturalImpact: Math.min(100, Math.max(0, parsed.culturalImpact || 0))
+    }
+  } catch (error) {
+    return {
+      artisticValue: 50,
+      historicalSignificance: 30,
+      famousMinter: false,
+      uniqueDesign: false,
+      culturalImpact: 40
+    }
+  }
+}
+
+export function calculateNoteValue(token: MarioToken): { baseValue: number; collectibleValue: number; totalValue: number } {
+  const baseValue = token.denomination
+  
+  if (!token.provenance) {
+    return { baseValue, collectibleValue: 0, totalValue: baseValue }
+  }
+
+  const p = token.provenance
+  let collectibleMultiplier = 0
+
+  if (isRareSerial(token.serialNumber)) {
+    collectibleMultiplier += 0.5
+  }
+
+  if (p.famousMinter) {
+    collectibleMultiplier += 1.0
+  }
+
+  if (p.uniqueDesign) {
+    collectibleMultiplier += 0.3
+  }
+
+  collectibleMultiplier += (p.artisticValue / 100) * 0.5
+  collectibleMultiplier += (p.historicalSignificance / 100) * 0.4
+  collectibleMultiplier += (p.culturalImpact / 100) * 0.3
+
+  const collectibleValue = baseValue * collectibleMultiplier
+  const totalValue = baseValue + collectibleValue
+
+  return {
+    baseValue,
+    collectibleValue: Math.round(collectibleValue * 100) / 100,
+    totalValue: Math.round(totalValue * 100) / 100
+  }
 }

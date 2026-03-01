@@ -4,13 +4,14 @@ import { MarioToken, Transaction, AppState } from '@/lib/types'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
-import { Seal, Coins, Printer, Scroll } from '@phosphor-icons/react'
+import { Seal, Coins, Printer, Scroll, ChartBar } from '@phosphor-icons/react'
 import { WalletBalance } from '@/components/WalletBalance'
 import { TokenCard } from '@/components/TokenCard'
 import { MintingInterface } from '@/components/MintingInterface'
 import { TransferDialog } from '@/components/TransferDialog'
 import { GlobalLedger } from '@/components/GlobalLedger'
 import { TokenDetailDialog } from '@/components/TokenDetailDialog'
+import { TreasuryCharts } from '@/components/TreasuryCharts'
 import { Toaster } from '@/components/ui/sonner'
 import { ScrollArea } from '@/components/ui/scroll-area'
 
@@ -138,7 +139,7 @@ function App() {
 
       <main className="container mx-auto px-4 py-8 md:px-8">
         <Tabs defaultValue="wallet" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:w-auto">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:w-auto">
             <TabsTrigger value="wallet" className="flex items-center gap-2">
               <Coins size={18} />
               <span className="hidden sm:inline">Wallet</span>
@@ -149,6 +150,10 @@ function App() {
                 <span className="hidden sm:inline">Mint</span>
               </TabsTrigger>
             )}
+            <TabsTrigger value="treasury" className="flex items-center gap-2">
+              <ChartBar size={18} />
+              <span className="hidden sm:inline">Treasury</span>
+            </TabsTrigger>
             <TabsTrigger value="ledger" className="flex items-center gap-2">
               <Scroll size={18} />
               <span className="hidden sm:inline">Ledger</span>
@@ -208,6 +213,13 @@ function App() {
 
           <TabsContent value="ledger" className="space-y-6">
             <GlobalLedger
+              tokens={appState?.allTokens || []}
+              transactions={appState?.allTransactions || []}
+            />
+          </TabsContent>
+
+          <TabsContent value="treasury" className="space-y-6">
+            <TreasuryCharts
               tokens={appState?.allTokens || []}
               transactions={appState?.allTransactions || []}
             />

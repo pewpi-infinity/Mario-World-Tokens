@@ -1,5 +1,13 @@
 export type Denomination = 1 | 5 | 10 | 20 | 50 | 100
 
+export interface NoteProvenance {
+  artisticValue: number
+  historicalSignificance: number
+  famousMinter: boolean
+  uniqueDesign: boolean
+  culturalImpact: number
+}
+
 export interface MarioToken {
   id: string
   serialNumber: string
@@ -9,6 +17,7 @@ export interface MarioToken {
   location: string
   designNotes: string
   currentOwner: string
+  provenance?: NoteProvenance
 }
 
 export interface Transaction {
