@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Slider } from '@/components/ui/slider'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Label } from '@/components/ui/label'
@@ -24,7 +24,10 @@ import {
   Circle,
   Stack,
   Coin,
-  Infinity
+  Infinity,
+  Sparkle,
+  MagicWand,
+  Lightbulb
 } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { MarioCoin } from '@/lib/types'
@@ -70,6 +73,10 @@ export function UnifiedMusicStudio({ open, onClose, onMintMusic, currentUser }: 
   const [beatSequence, setBeatSequence] = useState<boolean[][]>(
     Array(8).fill(null).map(() => Array(16).fill(false))
   )
+  const [aiSuggestions, setAiSuggestions] = useState<string[]>([])
+  const [isAIGenerating, setIsAIGenerating] = useState(false)
+  const [musicStyle, setMusicStyle] = useState('electronic')
+  const [aiCompositionPrompt, setAiCompositionPrompt] = useState('')
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const audioChunksRef = useRef<Blob[]>([])
@@ -405,6 +412,148 @@ export function UnifiedMusicStudio({ open, onClose, onMintMusic, currentUser }: 
     ))
   }
 
+  const generateAIBeatPattern = async () => {
+    setIsAIGenerating(true)
+    try {
+      const prompt = spark.llmPrompt`You are a professional music producer AI. Generate a drum beat pattern for ${musicStyle} style music.
+      
+      Return a JSON object with:
+      - pattern: an 8x16 array of booleans where each row is a drum sound (kick, snare, hihat, clap, tom1, tom2, cymbal, perc) and each column is a step in the sequence
+      - description: a brief description of the beat pattern style
+      
+      Create a pattern that is musically interesting and fits the ${musicStyle} genre.`
+      
+      const response = await spark.llm(prompt, 'gpt-4o-mini', true)
+      const data = JSON.parse(response)
+      
+      if (data.pattern && Array.isArray(data.pattern)) {
+        setBeatSequence(data.pattern)
+        toast.success(`🎵 AI Generated ${musicStyle} Beat Pattern!`, {
+          description: data.description || 'Pattern loaded successfully'
+        })
+      }
+    } catch (error) {
+      toast.error('Failed to generate AI beat pattern')
+      console.error(error)
+    } finally {
+      setIsAIGenerating(false)
+    }
+  }
+
+  const getAIMusicSuggestions = async () => {
+    setIsAIGenerating(true)
+    try {
+      const activeInstruments = tracks.filter(t => t.enabled).map(t => t.instrument).join(', ')
+      const prompt = spark.llmPrompt`You are a professional music producer AI assistant. 
+      
+      The user is creating music with these instruments: ${activeInstruments}
+      Music style preference: ${musicStyle}
+      Recording duration: ${recordingTime} seconds
+      
+      Provide 3 creative suggestions to enhance their music production. Each suggestion should be specific, actionable, and inspiring.
+      
+      Return a JSON object with a "suggestions" property containing an array of 3 strings.`
+      
+      const response = await spark.llm(prompt, 'gpt-4o-mini', true)
+      const data = JSON.parse(response)
+      
+      if (data.suggestions && Array.isArray(data.suggestions)) {
+        setAiSuggestions(data.suggestions)
+        toast.success('🎨 AI Music Suggestions Ready!')
+      }
+    } catch (error) {
+      toast.error('Failed to get AI suggestions')
+      console.error(error)
+    } finally {
+      setIsAIGenerating(false)
+    }
+  }
+
+  const generateMelodyIdeas = async () => {
+    if (!aiCompositionPrompt.trim()) {
+      toast.error('Please describe what kind of melody you want')
+      return
+    }
+    
+    setIsAIGenerating(true)
+    try {
+      const prompt = spark.llmPrompt`You are a music composition AI. The user wants: "${aiCompositionPrompt}"
+      
+      Provide creative guidance for creating this melody, including:
+      - Suggested key and scale
+      - Chord progression (3-4 chords)
+      - Rhythm pattern suggestion
+      - Instrument recommendations
+      - Mood and feel tips
+      
+      Return a JSON object with these properties as strings or arrays.`
+      
+      const response = await spark.llm(prompt, 'gpt-4o-mini', true)
+      const data = JSON.parse(response)
+      
+      toast.success('🎹 Melody Ideas Generated!', {
+        description: `Key: ${data.key || 'C Major'} | ${data['chord progression']?.[0] || 'Creative ideas ready!'}`
+      })
+      
+      setAiSuggestions([
+        `🎵 Key/Scale: ${data.key || 'C Major'} - ${data.scale || 'Major scale'}`,
+        `🎸 Chords: ${Array.isArray(data['chord progression']) ? data['chord progression'].join(' → ') : 'I - IV - V - I'}`,
+        `🥁 Rhythm: ${data['rhythm pattern'] || 'Quarter note steady beat'}`,
+        `🎹 Instruments: ${Array.isArray(data['instrument recommendations']) ? data['instrument recommendations'].join(', ') : 'Piano, Drums'}`,
+        `✨ Mood: ${data['mood and feel tips'] || 'Energetic and uplifting'}`
+      ])
+    } catch (error) {
+      toast.error('Failed to generate melody ideas')
+      console.error(error)
+    } finally {
+      setIsAIGenerating(false)
+    }
+  }
+
+  const autoCompose = async () => {
+    setIsAIGenerating(true)
+    try {
+      const prompt = spark.llmPrompt`You are an AI music composer. Create a simple melody using piano frequencies.
+      
+      Generate a sequence of 16 notes for a ${musicStyle} style melody. Use these available notes:
+      C4 (261.63 Hz), D4 (293.66 Hz), E4 (329.63 Hz), F4 (349.23 Hz), G4 (392.00 Hz), A4 (440.00 Hz), B4 (493.88 Hz), C5 (523.25 Hz)
+      
+      Return a JSON object with:
+      - notes: array of 16 objects, each with {freq: number, duration: number (0.2-1.0 seconds)}
+      - title: a creative title for this melody
+      
+      Make it musically pleasing and appropriate for ${musicStyle} style.`
+      
+      const response = await spark.llm(prompt, 'gpt-4o-mini', true)
+      const data = JSON.parse(response)
+      
+      if (data.notes && Array.isArray(data.notes)) {
+        toast.success('🎼 Auto-Composing Melody...', {
+          description: data.title || 'AI Generated Composition'
+        })
+        
+        for (let i = 0; i < data.notes.length; i++) {
+          const note = data.notes[i]
+          setTimeout(() => {
+            playSound(note.freq, 'piano', note.duration || 0.5)
+          }, i * 500)
+        }
+        
+        setAiSuggestions([
+          `🎵 Composed: "${data.title || 'AI Melody'}"`,
+          `📝 ${data.notes.length} notes generated`,
+          `🎹 Style: ${musicStyle}`,
+          `💡 You can record this by clicking Record and playing it again!`
+        ])
+      }
+    } catch (error) {
+      toast.error('Failed to auto-compose')
+      console.error(error)
+    } finally {
+      setIsAIGenerating(false)
+    }
+  }
+
   return (
     <>
     <Dialog open={open} onOpenChange={onClose}>
@@ -543,7 +692,7 @@ export function UnifiedMusicStudio({ open, onClose, onMintMusic, currentUser }: 
 
           <div className="flex-1 w-full order-1 lg:order-2">
             <Tabs defaultValue="piano" className="h-full flex flex-col">
-              <TabsList className="grid grid-cols-5 w-full bg-[oklch(0.28_0.04_285)] mb-4 flex-shrink-0">
+              <TabsList className="grid grid-cols-6 w-full bg-[oklch(0.28_0.04_285)] mb-4 flex-shrink-0">
                 <TabsTrigger value="piano" className="data-[state=active]:bg-[oklch(0.75_0.18_85)] data-[state=active]:text-[oklch(0.15_0.02_280)] text-xs sm:text-sm">
                   🎹 <span className="hidden sm:inline">Piano</span>
                 </TabsTrigger>
@@ -558,6 +707,9 @@ export function UnifiedMusicStudio({ open, onClose, onMintMusic, currentUser }: 
                 </TabsTrigger>
                 <TabsTrigger value="visualizer" className="data-[state=active]:bg-[oklch(0.68_0.18_110)] data-[state=active]:text-white text-xs sm:text-sm">
                   📊 <span className="hidden sm:inline">Audio</span>
+                </TabsTrigger>
+                <TabsTrigger value="ai" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[oklch(0.70_0.24_190)] data-[state=active]:to-[oklch(0.75_0.18_85)] data-[state=active]:text-white text-xs sm:text-sm">
+                  ✨ <span className="hidden sm:inline">AI</span>
                 </TabsTrigger>
               </TabsList>
 
@@ -766,6 +918,136 @@ export function UnifiedMusicStudio({ open, onClose, onMintMusic, currentUser }: 
                           <Equalizer weight="fill" size={32} className="mx-auto mb-2 text-[oklch(0.65_0.15_155)]" />
                           <div className="text-sm text-[oklch(0.65_0.02_280)]">Frequency Data</div>
                         </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="ai" className="p-4 m-0">
+                  <Card className="bg-[oklch(0.25_0.03_285)] border-[oklch(0.35_0.05_285)]">
+                    <CardContent className="pt-6 space-y-6">
+                      <div className="text-center mb-6">
+                        <div className="inline-flex items-center gap-2 text-3xl mb-2">
+                          <Sparkle weight="fill" className="text-[oklch(0.75_0.18_85)] animate-pulse" />
+                          <h3 className="text-2xl font-bold text-[oklch(0.75_0.18_85)]">AI Music Assistant</h3>
+                          <MagicWand weight="fill" className="text-[oklch(0.70_0.24_190)] animate-pulse" />
+                        </div>
+                        <p className="text-[oklch(0.65_0.02_280)]">Let AI help you create amazing music!</p>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <Card className="bg-[oklch(0.18_0.02_280)] border-[oklch(0.35_0.05_285)]">
+                          <CardHeader>
+                            <CardTitle className="text-[oklch(0.75_0.18_85)] text-lg flex items-center gap-2">
+                              <Lightbulb weight="fill" />
+                              Music Style
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent className="space-y-3">
+                            <Label className="text-white">Choose Style for AI Generation</Label>
+                            <div className="grid grid-cols-2 gap-2">
+                              {['electronic', 'hip-hop', 'rock', 'jazz', 'classical', 'ambient'].map(style => (
+                                <Button
+                                  key={style}
+                                  onClick={() => setMusicStyle(style)}
+                                  variant={musicStyle === style ? 'default' : 'outline'}
+                                  size="sm"
+                                  className={musicStyle === style ? 'bg-[oklch(0.75_0.18_85)] text-[oklch(0.15_0.02_280)]' : 'border-[oklch(0.35_0.05_285)]'}
+                                >
+                                  {style.charAt(0).toUpperCase() + style.slice(1)}
+                                </Button>
+                              ))}
+                            </div>
+                          </CardContent>
+                        </Card>
+
+                        <Card className="bg-[oklch(0.18_0.02_280)] border-[oklch(0.35_0.05_285)]">
+                          <CardHeader>
+                            <CardTitle className="text-[oklch(0.75_0.18_85)] text-lg flex items-center gap-2">
+                              <MagicWand weight="fill" />
+                              AI Actions
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent className="space-y-2">
+                            <Button
+                              onClick={generateAIBeatPattern}
+                              disabled={isAIGenerating}
+                              className="w-full bg-[oklch(0.58_0.24_330)] hover:bg-[oklch(0.63_0.26_330)] text-white"
+                            >
+                              {isAIGenerating ? '🎲 Generating...' : '🥁 Generate Beat Pattern'}
+                            </Button>
+                            <Button
+                              onClick={getAIMusicSuggestions}
+                              disabled={isAIGenerating}
+                              className="w-full bg-[oklch(0.70_0.24_190)] hover:bg-[oklch(0.75_0.24_190)] text-white"
+                            >
+                              {isAIGenerating ? '💭 Thinking...' : '💡 Get Music Suggestions'}
+                            </Button>
+                            <Button
+                              onClick={autoCompose}
+                              disabled={isAIGenerating}
+                              className="w-full bg-gradient-to-r from-[oklch(0.75_0.18_85)] to-[oklch(0.70_0.24_190)] text-[oklch(0.15_0.02_280)]"
+                            >
+                              {isAIGenerating ? '🎼 Composing...' : '🎹 Auto-Compose Melody'}
+                            </Button>
+                          </CardContent>
+                        </Card>
+                      </div>
+
+                      <Card className="bg-[oklch(0.18_0.02_280)] border-[oklch(0.35_0.05_285)]">
+                        <CardHeader>
+                          <CardTitle className="text-[oklch(0.75_0.18_85)] text-lg flex items-center gap-2">
+                            <Sparkle weight="fill" />
+                            Melody Generator
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                          <Label className="text-white">Describe what you want to create:</Label>
+                          <Input
+                            value={aiCompositionPrompt}
+                            onChange={(e) => setAiCompositionPrompt(e.target.value)}
+                            placeholder="e.g., 'upbeat dance melody' or 'calm piano piece'"
+                            className="bg-[oklch(0.15_0.02_280)] border-[oklch(0.35_0.05_285)] text-white"
+                          />
+                          <Button
+                            onClick={generateMelodyIdeas}
+                            disabled={isAIGenerating || !aiCompositionPrompt.trim()}
+                            className="w-full bg-[oklch(0.65_0.15_155)] hover:bg-[oklch(0.70_0.15_155)] text-white"
+                          >
+                            {isAIGenerating ? '✨ Generating Ideas...' : '✨ Generate Melody Ideas'}
+                          </Button>
+                        </CardContent>
+                      </Card>
+
+                      {aiSuggestions.length > 0 && (
+                        <Card className="bg-gradient-to-br from-[oklch(0.22_0.03_285)] to-[oklch(0.18_0.02_290)] border-2 border-[oklch(0.75_0.18_85)]">
+                          <CardHeader>
+                            <CardTitle className="text-[oklch(0.75_0.18_85)] text-lg flex items-center gap-2">
+                              <Sparkle weight="fill" className="animate-pulse" />
+                              AI Suggestions
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <ScrollArea className="h-64">
+                              <div className="space-y-3">
+                                {aiSuggestions.map((suggestion, index) => (
+                                  <div
+                                    key={index}
+                                    className="p-4 bg-[oklch(0.15_0.02_280)] rounded-lg border border-[oklch(0.35_0.05_285)] hover:border-[oklch(0.75_0.18_85)] transition-colors"
+                                  >
+                                    <p className="text-white text-sm leading-relaxed">{suggestion}</p>
+                                  </div>
+                                ))}
+                              </div>
+                            </ScrollArea>
+                          </CardContent>
+                        </Card>
+                      )}
+
+                      <div className="text-center pt-4">
+                        <p className="text-[oklch(0.65_0.02_280)] text-sm">
+                          💡 Use AI to generate beats, get creative suggestions, and compose melodies automatically!
+                        </p>
                       </div>
                     </CardContent>
                   </Card>
