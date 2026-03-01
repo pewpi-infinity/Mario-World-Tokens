@@ -6,6 +6,7 @@ import { Slider } from '@/components/ui/slider'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
+import { Switch } from '@/components/ui/switch'
 import { 
   Play, 
   Pause, 
@@ -16,13 +17,32 @@ import {
   MusicNotes,
   PianoKeys,
   SpeakerHigh,
-  Equalizer
+  Equalizer,
+  Guitar,
+  Microphone,
+  Circle,
+  Stack
 } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 
 interface AdvancedMusicStudioProps {
   open: boolean
   onClose: () => void
+  onSaveToToken?: (audioBlob: Blob, metadata: RecordingMetadata) => void
+}
+
+interface RecordingMetadata {
+  title: string
+  artist: string
+  duration: number
+  timestamp: number
+  tracks: TrackInfo[]
+}
+
+interface TrackInfo {
+  name: string
+  instrument: string
+  enabled: boolean
 }
 
 interface DrumPad {
@@ -38,7 +58,14 @@ interface BeatStep {
   active: boolean
 }
 
-export function AdvancedMusicStudio({ open, onClose }: AdvancedMusicStudioProps) {
+interface InstrumentNote {
+  note: string
+  freq: number
+  key: string
+  white?: boolean
+}
+
+export function AdvancedMusicStudio({ open, onClose, onSaveToToken }: AdvancedMusicStudioProps) {
   const [isRecording, setIsRecording] = useState(false)
   const [recordingTime, setRecordingTime] = useState(0)
   const [recordedAudio, setRecordedAudio] = useState<Blob | null>(null)

@@ -12,7 +12,7 @@ import { TokenCard } from '@/components/TokenCard'
 import { Marketplace } from '@/components/Marketplace'
 import { MarioActionButtons } from '@/components/MarioActionButtons'
 import { MarioLogo } from '@/components/MarioLogo'
-import { AdvancedMusicStudio } from '@/components/AdvancedMusicStudio'
+import { UnifiedMusicStudio } from '@/components/UnifiedMusicStudio'
 import { MarioArtStudio } from '@/components/MarioArtStudio'
 import { MarioRaceTrack } from '@/components/MarioRaceTrack'
 import { MarioCoin, TreasuryStats } from '@/lib/types'
@@ -256,9 +256,11 @@ function App() {
         currentUser={currentUser}
       />
 
-      <AdvancedMusicStudio
+      <UnifiedMusicStudio
         open={showMusicStudio}
         onClose={() => setShowMusicStudio(false)}
+        onMintMusic={handleMint}
+        currentUser={currentUser}
       />
 
       <MarioArtStudio
