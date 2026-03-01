@@ -1,160 +1,151 @@
 # Planning Guide
 
-A decentralized digital currency platform that enables authorized minters to produce serial-numbered Mario Tokens (Federal Reserve Notes) with fixed denominations ($1, $5, $10, $20, $50, $100), while providing transparent wallet management and transaction tracking through GitHub integration.
+A playful photo manipulation app that transforms the iconic pixelated Mario image with creative effects, filters, and retro gaming aesthetics.
 
-**Experience Qualities**:
-1. **Trustworthy** - Every token is uniquely serial-numbered and all transactions are permanently recorded, creating an immutable audit trail that builds confidence
-2. **Accessible** - Any GitHub user can receive and manage tokens without premium subscriptions, making financial participation barrier-free
-3. **Official** - The minting process mirrors Federal Reserve operations with professional styling, serial numbers, and production metadata that gives each token authentic gravitas
+**Experience Qualities**: 
+1. **Nostalgic** - Evokes memories of classic 8-bit gaming through pixel-perfect aesthetics and retro sound effects
+2. **Playful** - Encourages experimentation with whimsical effects and instant visual feedback 
+3. **Creative** - Empowers users to transform the image in surprising and delightful ways
 
-**Complexity Level**: Complex Application (advanced functionality, likely with multiple views)
-This requires multi-role authentication (minters vs. users), token generation with unique serial numbers, wallet management, transaction history, GitHub user integration, and transparent ledger tracking across the entire economy.
+**Complexity Level**: Light Application (multiple features with basic state)
+- This is a focused creative tool with multiple transformation options, filter controls, and save/export capabilities. It goes beyond single-purpose but doesn't require complex multi-view navigation or advanced state management.
 
 ## Essential Features
 
-### Token Minting (Minter Role Only)
-- **Functionality**: Authorized minters can create new tokens in standard denominations with unique serial numbers, location stamps, and design notes
-- **Purpose**: Establishes controlled token production similar to Federal Reserve operations, preventing counterfeiting while allowing economic expansion
-- **Trigger**: Minter clicks "Mint New Token" button
-- **Progression**: Select denomination → Auto-generate serial number → Enter location/design notes → Review token preview → Confirm minting → Token created and added to minter's distribution pool
-- **Success criteria**: Token appears in system with unique serial number, all metadata recorded, ready for distribution
+### Photo Display & Preview
+- **Functionality**: Displays the uploaded Mario image prominently with real-time effect previews
+- **Purpose**: Serves as the canvas for all creative transformations
+- **Trigger**: Loads automatically on app initialization
+- **Progression**: App loads → Image displays in center → Effects apply in real-time → Preview updates instantly
+- **Success criteria**: Image renders clearly, effects apply smoothly without lag, transformations are immediately visible
 
-### Token Distribution
-- **Functionality**: Minters can transfer tokens from their pool to any GitHub user's wallet
-- **Purpose**: Circulates currency into the economy by getting tokens to end users
-- **Trigger**: Minter enters recipient's GitHub username and selects tokens to send
-- **Progression**: Enter recipient username → Select tokens from available pool → Review transfer → Confirm → Tokens move to recipient's wallet → Transaction recorded
-- **Success criteria**: Recipient sees tokens in their wallet, transaction appears in both parties' history and global ledger
+### Retro Filters
+- **Functionality**: Apply vintage gaming-inspired filters (CRT scan lines, VHS glitch, color palettes from classic consoles)
+- **Purpose**: Enhances the nostalgic 8-bit aesthetic with period-appropriate visual treatments
+- **Trigger**: User selects filter from preset gallery
+- **Progression**: User browses filter thumbnails → Clicks filter → Preview updates → Can toggle intensity → Apply or reset
+- **Success criteria**: At least 6 distinct filters, smooth transitions, ability to adjust intensity, clear before/after comparison
 
-### Personal Wallet
-- **Functionality**: Users view their token balance, individual token details (serial numbers, denomination, minting history), and can transfer tokens to other users
-- **Purpose**: Provides ownership management and transaction capabilities for all participants
-- **Trigger**: User logs in with GitHub authentication
-- **Progression**: GitHub login → View wallet balance → Explore individual tokens → Initiate transfer → Enter recipient → Select tokens → Confirm → Transaction complete
-- **Success criteria**: Balance updates in real-time, all tokens traceable to origin, transfers execute successfully
+### Pixel Art Tools
+- **Functionality**: Pixelation controls, color reduction, dithering effects, edge detection for pixel art enhancement
+- **Purpose**: Celebrates and enhances the pixel art nature of the source image
+- **Trigger**: User adjusts sliders in pixel tools panel
+- **Progression**: User opens pixel panel → Adjusts pixelation level → Modifies color depth → Applies dithering → Sees real-time preview
+- **Success criteria**: Smooth slider controls, values from subtle to extreme, maintains image recognizability
 
-### Global Transaction Ledger
-- **Functionality**: Public view of all minted tokens, their current owners, and complete transaction history
-- **Purpose**: Creates transparency and prevents fraud by making all economic activity visible
-- **Trigger**: User navigates to "Ledger" tab
-- **Progression**: View all tokens → Filter by serial number, denomination, or owner → Trace token's complete journey from minting to current holder
-- **Success criteria**: Every token and transaction visible, searchable, and traceable to source
+### Color Transformations
+- **Functionality**: Hue shifting, saturation boost/reduction, palette swaps (fire Mario, Luigi, etc.)
+- **Purpose**: Allows creative recoloring and character variations
+- **Trigger**: User selects color tool or preset palette
+- **Progression**: User opens color panel → Adjusts hue/saturation sliders OR selects preset → Preview updates → Save preferred look
+- **Success criteria**: Accurate color transformations, preset palettes for classic Mario variations, RGB/HSL controls
 
-### Token Authentication & Rarity
-- **Functionality**: Each token displays its unique serial number, minting location, design notes, and creation timestamp
-- **Purpose**: Enables collector value for rare serial numbers (repeating digits, sequential patterns, historic dates) while preventing duplication
-- **Trigger**: User clicks on any token to view details
-- **Progression**: Select token → View serial number, denomination, minting metadata → See complete ownership history → Identify potential collector value
-- **Success criteria**: All metadata displayed, no duplicate serials possible, rare patterns identifiable
+### Stickers & Overlays
+- **Functionality**: Add retro gaming elements (coins, stars, power-ups, text overlays, pixel borders)
+- **Purpose**: Enables creative composition and personalization
+- **Trigger**: User clicks sticker button
+- **Progression**: User opens sticker panel → Browses categories → Clicks to add → Drag to position → Scale/rotate → Delete if needed
+- **Success criteria**: Minimum 12 stickers, drag-and-drop positioning, resize handles, layering controls
 
-### AI-Powered Minting Strategy Recommendations
-- **Functionality**: Analyzes current token distribution, market conditions, and historical patterns to provide intelligent minting recommendations
-- **Purpose**: Helps minters make informed decisions about what denominations to mint based on circulation needs, user demand patterns, and economic balance
-- **Trigger**: Minter views the minting interface
-- **Progression**: System analyzes current state → AI generates recommendations with reasoning → Displays suggested denominations, quantities, and strategic insights → Minter can follow or override suggestions
-- **Success criteria**: Recommendations appear within 2 seconds, provide clear rationale, adapt to changing conditions, lead to more balanced token economy
+### Save & Export
+- **Functionality**: Download edited image as PNG, copy to clipboard, save editing state
+- **Purpose**: Allows users to keep and share their creations
+- **Trigger**: User clicks save/download button
+- **Progression**: User finalizes edits → Clicks export → Chooses format → Image downloads OR copies to clipboard → Success confirmation
+- **Success criteria**: High-quality export, preserves pixel crispness, filename includes timestamp
 
 ## Edge Case Handling
-- **Duplicate Serial Numbers**: System generates cryptographically unique serials and validates before minting
-- **Offline Minting**: All transactions queue until GitHub sync available, preventing data loss
-- **Non-existent Recipients**: Transfer validates GitHub username existence before allowing completion
-- **Minter Authorization**: Only explicitly approved GitHub users can access minting interface
-- **Token Deletion**: Tokens cannot be destroyed, only transferred, maintaining economic stability
-- **Lost Wallets**: User's GitHub account is the recovery mechanism; tokens persist tied to username
+
+- **No image loaded**: Display placeholder with prompt to upload (though initial version has hardcoded image)
+- **Extreme filter combinations**: Gracefully handle performance issues, disable conflicting effects with helpful tooltip
+- **Mobile viewport**: Collapse tool panels into drawer, make touch-friendly controls for sticker manipulation
+- **Large sticker count**: Limit to 20 active stickers with visual indicator when approaching limit
+- **Export failures**: Show error toast with retry option, fallback to canvas right-click save
 
 ## Design Direction
-The design should evoke a vibrant, playful Mario-themed aesthetic that makes financial transactions feel joyful and game-like, while maintaining the professionalism of a currency system. Think Super Mario World meets Federal Reserve - bright primary colors, animated characters presenting data, coin-collecting excitement, and a nostalgic retro gaming feel with modern polish.
+
+The design should feel like stepping into a retro arcade - vibrant neon colors against dark backgrounds, chunky pixel fonts, and UI elements that echo classic game cartridges and CRT monitors. Every interaction should spark joy through micro-animations, satisfying clicks, and immediate visual feedback.
 
 ## Color Selection
-A bold, saturated Mario-inspired palette featuring red, yellow, blue, and green as primary accent colors, set against a rich blue background reminiscent of Mario's sky levels.
 
-- **Primary Color**: Mario Red (oklch(0.55 0.24 30)) - Main brand color for important actions and minting features, communicates energy and excitement like collecting coins
-- **Secondary Color**: Luigi Green (oklch(0.45 0.18 145)) - Supporting color for treasury and balance displays, represents growth and the classic Luigi aesthetic
-- **Accent Color**: Coin Yellow (oklch(0.75 0.20 85)) - Attention-grabbing highlight for valuable items, CTAs, and currency elements with a golden coin shimmer
-- **Background**: Sky Blue (oklch(0.55 0.08 245)) - Main page background with subtle gradient overlays creating a Mario sky atmosphere
-- **Card Background**: Brick Orange (oklch(0.60 0.10 25)) - Card containers with warmth reminiscent of Mario's brick blocks
+A bold, saturated color scheme inspired by arcade cabinets and 80s/90s gaming culture.
+
+- **Primary Color**: `oklch(0.58 0.24 330)` - Hot Pink/Magenta - The energetic accent color of arcade neon signs, used for primary CTAs and active states
+- **Secondary Colors**: 
+  - `oklch(0.65 0.25 265)` - Electric Purple - Supporting UI elements and secondary buttons
+  - `oklch(0.70 0.24 190)` - Cyan Blue - Informational elements and hover states
+- **Accent Color**: `oklch(0.80 0.20 85)` - Neon Yellow - Attention-grabbing highlights for tool selections and active filters
 - **Foreground/Background Pairings**:
-  - Accent (Coin Yellow): Dark Brown text - Ratio 5.2:1 ✓
-  - Primary (Mario Red): White text - Ratio 5.8:1 ✓
-  - Secondary (Luigi Green): White text - Ratio 6.4:1 ✓
-  - Background (Sky Blue): White text - Ratio 4.6:1 ✓
-  - Card (Brick Orange): White text - Ratio 4.9:1 ✓
+  - Background (Deep Space) `oklch(0.15 0.02 280)`: White text `oklch(0.98 0 0)` - Ratio 12.5:1 ✓
+  - Card (Elevated Dark) `oklch(0.22 0.03 285)`: Light Gray `oklch(0.92 0.01 280)` - Ratio 10.8:1 ✓
+  - Primary (Hot Pink) `oklch(0.58 0.24 330)`: White `oklch(0.98 0 0)` - Ratio 5.2:1 ✓
+  - Accent (Neon Yellow) `oklch(0.80 0.20 85)`: Black `oklch(0.15 0.02 280)` - Ratio 9.1:1 ✓
 
 ## Font Selection
-Typography should convey official documentation and financial precision with a monospace font for serial numbers and a serious serif for denominations.
 
-- **Typographic Hierarchy**:
-  - H1 (Page Titles): Crimson Pro Bold/36px/tight tracking - Official government document feel
-  - H2 (Section Headers): Crimson Pro SemiBold/24px/normal tracking
-  - H3 (Token Denominations): Crimson Pro Bold/20px/wide tracking - Makes denominations prominent
-  - Body Text: Inter Regular/16px/1.5 line height
-  - Serial Numbers: JetBrains Mono Medium/14px/tracked spacing - Monospace for authenticity
-  - Metadata: Inter Regular/14px/muted color
-  - Button Labels: Inter SemiBold/16px/uppercase tracking
+Typefaces should bridge retro gaming aesthetics with modern readability - chunky and bold for headings, clean and technical for controls.
+
+- **Typographic Hierarchy**: 
+  - H1 (App Title): Press Start 2P Bold / 32px / wide letter spacing (0.1em) - Authentic pixel game font for main branding
+  - H2 (Section Headers): Space Grotesk Bold / 24px / tight tracking (-0.02em) - Modern geometric font with retro tech feel
+  - Body (Controls/Labels): JetBrains Mono Medium / 14px / normal spacing - Monospace for that console/debug aesthetic
+  - Buttons: Space Grotesk SemiBold / 16px / uppercase / letter-spacing 0.05em - Clear, confident action labels
 
 ## Animations
-Animations should bring the Mario universe to life with bouncy, energetic movements and character-driven interactions. Mario and Luigi act as AI guides presenting data with personality.
 
-- Token minting: Coin-flip animation with bounce and sparkle effect (500ms)
-- Balance updates: Coin-counting animation with Mario coin sound aesthetic
-- Token transfers: Tokens hop from sender to recipient with arc motion (400ms)
-- Mario & Luigi characters: Gentle floating animation (infinite loop, 2s cycle) with occasional idle animations
-- Chart reveals: Staggered bar growth with playful spring physics (300ms per bar with 50ms delay)
-- Hover states: Subtle lift with shadow expansion (150ms) like Mario jumping
-- Rare token sparkle: Continuous twinkle animation with rotating sparkles
-- Tab transitions: Slide in from direction with slight overshoot bounce (250ms)
+Animations should feel snappy and game-like - no slow, organic easing. Think instant reactions, pop-in effects, and satisfying micro-interactions that reward every click.
+
+- Sticker placement: Scale-up pop (0 → 1.1 → 1) with slight rotation wobble in 200ms
+- Filter application: Quick flash overlay (100ms) followed by cross-fade transition
+- Button interactions: Immediate scale down on press (0.95), bounce back with slight overshoot
+- Tool panel transitions: Slide-in from edge with elastic easing, 300ms
+- Success states: Celebratory particle burst effect for save/export actions
 
 ## Component Selection
 
 - **Components**:
-  - `Card` - Token displays, wallet summaries, minting interface (modified with border-2 and shadow-lg for substantial feel)
-  - `Dialog` - Minting confirmation, transfer modals, token detail views
-  - `Table` - Global ledger, transaction history with striped rows
-  - `Tabs` - Navigation between Wallet, Mint, Ledger, History
-  - `Input` - GitHub username entry, search fields (with green focus rings)
-  - `Select` - Denomination picker for minting
-  - `Button` - Primary actions in green, secondary in blue, destructive unused (no deletion allowed)
-  - `Badge` - Denomination labels ($1, $5, etc.) with color coding
-  - `Avatar` - GitHub user profile pictures in wallet/ledger
-  - `ScrollArea` - Long token lists and transaction histories
-  - `Separator` - Visual breaks between major sections
-  - `Tooltip` - Explanatory text for serial number patterns, collector value
+  - Dialog for export options with format selection and quality settings
+  - Slider for all intensity/value controls (pixelation, color shifts, filter strength)
+  - Tabs for organizing tool categories (Filters, Colors, Pixels, Stickers)
+  - Card for displaying the main image canvas with border/shadow for depth
+  - Button variants for primary (save), secondary (reset), and ghost (tool toggles)
+  - Badge for active filter indicators and sticker count
+  - Tooltip for explaining advanced controls on hover
+  - ScrollArea for sticker/filter galleries when content exceeds viewport
+  - Separator between tool sections for visual organization
 
 - **Customizations**:
-  - Custom token card component with watermark-style background pattern (repeating dollar signs in subtle texture)
-  - Serial number component with monospace font and subtle highlight for rare patterns
-  - Balance display component that shows total value and breakdown by denomination
-  - Transaction timeline component showing token journey with connecting lines
+  - Custom Canvas component with touch/drag handlers for sticker manipulation
+  - Pixel-perfect grid overlay toggle for alignment assistance
+  - Custom color picker with gaming palette presets
+  - Filter thumbnail previews showing actual effect on mini Mario
 
 - **States**:
-  - Buttons: Solid fill on default, subtle scale on hover (1.02), pressed state with inner shadow, disabled with opacity
-  - Inputs: Thin border default, thick green border on focus, error state with red border
-  - Token cards: Flat default, elevated shadow on hover, selected state with green outline
-  - Transfer actions: Loading spinner during GitHub sync, success checkmark with green pulse
+  - Buttons: Default has neon glow border, hover intensifies glow, active scales down with satisfying click
+  - Sliders: Track glows with accent color, thumb is oversized circle with inner shadow
+  - Tool panels: Active tool highlighted with accent border-left, inactive are muted
+  - Stickers: Selected has dashed outline with corner handles, unselected is transparent overlay on hover
 
 - **Icon Selection**:
-  - `Coins` - Wallet balance, token overview
-  - `Printer` - Minting interface
-  - `ArrowsLeftRight` - Transfers and transactions
-  - `ListNumbers` - Serial numbers, ledger entries
-  - `Scroll` - Transaction history, ledger
-  - `Seal` - Minter authorization badge
-  - `MapPin` - Token minting location
-  - `Sparkle` - Rare serial number indicator
-  - `User` - GitHub user identification
-  - `Check` - Transaction confirmation
+  - Sparkles for filters/effects
+  - Palette for color tools
+  - GridFour for pixelation
+  - Sticker for overlay panel
+  - FloppyDisk for save (retro!)
+  - Download for export
+  - ArrowCounterClockwise for reset
+  - Play for preview toggle
 
 - **Spacing**:
-  - Section padding: p-8 (desktop), p-4 (mobile)
-  - Card padding: p-6
-  - Element gaps: gap-4 for related items, gap-8 for major sections
-  - Grid layouts: grid-cols-1 (mobile), grid-cols-2 (tablet), grid-cols-3 (desktop) for token displays
-  - List spacing: space-y-3 for transaction entries
+  - Tool panels: p-6 with gap-4 between control groups
+  - Button groups: gap-3 for related actions
+  - Main canvas: mx-auto with max-w-4xl, my-8
+  - Section headers: mb-4
+  - Inline controls: gap-2 for label + input pairs
 
 - **Mobile**:
-  - Tabs collapse to dropdown menu on mobile
-  - Token cards stack vertically in single column
-  - Table becomes card-based list with key information prioritized
-  - Minting interface becomes multi-step wizard instead of single form
-  - Transfer dialog uses full-screen overlay on small screens
-  - Serial numbers wrap gracefully with preserved monospace alignment
+  - Tool panels collapse into bottom sheet drawer (pulled up from bottom)
+  - Canvas takes full width with touch-zoom enabled
+  - Sticker controls switch to single-finger drag, two-finger pinch-rotate-scale
+  - Filter gallery becomes horizontal scroll strip
+  - Export menu simplified to essential options only

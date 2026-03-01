@@ -1,300 +1,210 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useKV } from '@github/spark/hooks'
-import { MarioToken, Transaction, AppState } from '@/lib/types'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Seal, Coins, Printer, Scroll, ChartBar } from '@phosphor-icons/react'
-import { WalletBalance } from '@/components/WalletBalance'
-import { TokenCard } from '@/components/TokenCard'
-import { MintingInterface } from '@/components/MintingInterface'
-import { TransferDialog } from '@/components/TransferDialog'
-import { GlobalLedger } from '@/components/GlobalLedger'
-import { TokenDetailDialog } from '@/components/TokenDetailDialog'
-import { TreasuryCharts } from '@/components/TreasuryCharts'
-import { AutoAssessment } from '@/components/AutoAssessment'
+import { Button } from '@/components/ui/button'
+import { Sparkle, Palette, GridFour, Sticker, FloppyDisk, Download, ArrowCounterClockwise } from '@phosphor-icons/react'
+import { ImageCanvas } from '@/components/ImageCanvas'
+import { FilterPanel } from '@/components/FilterPanel'
+import { ColorPanel } from '@/components/ColorPanel'
+import { PixelPanel } from '@/components/PixelPanel'
+import { StickerPanel } from '@/components/StickerPanel'
+import { EditorState } from '@/lib/types'
 import { Toaster } from '@/components/ui/sonner'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { motion } from 'framer-motion'
+import { toast } from 'sonner'
+import marioImage from '@/assets/images/Screenshot_20260225-192747.png'
+
+const defaultState: EditorState = {
+  filter: { type: 'none', intensity: 50 },
+  color: { palette: 'original', hue: 0, saturation: 100, brightness: 100 },
+  pixel: { pixelation: 0, colorDepth: 100, dithering: 0 },
+  stickers: []
+}
 
 function App() {
-  const [user, setUser] = useState<{ login: string; avatarUrl: string } | null>(null)
-  const [appState, setAppState] = useKV<AppState>('mario-tokens-state', {
-    allTokens: [],
-    allTransactions: [],
-    minters: [],
-  })
-  const [selectedToken, setSelectedToken] = useState<MarioToken | null>(null)
-  const [detailDialogOpen, setDetailDialogOpen] = useState(false)
+  const [editorState, setEditorState] = useKV<EditorState>('pixel-perfect-state', defaultState)
+  const [activeTab, setActiveTab] = useState('filters')
+  
+  const state = editorState || defaultState
 
-  useEffect(() => {
-    const loadUser = async () => {
-      const userData = await window.spark.user()
-      if (!userData) return
-      
-      setUser(userData)
-      
-      if (userData.isOwner) {
-        setAppState((currentState) => {
-          const state = currentState || { allTokens: [], allTransactions: [], minters: [] }
-          if (!state.minters.includes(userData.login)) {
-            return {
-              ...state,
-              minters: [...state.minters, userData.login]
-            }
-          }
-          return state
-        })
-      }
+  const handleReset = () => {
+    setEditorState(defaultState)
+    toast.success('Editor reset to defaults')
+  }
+
+  const handleSave = () => {
+    toast.success('Editor state saved!', {
+      description: 'Your edits are automatically saved'
+    })
+  }
+
+  const handleExport = () => {
+    const canvas = document.querySelector('canvas')
+    if (canvas) {
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const url = URL.createObjectURL(blob)
+          const a = document.createElement('a')
+          a.href = url
+          a.download = `mario-edit-${Date.now()}.png`
+          a.click()
+          URL.revokeObjectURL(url)
+          toast.success('Image downloaded!', {
+            description: 'Check your downloads folder'
+          })
+        }
+      })
     }
-    loadUser()
-  }, [setAppState])
-
-  useEffect(() => {
-    const debugState = async () => {
-      const keys = await window.spark.kv.keys()
-      console.log('KV Keys:', keys)
-      const state = await window.spark.kv.get<AppState>('mario-tokens-state')
-      console.log('Current State:', state)
-      console.log('Total Tokens:', state?.allTokens?.length || 0)
-      console.log('Total Transactions:', state?.allTransactions?.length || 0)
-    }
-    debugState()
-    const interval = setInterval(debugState, 10000)
-    return () => clearInterval(interval)
-  }, [])
-
-  const isMinter = user && appState && appState.minters.includes(user.login)
-  const userTokens = appState ? appState.allTokens.filter(token => token.currentOwner === user?.login) : []
-
-  const handleMint = (newToken: MarioToken) => {
-    setAppState((currentState) => {
-      const state = currentState || { allTokens: [], allTransactions: [], minters: [] }
-      return {
-        ...state,
-        allTokens: [...state.allTokens, newToken]
-      }
-    })
-  }
-
-  const handleTransfer = (tokenIds: string[], recipient: string) => {
-    const timestamp = Date.now()
-    const newTransactions: Transaction[] = tokenIds.map(tokenId => {
-      const token = appState!.allTokens.find(t => t.id === tokenId)!
-      return {
-        id: `tx-${timestamp}-${tokenId}`,
-        tokenId,
-        from: user!.login,
-        to: recipient,
-        timestamp,
-        serialNumber: token.serialNumber,
-        denomination: token.denomination,
-      }
-    })
-
-    setAppState((currentState) => {
-      const state = currentState || { allTokens: [], allTransactions: [], minters: [] }
-      return {
-        ...state,
-        allTokens: state.allTokens.map(token =>
-          tokenIds.includes(token.id)
-            ? { ...token, currentOwner: recipient }
-            : token
-        ),
-        allTransactions: [...state.allTransactions, ...newTransactions]
-      }
-    })
-  }
-
-  const handleTokenClick = (token: MarioToken) => {
-    setSelectedToken(token)
-    setDetailDialogOpen(true)
-  }
-
-  const handleProvenanceUpdate = (tokenId: string, provenance: any) => {
-    setAppState((currentState) => {
-      const state = currentState || { allTokens: [], allTransactions: [], minters: [] }
-      return {
-        ...state,
-        allTokens: state.allTokens.map(token =>
-          token.id === tokenId
-            ? { ...token, provenance }
-            : token
-        )
-      }
-    })
-  }
-
-  if (!user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-lg text-muted-foreground">Loading...</div>
-        </div>
-      </div>
-    )
   }
 
   return (
-    <div className="min-h-screen mario-bg">
-      <header className="border-b-4 border-accent bg-gradient-to-r from-primary via-[oklch(0.55_0.30_30)] to-primary shadow-2xl relative overflow-hidden">
+    <div className="min-h-screen bg-background text-foreground">
+      <header className="border-b-4 border-primary bg-gradient-to-r from-primary via-secondary to-primary relative overflow-hidden">
         <div className="absolute inset-0 bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,oklch(1_0_0_/_0.05)_10px,oklch(1_0_0_/_0.05)_20px)]"></div>
-        <div className="container mx-auto px-4 py-5 md:px-8 relative z-10">
+        <div className="container mx-auto px-4 py-6 relative z-10">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <motion.div
-                animate={{ 
-                  rotate: [0, 10, -10, 10, 0],
-                  y: [0, -5, 0, -5, 0]
-                }}
-                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                className="bg-accent p-4 rounded-2xl shadow-2xl border-4 border-white/30"
-              >
-                <Coins size={48} className="text-accent-foreground drop-shadow-lg" weight="fill" />
-              </motion.div>
+              <div className="bg-accent p-3 rounded-lg arcade-pulse">
+                <Sparkle size={40} className="text-accent-foreground" weight="fill" />
+              </div>
               <div>
-                <h1 className="text-4xl md:text-5xl font-bold font-serif text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.4)] tracking-tight">
-                  Mario Tokens
+                <h1 className="text-3xl md:text-4xl font-bold text-white drop-shadow-lg pixel-font">
+                  PIXEL PERFECT
                 </h1>
-                <p className="text-base md:text-lg text-accent font-bold drop-shadow-md">Federal Reserve Notes 🍄⭐</p>
+                <p className="text-sm md:text-base text-accent font-semibold drop-shadow">
+                  Mario Photo Editor 🎮
+                </p>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              {isMinter && (
-                <Badge className="hidden md:flex items-center gap-2 bg-accent text-accent-foreground border-3 border-accent-foreground/30 text-base px-4 py-2 shadow-lg">
-                  <Seal size={20} weight="fill" />
-                  Authorized Minter
-                </Badge>
-              )}
-              <motion.div
-                whileHover={{ scale: 1.08, rotate: 5 }}
-                whileTap={{ scale: 0.92 }}
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleReset}
+                className="border-accent text-accent hover:bg-accent hover:text-accent-foreground"
               >
-                <Avatar className="ring-4 ring-accent shadow-2xl w-14 h-14">
-                  <AvatarImage src={user.avatarUrl} alt={user.login} />
-                  <AvatarFallback className="bg-secondary text-secondary-foreground text-xl font-bold">{user.login[0].toUpperCase()}</AvatarFallback>
-                </Avatar>
-              </motion.div>
-              <div className="hidden md:block text-white">
-                <div className="font-bold text-lg drop-shadow">{user.login}</div>
-                <div className="text-sm text-accent/90 drop-shadow">@{user.login}</div>
-              </div>
+                <ArrowCounterClockwise size={20} weight="bold" />
+                <span className="hidden md:inline ml-2">Reset</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleSave}
+                className="border-cyan text-cyan hover:bg-cyan hover:text-background"
+              >
+                <FloppyDisk size={20} weight="fill" />
+                <span className="hidden md:inline ml-2">Save</span>
+              </Button>
+              <Button
+                size="sm"
+                onClick={handleExport}
+                className="bg-accent text-accent-foreground hover:bg-accent/90"
+              >
+                <Download size={20} weight="bold" />
+                <span className="hidden md:inline ml-2">Export</span>
+              </Button>
             </div>
           </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8 md:px-8">
-        <Tabs defaultValue="wallet" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:w-auto bg-card/95 backdrop-blur border-3 border-accent/30 p-1.5 shadow-xl">
-            <TabsTrigger 
-              value="wallet" 
-              className="flex items-center gap-2 data-[state=active]:bg-gradient-to-br data-[state=active]:from-accent data-[state=active]:to-[oklch(0.75_0.22_90)] data-[state=active]:text-accent-foreground data-[state=active]:shadow-lg font-semibold transition-all"
-            >
-              <Coins size={20} weight="fill" />
-              <span className="hidden sm:inline">Wallet</span>
-            </TabsTrigger>
-            {isMinter && (
-              <TabsTrigger 
-                value="mint" 
-                className="flex items-center gap-2 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-[oklch(0.45_0.30_25)] data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg font-semibold transition-all"
-              >
-                <Printer size={20} weight="fill" />
-                <span className="hidden sm:inline">Mint</span>
-              </TabsTrigger>
-            )}
-            <TabsTrigger 
-              value="treasury" 
-              className="flex items-center gap-2 data-[state=active]:bg-gradient-to-br data-[state=active]:from-secondary data-[state=active]:to-[oklch(0.40_0.24_145)] data-[state=active]:text-secondary-foreground data-[state=active]:shadow-lg font-semibold transition-all"
-            >
-              <ChartBar size={20} weight="fill" />
-              <span className="hidden sm:inline">Treasury</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="ledger" 
-              className="flex items-center gap-2 data-[state=active]:bg-gradient-to-br data-[state=active]:from-[oklch(0.60_0.25_270)] data-[state=active]:to-[oklch(0.50_0.25_270)] data-[state=active]:text-white data-[state=active]:shadow-lg font-semibold transition-all"
-            >
-              <Scroll size={20} weight="fill" />
-              <span className="hidden sm:inline">Ledger</span>
-            </TabsTrigger>
-          </TabsList>
+      <main className="container mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2">
+            <Card className="p-6 bg-card border-2 border-primary/30">
+              <ImageCanvas
+                imageSrc={marioImage}
+                editorState={state}
+              />
+            </Card>
+          </div>
 
-          <TabsContent value="wallet" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-1">
-                <WalletBalance tokens={userTokens} />
+          <div className="lg:col-span-1">
+            <Card className="p-6 bg-card border-2 border-secondary/30">
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="text-xl font-bold">Tools</h2>
+                {state.stickers.length > 0 && (
+                  <Badge variant="outline" className="border-accent text-accent">
+                    {state.stickers.length} sticker{state.stickers.length !== 1 ? 's' : ''}
+                  </Badge>
+                )}
               </div>
-              <div className="lg:col-span-2 space-y-4">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-xl font-semibold font-serif">Your Tokens</h2>
-                  {userTokens.length > 0 && (
-                    <TransferDialog
-                      availableTokens={userTokens}
-                      onTransfer={handleTransfer}
+
+              <Tabs value={activeTab} onValueChange={setActiveTab}>
+                <TabsList className="grid grid-cols-4 w-full bg-muted p-1">
+                  <TabsTrigger
+                    value="filters"
+                    className="flex flex-col items-center gap-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                  >
+                    <Sparkle size={20} weight="fill" />
+                    <span className="text-xs">Filters</span>
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="colors"
+                    className="flex flex-col items-center gap-1 data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground"
+                  >
+                    <Palette size={20} weight="fill" />
+                    <span className="text-xs">Colors</span>
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="pixels"
+                    className="flex flex-col items-center gap-1 data-[state=active]:bg-cyan data-[state=active]:text-background"
+                  >
+                    <GridFour size={20} weight="fill" />
+                    <span className="text-xs">Pixels</span>
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="stickers"
+                    className="flex flex-col items-center gap-1 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground"
+                  >
+                    <Sticker size={20} weight="fill" />
+                    <span className="text-xs">Stickers</span>
+                  </TabsTrigger>
+                </TabsList>
+
+                <div className="mt-6">
+                  <TabsContent value="filters" className="mt-0">
+                    <FilterPanel
+                      filter={state.filter}
+                      onFilterChange={(filter) =>
+                        setEditorState((current) => ({ ...(current || defaultState), filter }))
+                      }
                     />
-                  )}
+                  </TabsContent>
+
+                  <TabsContent value="colors" className="mt-0">
+                    <ColorPanel
+                      color={state.color}
+                      onColorChange={(color) =>
+                        setEditorState((current) => ({ ...(current || defaultState), color }))
+                      }
+                    />
+                  </TabsContent>
+
+                  <TabsContent value="pixels" className="mt-0">
+                    <PixelPanel
+                      pixel={state.pixel}
+                      onPixelChange={(pixel) =>
+                        setEditorState((current) => ({ ...(current || defaultState), pixel }))
+                      }
+                    />
+                  </TabsContent>
+
+                  <TabsContent value="stickers" className="mt-0">
+                    <StickerPanel
+                      stickers={state.stickers}
+                      onStickersChange={(stickers) =>
+                        setEditorState((current) => ({ ...(current || defaultState), stickers }))
+                      }
+                    />
+                  </TabsContent>
                 </div>
-                <ScrollArea className="h-[600px]">
-                  {userTokens.length === 0 ? (
-                    <div className="text-center py-12">
-                      <Coins size={64} className="mx-auto text-muted-foreground mb-4" />
-                      <p className="text-lg text-muted-foreground">No tokens in your wallet</p>
-                      <p className="text-sm text-muted-foreground mt-2">
-                        {isMinter ? 'Mint some tokens to get started' : 'Wait for tokens to be distributed to you'}
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {userTokens.map((token) => (
-                        <TokenCard
-                          key={token.id}
-                          token={token}
-                          onClick={() => handleTokenClick(token)}
-                        />
-                      ))}
-                    </div>
-                  )}
-                </ScrollArea>
-              </div>
-            </div>
-          </TabsContent>
-
-          {isMinter && (
-            <TabsContent value="mint" className="space-y-6">
-              <div className="max-w-2xl mx-auto">
-                <MintingInterface
-                  currentUser={user.login}
-                  allTokens={appState?.allTokens || []}
-                  onMint={handleMint}
-                />
-              </div>
-            </TabsContent>
-          )}
-
-          <TabsContent value="ledger" className="space-y-6">
-            <GlobalLedger
-              tokens={appState?.allTokens || []}
-              transactions={appState?.allTransactions || []}
-            />
-          </TabsContent>
-
-          <TabsContent value="treasury" className="space-y-6">
-            <AutoAssessment tokens={appState?.allTokens || []} />
-            <TreasuryCharts
-              tokens={appState?.allTokens || []}
-              transactions={appState?.allTransactions || []}
-            />
-          </TabsContent>
-        </Tabs>
+              </Tabs>
+            </Card>
+          </div>
+        </div>
       </main>
-
-      <TokenDetailDialog
-        token={selectedToken}
-        transactions={appState?.allTransactions || []}
-        open={detailDialogOpen}
-        onOpenChange={setDetailDialogOpen}
-        onProvenanceUpdate={handleProvenanceUpdate}
-      />
 
       <Toaster />
     </div>
