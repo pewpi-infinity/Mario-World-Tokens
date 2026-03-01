@@ -15,6 +15,7 @@ import { MarioLogo } from '@/components/MarioLogo'
 import { UnifiedMusicStudio } from '@/components/UnifiedMusicStudio'
 import { MarioArtStudio } from '@/components/MarioArtStudio'
 import { MarioRaceTrack } from '@/components/MarioRaceTrack'
+import { GameEmulatorBuilder } from '@/components/GameEmulatorBuilder'
 import { MarioCoin, TreasuryStats } from '@/lib/types'
 import { Toaster } from '@/components/ui/sonner'
 import { toast } from 'sonner'
@@ -28,6 +29,7 @@ function App() {
   const [showMusicStudio, setShowMusicStudio] = useState(false)
   const [showArtStudio, setShowArtStudio] = useState(false)
   const [showRaceTrack, setShowRaceTrack] = useState(false)
+  const [showGameBuilder, setShowGameBuilder] = useState(false)
   const [currentUser] = useState(() => `user-${Math.random().toString(36).substr(2, 9)}`)
 
   const userCoins = coins || []
@@ -129,8 +131,8 @@ function App() {
       setShowMusicStudio(true)
     },
     onValueJump: (fromValue: number, toValue: number) => {
-      setShowRaceTrack(true)
-      toast.success(`🕹️ Race to win Science Points & access the Laboratory!`)
+      setShowGameBuilder(true)
+      toast.success(`🕹️ Game Builder & Mario-3 Emulator activated!`)
     },
     onLivingToken: () => {
       toast.success('⭐ Living Token created! Community + AI updates enabled')
@@ -273,6 +275,11 @@ function App() {
       <MarioRaceTrack
         open={showRaceTrack}
         onClose={() => setShowRaceTrack(false)}
+      />
+
+      <GameEmulatorBuilder
+        open={showGameBuilder}
+        onClose={() => setShowGameBuilder(false)}
       />
 
       <Toaster />

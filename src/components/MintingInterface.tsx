@@ -7,10 +7,12 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { MarioCoin, ContentType } from '@/lib/types'
-import { MusicNotes, Image, VideoCamera, PenNib, Users, FileText, Link, Sticker } from '@phosphor-icons/react'
+import { MusicNotes, Image, VideoCamera, PenNib, Users, FileText, Link, Sticker, Sparkle } from '@phosphor-icons/react'
 import { FileUploadPanel } from '@/components/FileUploadPanel'
 import { ArtPad } from '@/components/ArtPad'
 import { MarioStickers } from '@/components/MarioStickers'
+import { AIChatAssistant } from '@/components/AIChatAssistant'
+import { InfinitySpiritGenerator } from '@/components/InfinitySpiritGenerator'
 import { toast } from 'sonner'
 
 export interface MintingInterfaceProps {
@@ -29,43 +31,6 @@ const contentTypes: { value: ContentType; label: string; icon: typeof MusicNotes
   { value: 'text', label: 'Text/Document', icon: FileText }
 ]
 
-async function moderateUrl(url: string): Promise<{ approved: boolean; reason?: string }> {
-  if (!url.trim()) return { approved: true }
-
-  try {
-    const prompt = window.spark.llmPrompt`You are a content moderator for a family-friendly currency minting platform. Analyze this URL to ensure it meets safety guidelines.
-
-Safety Guidelines (from the Bible and family values):
-- NO pornography or sexual content links
-- NO death, gore, or graphic violence sites
-- NO hateful content or extremist sites
-- NO dangerous activities or self-harm content
-- NO illegal substances or activities sites
-- FAMILY-FRIENDLY content only
-
-URL to check: ${url}
-
-Based on the URL domain and path, please respond with ONLY a JSON object in this exact format:
-{
-  "approved": true or false,
-  "reason": "brief explanation if not approved"
-}
-
-If the URL appears safe and family-friendly (or you cannot determine from the URL alone), set approved to true. If it clearly violates guidelines, set approved to false and provide a brief reason.`
-
-    const response = await window.spark.llm(prompt, 'gpt-4o-mini', true)
-    const result = JSON.parse(response)
-    
-    return {
-      approved: result.approved === true,
-      reason: result.reason || 'URL did not meet safety guidelines'
-    }
-  } catch (error) {
-    console.error('URL moderation error:', error)
-    return { approved: true }
-  }
-}
-
 export function MintingInterface({ open, onClose, onMint, currentUser }: MintingInterfaceProps) {
   const [value, setValue] = useState('1.00')
   const [contentType, setContentType] = useState<ContentType>('music')
@@ -77,20 +42,12 @@ export function MintingInterface({ open, onClose, onMint, currentUser }: Minting
   const [drawing, setDrawing] = useState('')
   const [stickers, setStickers] = useState<string[]>([])
   const [isMinting, setIsMinting] = useState(false)
+  const [showInfinitySpiritGenerator, setShowInfinitySpiritGenerator] = useState(false)
 
   const handleMint = async () => {
     setIsMinting(true)
 
     try {
-      if (url) {
-        const moderationResult = await moderateUrl(url)
-        if (!moderationResult.approved) {
-          toast.error(`URL moderation: ${moderationResult.reason}`)
-          setIsMinting(false)
-          return
-        }
-      }
-
       let data = uploadedImage?.data || uploadedVideo?.data || drawing || undefined
 
       const serialNumber = `MC-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`
