@@ -1,50 +1,44 @@
-export type FilterType = 
-  | 'none'
-  | 'crt'
-  | 'vhs'
-  | 'gameboy'
-  | 'nes'
-  | 'glitch'
-  | 'arcade';
+export type ContentType = 
+  | 'music'
+  | 'video'
+  | 'image'
+  | 'poetry'
+  | 'clout'
+  | 'text';
 
-export type ColorPalette = 
-  | 'original'
-  | 'fire'
-  | 'luigi'
-  | 'ice'
-  | 'gold'
-  | 'monochrome';
-
-export interface FilterSettings {
-  type: FilterType;
-  intensity: number;
+export interface ContentAttachment {
+  type: ContentType;
+  title: string;
+  description: string;
+  url?: string;
+  data?: string;
 }
 
-export interface ColorSettings {
-  palette: ColorPalette;
-  hue: number;
-  saturation: number;
-  brightness: number;
-}
-
-export interface PixelSettings {
-  pixelation: number;
-  colorDepth: number;
-  dithering: number;
-}
-
-export interface Sticker {
+export interface MarioCoin {
   id: string;
-  type: string;
-  x: number;
-  y: number;
-  scale: number;
-  rotation: number;
+  value: number;
+  mintedAt: number;
+  mintedBy: string;
+  content: ContentAttachment;
+  transferHistory: Transfer[];
 }
 
-export interface EditorState {
-  filter: FilterSettings;
-  color: ColorSettings;
-  pixel: PixelSettings;
-  stickers: Sticker[];
+export interface Transfer {
+  from: string;
+  to: string;
+  timestamp: number;
+  note?: string;
+}
+
+export interface TreasuryStats {
+  totalValue: number;
+  coinCount: number;
+  contentBreakdown: Record<ContentType, number>;
+  mintingHistory: MintingEvent[];
+}
+
+export interface MintingEvent {
+  timestamp: number;
+  value: number;
+  totalValue: number;
 }

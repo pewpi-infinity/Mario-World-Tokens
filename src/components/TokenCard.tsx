@@ -1,96 +1,83 @@
-import { MarioToken } from '@/lib/types'
+import { useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Sparkle, MapPin, TrendUp } from '@phosphor-icons/react'
-import { getDenominationColor, isRareSerial, formatTimestamp, calculateNoteValue } from '@/lib/currency'
-import { motion } from 'framer-motion'
-import { cn } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
+import { MarioCoin } from '@/lib/types'
+import { Coins, MusicNotes, Image, VideoCamera, PenNib, Users, FileText, ArrowsLeftRight, Eye } from '@phosphor-icons/react'
+import { TokenDetailDialog } from '@/components/TokenDetailDialog'
 
-interface TokenCardProps {
-  token: MarioToken
-  onClick?: () => void
-  selected?: boolean
+export interface TokenCardProps {
+  coin: MarioCoin
+  onTransfer: (coinId: string) => void
 }
 
-export function TokenCard({ token, onClick, selected }: TokenCardProps) {
-  const isRare = isRareSerial(token.serialNumber)
-  const noteValue = token.provenance ? calculateNoteValue(token) : null
-  const hasSignificantValue = noteValue && noteValue.collectibleValue > token.denomination * 0.2
+const contentIcons = {
+  music: MusicNotes,
+  video: VideoCamera,
+  image: Image,
+  poetry: PenNib,
+  clout: Users,
+  text: FileText
+}
+
+export function TokenCard({ coin, onTransfer }: TokenCardProps) {
+  const [showDetails, setShowDetails] = useState(false)
+  const ContentIcon = contentIcons[coin.content.type] || FileText
 
   return (
-    <motion.div
-      whileHover={{ scale: 1.02, y: -2 }}
-      transition={{ duration: 0.15 }}
-    >
-      <Card
-        className={cn(
-          'p-6 cursor-pointer border-3 shadow-lg hover:shadow-xl transition-all currency-pattern relative overflow-hidden',
-          selected && 'ring-4 ring-accent shadow-accent/50',
-          getDenominationColor(token.denomination)
-        )}
-        onClick={onClick}
-      >
-        {isRare && (
-          <motion.div
-            className="absolute top-2 right-2"
-            animate={{ rotate: [0, 10, -10, 0], scale: [1, 1.1, 1] }}
-            transition={{ duration: 2, repeat: Infinity }}
-          >
-            <Sparkle className="text-accent drop-shadow-lg" size={24} weight="fill" />
-          </motion.div>
-        )}
-
-        {hasSignificantValue && (
-          <div className="absolute top-2 left-2">
-            <Badge className="bg-accent text-accent-foreground text-xs px-2 py-1 shadow-lg border-2 border-accent-foreground/20">
-              <TrendUp size={14} className="mr-1" weight="bold" />
-              Valuable
-            </Badge>
-          </div>
-        )}
-
+    <>
+      <Card className="p-6 bg-card border-2 border-border hover:border-[oklch(0.75_0.18_85)] transition-all hover:shadow-lg group">
         <div className="flex items-start justify-between mb-4">
-          <div>
-            <motion.div
-              className="text-4xl font-bold font-serif drop-shadow-md"
-              initial={{ scale: 0.9 }}
-              animate={{ scale: 1 }}
-            >
-              ${token.denomination}
-            </motion.div>
-            <Badge variant="outline" className="mt-2 border-current/30 backdrop-blur-sm">
-              Federal Reserve Note
-            </Badge>
+          <div className="bg-gradient-to-br from-[oklch(0.75_0.18_85)] to-[oklch(0.80_0.20_85)] p-3 rounded-lg">
+            <Coins size={32} className="text-[oklch(0.15_0.02_280)]" weight="fill" />
+          </div>
+          <Badge variant="outline" className="border-[oklch(0.65_0.15_155)] text-[oklch(0.65_0.15_155)]">
+            {coin.content.type}
+          </Badge>
+        </div>
+
+        <div className="mb-4">
+          <p className="text-3xl font-bold text-foreground tabular-nums">${coin.value.toFixed(2)}</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            Minted {new Date(coin.mintedAt).toLocaleDateString()}
+          </p>
+        </div>
+
+        <div className="flex items-start gap-2 mb-4 p-3 bg-muted rounded-lg">
+          <ContentIcon size={20} className="text-[oklch(0.70_0.24_190)] flex-shrink-0 mt-0.5" weight="fill" />
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold text-foreground truncate">{coin.content.title}</p>
+            <p className="text-xs text-muted-foreground line-clamp-2 mt-1">{coin.content.description}</p>
           </div>
         </div>
 
-        <div className="space-y-2">
-          <div>
-            <div className="text-xs uppercase tracking-wider font-semibold opacity-80">Serial Number</div>
-            <div className="serial-number text-sm font-bold mt-1">
-              {token.serialNumber}
-            </div>
-          </div>
-
-          {noteValue && (
-            <div className="pt-2 border-t border-current/20">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold opacity-80">Est. Value</span>
-                <span className="text-base font-bold">${noteValue.totalValue.toFixed(2)}</span>
-              </div>
-            </div>
-          )}
-
-          <div className="flex items-center gap-1 text-xs opacity-80 font-medium">
-            <MapPin size={14} weight="fill" />
-            <span>{token.location}</span>
-          </div>
-
-          <div className="text-xs opacity-75">
-            Minted {formatTimestamp(token.mintedAt)}
-          </div>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex-1"
+            onClick={() => setShowDetails(true)}
+          >
+            <Eye size={16} weight="bold" />
+            <span className="ml-2">Details</span>
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex-1 border-[oklch(0.70_0.24_190)] text-[oklch(0.70_0.24_190)] hover:bg-[oklch(0.70_0.24_190)] hover:text-white"
+            onClick={() => onTransfer(coin.id)}
+          >
+            <ArrowsLeftRight size={16} weight="bold" />
+            <span className="ml-2">Transfer</span>
+          </Button>
         </div>
       </Card>
-    </motion.div>
+
+      <TokenDetailDialog
+        coin={coin}
+        open={showDetails}
+        onClose={() => setShowDetails(false)}
+      />
+    </>
   )
 }

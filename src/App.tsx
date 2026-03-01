@@ -1,210 +1,174 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useKV } from '@github/spark/hooks'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Sparkle, Palette, GridFour, Sticker, FloppyDisk, Download, ArrowCounterClockwise } from '@phosphor-icons/react'
-import { ImageCanvas } from '@/components/ImageCanvas'
-import { FilterPanel } from '@/components/FilterPanel'
-import { ColorPanel } from '@/components/ColorPanel'
-import { PixelPanel } from '@/components/PixelPanel'
-import { StickerPanel } from '@/components/StickerPanel'
-import { EditorState } from '@/lib/types'
+import { Coins, TrendUp, Globe, Plus } from '@phosphor-icons/react'
+import { MintingInterface } from '@/components/MintingInterface'
+import { WalletBalance } from '@/components/WalletBalance'
+import { TreasuryCharts } from '@/components/TreasuryCharts'
+import { GlobalLedger } from '@/components/GlobalLedger'
+import { TokenCard } from '@/components/TokenCard'
+import { MarioCoin, TreasuryStats } from '@/lib/types'
 import { Toaster } from '@/components/ui/sonner'
 import { toast } from 'sonner'
 import marioImage from '@/assets/images/Screenshot_20260225-192747.png'
 
-const defaultState: EditorState = {
-  filter: { type: 'none', intensity: 50 },
-  color: { palette: 'original', hue: 0, saturation: 100, brightness: 100 },
-  pixel: { pixelation: 0, colorDepth: 100, dithering: 0 },
-  stickers: []
-}
-
 function App() {
-  const [editorState, setEditorState] = useKV<EditorState>('pixel-perfect-state', defaultState)
-  const [activeTab, setActiveTab] = useState('filters')
-  
-  const state = editorState || defaultState
+  const [coins, setCoins] = useKV<MarioCoin[]>('mario-coins', [])
+  const [globalCoins, setGlobalCoins] = useKV<MarioCoin[]>('global-mario-coins', [])
+  const [activeTab, setActiveTab] = useState('treasury')
+  const [showMinting, setShowMinting] = useState(false)
+  const [currentUser] = useState(() => `user-${Math.random().toString(36).substr(2, 9)}`)
 
-  const handleReset = () => {
-    setEditorState(defaultState)
-    toast.success('Editor reset to defaults')
+  const userCoins = coins || []
+
+  const treasuryStats: TreasuryStats = {
+    totalValue: userCoins.reduce((sum, coin) => sum + coin.value, 0),
+    coinCount: userCoins.length,
+    contentBreakdown: userCoins.reduce((acc, coin) => {
+      acc[coin.content.type] = (acc[coin.content.type] || 0) + 1
+      return acc
+    }, {} as Record<string, number>),
+    mintingHistory: userCoins
+      .sort((a, b) => a.mintedAt - b.mintedAt)
+      .map((coin, index, arr) => ({
+        timestamp: coin.mintedAt,
+        value: coin.value,
+        totalValue: arr.slice(0, index + 1).reduce((sum, c) => sum + c.value, 0)
+      }))
   }
 
-  const handleSave = () => {
-    toast.success('Editor state saved!', {
-      description: 'Your edits are automatically saved'
+  const handleMint = (newCoin: MarioCoin) => {
+    setCoins((current) => [...(current || []), newCoin])
+    setGlobalCoins((current) => [...(current || []), newCoin])
+    setShowMinting(false)
+    toast.success('Mario Coin Minted!', {
+      description: `$${newCoin.value.toFixed(2)} backed by ${newCoin.content.type}`
     })
   }
 
-  const handleExport = () => {
-    const canvas = document.querySelector('canvas')
-    if (canvas) {
-      canvas.toBlob((blob) => {
-        if (blob) {
-          const url = URL.createObjectURL(blob)
-          const a = document.createElement('a')
-          a.href = url
-          a.download = `mario-edit-${Date.now()}.png`
-          a.click()
-          URL.revokeObjectURL(url)
-          toast.success('Image downloaded!', {
-            description: 'Check your downloads folder'
-          })
-        }
-      })
+  useEffect(() => {
+    if (userCoins.length === 0 && activeTab === 'treasury') {
+      const timer = setTimeout(() => {
+        toast.info('Start Minting!', {
+          description: 'Click "Mint New Coin" to create your first Mario Currency',
+          duration: 5000
+        })
+      }, 1000)
+      return () => clearTimeout(timer)
     }
-  }
+  }, [userCoins.length, activeTab])
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="border-b-4 border-primary bg-gradient-to-r from-primary via-secondary to-primary relative overflow-hidden">
+      <header className="border-b-4 border-[oklch(0.75_0.18_85)] bg-gradient-to-r from-[oklch(0.58_0.24_330)] via-[oklch(0.65_0.25_265)] to-[oklch(0.70_0.24_190)] relative overflow-hidden">
         <div className="absolute inset-0 bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,oklch(1_0_0_/_0.05)_10px,oklch(1_0_0_/_0.05)_20px)]"></div>
         <div className="container mx-auto px-4 py-6 relative z-10">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center gap-4">
-              <div className="bg-accent p-3 rounded-lg arcade-pulse">
-                <Sparkle size={40} className="text-accent-foreground" weight="fill" />
+              <div className="bg-[oklch(0.75_0.18_85)] p-3 rounded-lg shadow-lg border-2 border-[oklch(0.85_0.20_85)]">
+                <img src={marioImage} alt="Mario Logo" className="w-12 h-12 object-contain" />
               </div>
               <div>
-                <h1 className="text-3xl md:text-4xl font-bold text-white drop-shadow-lg pixel-font">
-                  PIXEL PERFECT
+                <h1 className="text-2xl md:text-3xl font-bold text-white drop-shadow-lg pixel-font">
+                  FEDERAL RESERVE MARIO
                 </h1>
-                <p className="text-sm md:text-base text-accent font-semibold drop-shadow">
-                  Mario Photo Editor 🎮
+                <p className="text-sm md:text-base text-[oklch(0.75_0.18_85)] font-semibold drop-shadow">
+                  People's Treasury Creation System 🪙
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleReset}
-                className="border-accent text-accent hover:bg-accent hover:text-accent-foreground"
-              >
-                <ArrowCounterClockwise size={20} weight="bold" />
-                <span className="hidden md:inline ml-2">Reset</span>
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleSave}
-                className="border-cyan text-cyan hover:bg-cyan hover:text-background"
-              >
-                <FloppyDisk size={20} weight="fill" />
-                <span className="hidden md:inline ml-2">Save</span>
-              </Button>
-              <Button
-                size="sm"
-                onClick={handleExport}
-                className="bg-accent text-accent-foreground hover:bg-accent/90"
-              >
-                <Download size={20} weight="bold" />
-                <span className="hidden md:inline ml-2">Export</span>
-              </Button>
-            </div>
+            <Button
+              size="lg"
+              onClick={() => setShowMinting(true)}
+              className="bg-[oklch(0.75_0.18_85)] text-[oklch(0.15_0.02_280)] hover:bg-[oklch(0.80_0.20_85)] font-bold shadow-lg"
+            >
+              <Plus size={24} weight="bold" />
+              <span className="ml-2">Mint New Coin</span>
+            </Button>
           </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            <Card className="p-6 bg-card border-2 border-primary/30">
-              <ImageCanvas
-                imageSrc={marioImage}
-                editorState={state}
-              />
-            </Card>
-          </div>
+      <main className="container mx-auto px-4 py-8 max-w-7xl">
+        <WalletBalance stats={treasuryStats} />
 
-          <div className="lg:col-span-1">
-            <Card className="p-6 bg-card border-2 border-secondary/30">
-              <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-xl font-bold">Tools</h2>
-                {state.stickers.length > 0 && (
-                  <Badge variant="outline" className="border-accent text-accent">
-                    {state.stickers.length} sticker{state.stickers.length !== 1 ? 's' : ''}
-                  </Badge>
-                )}
-              </div>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-8">
+          <TabsList className="grid grid-cols-3 w-full max-w-md mx-auto bg-muted p-1">
+            <TabsTrigger
+              value="treasury"
+              className="flex items-center gap-2 data-[state=active]:bg-[oklch(0.75_0.18_85)] data-[state=active]:text-[oklch(0.15_0.02_280)]"
+            >
+              <Coins size={20} weight="fill" />
+              <span>My Treasury</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="charts"
+              className="flex items-center gap-2 data-[state=active]:bg-[oklch(0.65_0.15_155)] data-[state=active]:text-white"
+            >
+              <TrendUp size={20} weight="fill" />
+              <span>Charts</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="ledger"
+              className="flex items-center gap-2 data-[state=active]:bg-[oklch(0.70_0.24_190)] data-[state=active]:text-white"
+            >
+              <Globe size={20} weight="fill" />
+              <span>Global Ledger</span>
+            </TabsTrigger>
+          </TabsList>
 
-              <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <TabsList className="grid grid-cols-4 w-full bg-muted p-1">
-                  <TabsTrigger
-                    value="filters"
-                    className="flex flex-col items-center gap-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+          <TabsContent value="treasury" className="mt-8">
+            {userCoins.length === 0 ? (
+              <Card className="p-12 text-center bg-card border-2 border-border">
+                <div className="max-w-md mx-auto">
+                  <Coins size={64} className="mx-auto mb-4 text-muted-foreground" weight="fill" />
+                  <h3 className="text-2xl font-bold mb-2">No Coins Yet</h3>
+                  <p className="text-muted-foreground mb-6">
+                    Start minting Mario Coins backed by your creative content. You are your own central bank!
+                  </p>
+                  <Button
+                    size="lg"
+                    onClick={() => setShowMinting(true)}
+                    className="bg-[oklch(0.75_0.18_85)] text-[oklch(0.15_0.02_280)] hover:bg-[oklch(0.80_0.20_85)]"
                   >
-                    <Sparkle size={20} weight="fill" />
-                    <span className="text-xs">Filters</span>
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="colors"
-                    className="flex flex-col items-center gap-1 data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground"
-                  >
-                    <Palette size={20} weight="fill" />
-                    <span className="text-xs">Colors</span>
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="pixels"
-                    className="flex flex-col items-center gap-1 data-[state=active]:bg-cyan data-[state=active]:text-background"
-                  >
-                    <GridFour size={20} weight="fill" />
-                    <span className="text-xs">Pixels</span>
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="stickers"
-                    className="flex flex-col items-center gap-1 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground"
-                  >
-                    <Sticker size={20} weight="fill" />
-                    <span className="text-xs">Stickers</span>
-                  </TabsTrigger>
-                </TabsList>
-
-                <div className="mt-6">
-                  <TabsContent value="filters" className="mt-0">
-                    <FilterPanel
-                      filter={state.filter}
-                      onFilterChange={(filter) =>
-                        setEditorState((current) => ({ ...(current || defaultState), filter }))
-                      }
-                    />
-                  </TabsContent>
-
-                  <TabsContent value="colors" className="mt-0">
-                    <ColorPanel
-                      color={state.color}
-                      onColorChange={(color) =>
-                        setEditorState((current) => ({ ...(current || defaultState), color }))
-                      }
-                    />
-                  </TabsContent>
-
-                  <TabsContent value="pixels" className="mt-0">
-                    <PixelPanel
-                      pixel={state.pixel}
-                      onPixelChange={(pixel) =>
-                        setEditorState((current) => ({ ...(current || defaultState), pixel }))
-                      }
-                    />
-                  </TabsContent>
-
-                  <TabsContent value="stickers" className="mt-0">
-                    <StickerPanel
-                      stickers={state.stickers}
-                      onStickersChange={(stickers) =>
-                        setEditorState((current) => ({ ...(current || defaultState), stickers }))
-                      }
-                    />
-                  </TabsContent>
+                    <Plus size={24} weight="bold" />
+                    <span className="ml-2">Mint Your First Coin</span>
+                  </Button>
                 </div>
-              </Tabs>
-            </Card>
-          </div>
-        </div>
+              </Card>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {userCoins.map((coin) => (
+                  <TokenCard
+                    key={coin.id}
+                    coin={coin}
+                    onTransfer={(coinId) => {
+                      toast.info('Transfer feature coming soon!')
+                    }}
+                  />
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="charts" className="mt-8">
+            <TreasuryCharts stats={treasuryStats} marioLogo={marioImage} />
+          </TabsContent>
+
+          <TabsContent value="ledger" className="mt-8">
+            <GlobalLedger globalCoins={globalCoins || []} />
+          </TabsContent>
+        </Tabs>
       </main>
+
+      <MintingInterface
+        open={showMinting}
+        onClose={() => setShowMinting(false)}
+        onMint={handleMint}
+        currentUser={currentUser}
+      />
 
       <Toaster />
     </div>

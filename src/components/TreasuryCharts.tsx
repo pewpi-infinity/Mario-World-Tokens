@@ -1,272 +1,157 @@
-import { MarioToken, Transaction } from '@/lib/types'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
-import { TrendUp, Coins, Users } from '@phosphor-icons/react'
-import { groupTokensByDenomination } from '@/lib/currency'
-import { MarioChartCharacter } from './MarioChartCharacter'
+import { useEffect, useRef, useState } from 'react'
+import { Card } from '@/components/ui/card'
+import { TreasuryStats } from '@/lib/types'
+import * as d3 from 'd3'
 import { motion } from 'framer-motion'
 
-interface TreasuryChartsProps {
-  tokens: MarioToken[]
-  transactions: Transaction[]
+export interface TreasuryChartsProps {
+  stats: TreasuryStats
+  marioLogo: string
 }
 
-const DENOMINATION_COLORS = {
-  1: 'oklch(0.80 0.25 95)',
-  5: 'oklch(0.65 0.28 25)',
-  10: 'oklch(0.55 0.25 145)',
-  20: 'oklch(0.65 0.25 270)',
-  50: 'oklch(0.75 0.25 340)',
-  100: 'oklch(0.70 0.25 60)'
-}
+export function TreasuryCharts({ stats, marioLogo }: TreasuryChartsProps) {
+  const svgRef = useRef<SVGSVGElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [marioPosition, setMarioPosition] = useState({ x: 0, y: 0 })
 
-export function TreasuryCharts({ tokens, transactions }: TreasuryChartsProps) {
-  const denominationGroups = groupTokensByDenomination(tokens)
-  
-  const denominationData = Object.entries(denominationGroups).map(([denom, count]) => ({
-    denomination: `$${denom}`,
-    count,
-    value: parseInt(denom) * count,
-    fill: DENOMINATION_COLORS[parseInt(denom) as keyof typeof DENOMINATION_COLORS]
-  }))
+  useEffect(() => {
+    if (!svgRef.current || !containerRef.current || stats.mintingHistory.length === 0) return
 
-  const minterStats = tokens.reduce((acc, token) => {
-    if (!acc[token.mintedBy]) {
-      acc[token.mintedBy] = { count: 0, value: 0 }
+    const container = containerRef.current
+    const width = container.clientWidth
+    const height = 400
+    const margin = { top: 40, right: 40, bottom: 60, left: 70 }
+    const chartWidth = width - margin.left - margin.right
+    const chartHeight = height - margin.top - margin.bottom
+
+    d3.select(svgRef.current).selectAll('*').remove()
+
+    const svg = d3.select(svgRef.current)
+      .attr('width', width)
+      .attr('height', height)
+
+    const g = svg.append('g')
+      .attr('transform', `translate(${margin.left},${margin.top})`)
+
+    const x = d3.scaleTime()
+      .domain(d3.extent(stats.mintingHistory, d => new Date(d.timestamp)) as [Date, Date])
+      .range([0, chartWidth])
+
+    const y = d3.scaleLinear()
+      .domain([0, d3.max(stats.mintingHistory, d => d.totalValue) || 100])
+      .nice()
+      .range([chartHeight, 0])
+
+    const line = d3.line<typeof stats.mintingHistory[0]>()
+      .x(d => x(new Date(d.timestamp)))
+      .y(d => y(d.totalValue))
+      .curve(d3.curveMonotoneX)
+
+    g.append('defs').append('linearGradient')
+      .attr('id', 'area-gradient')
+      .attr('gradientUnits', 'userSpaceOnUse')
+      .attr('x1', 0).attr('y1', y(0))
+      .attr('x2', 0).attr('y2', y((d3.max(stats.mintingHistory, d => d.totalValue) || 100)))
+      .selectAll('stop')
+      .data([
+        { offset: '0%', color: 'oklch(0.75 0.18 85)', opacity: 0.3 },
+        { offset: '100%', color: 'oklch(0.75 0.18 85)', opacity: 0 }
+      ])
+      .enter().append('stop')
+      .attr('offset', d => d.offset)
+      .attr('stop-color', d => d.color)
+      .attr('stop-opacity', d => d.opacity)
+
+    const area = d3.area<typeof stats.mintingHistory[0]>()
+      .x(d => x(new Date(d.timestamp)))
+      .y0(chartHeight)
+      .y1(d => y(d.totalValue))
+      .curve(d3.curveMonotoneX)
+
+    g.append('path')
+      .datum(stats.mintingHistory)
+      .attr('fill', 'url(#area-gradient)')
+      .attr('d', area)
+
+    g.append('path')
+      .datum(stats.mintingHistory)
+      .attr('fill', 'none')
+      .attr('stroke', 'oklch(0.75 0.18 85)')
+      .attr('stroke-width', 3)
+      .attr('d', line)
+
+    g.append('g')
+      .attr('transform', `translate(0,${chartHeight})`)
+      .call(d3.axisBottom(x).ticks(5))
+      .style('color', 'oklch(0.65 0.02 280)')
+      .selectAll('text')
+      .style('font-size', '12px')
+
+    g.append('g')
+      .call(d3.axisLeft(y).ticks(5).tickFormat(d => `$${d}`))
+      .style('color', 'oklch(0.65 0.02 280)')
+      .selectAll('text')
+      .style('font-size', '12px')
+
+    g.selectAll('.dot')
+      .data(stats.mintingHistory)
+      .enter().append('circle')
+      .attr('class', 'dot')
+      .attr('cx', d => x(new Date(d.timestamp)))
+      .attr('cy', d => y(d.totalValue))
+      .attr('r', 4)
+      .attr('fill', 'oklch(0.75 0.18 85)')
+      .attr('stroke', 'oklch(0.15 0.02 280)')
+      .attr('stroke-width', 2)
+
+    const lastPoint = stats.mintingHistory[stats.mintingHistory.length - 1]
+    if (lastPoint) {
+      const marioX = x(new Date(lastPoint.timestamp)) + margin.left
+      const marioY = y(lastPoint.totalValue) + margin.top - 30
+      setMarioPosition({ x: marioX, y: marioY })
     }
-    acc[token.mintedBy].count++
-    acc[token.mintedBy].value += token.denomination
-    return acc
-  }, {} as Record<string, { count: number; value: number }>)
 
-  const minterData = Object.entries(minterStats)
-    .map(([minter, stats]) => ({
-      minter: minter.length > 15 ? minter.substring(0, 12) + '...' : minter,
-      fullMinter: minter,
-      count: stats.count,
-      value: stats.value
-    }))
-    .sort((a, b) => b.value - a.value)
-    .slice(0, 10)
+  }, [stats])
 
-  const totalCirculation = tokens.reduce((sum, t) => sum + t.denomination, 0)
-  const uniqueMinters = new Set(tokens.map(t => t.mintedBy)).size
+  if (stats.mintingHistory.length === 0) {
+    return (
+      <Card className="p-12 text-center bg-card border-2 border-border">
+        <p className="text-muted-foreground">Mint your first coin to see treasury growth charts!</p>
+      </Card>
+    )
+  }
 
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.5 }}
-        >
-          <Card className="bg-gradient-to-br from-accent via-[oklch(0.85_0.28_100)] to-[oklch(0.75_0.25_90)] border-none text-accent-foreground shadow-2xl">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-bold opacity-90">Total Circulation</p>
-                  <p className="text-4xl font-bold font-serif drop-shadow-lg">${totalCirculation.toLocaleString()}</p>
-                </div>
-                <motion.div
-                  animate={{ rotate: [0, 360] }}
-                  transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-                >
-                  <Coins size={56} weight="fill" className="drop-shadow-lg" />
-                </motion.div>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-        >
-          <Card className="bg-gradient-to-br from-primary via-[oklch(0.55_0.30_30)] to-[oklch(0.45_0.28_25)] border-none text-white shadow-2xl">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-bold opacity-90">Notes in Circulation</p>
-                  <p className="text-4xl font-bold font-serif drop-shadow-lg">{tokens.length.toLocaleString()}</p>
-                </div>
-                <motion.div
-                  animate={{ y: [0, -12, 0] }}
-                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-                >
-                  <TrendUp size={56} weight="fill" className="drop-shadow-lg" />
-                </motion.div>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-        >
-          <Card className="bg-gradient-to-br from-secondary via-[oklch(0.50_0.25_150)] to-[oklch(0.40_0.22_145)] border-none text-white shadow-2xl">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-bold opacity-90">Active Minters</p>
-                  <p className="text-4xl font-bold font-serif drop-shadow-lg">{uniqueMinters}</p>
-                </div>
-                <motion.div
-                  animate={{ scale: [1, 1.2, 1] }}
-                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                >
-                  <Users size={56} weight="fill" className="drop-shadow-lg" />
-                </motion.div>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
+    <Card className="p-6 bg-card border-2 border-border">
+      <h3 className="text-2xl font-bold mb-6">Treasury Growth Over Time</h3>
+      <div ref={containerRef} className="relative">
+        <svg ref={svgRef}></svg>
+        {marioPosition.x > 0 && (
+          <motion.div
+            className="absolute pointer-events-none"
+            initial={{ x: 0, y: marioPosition.y }}
+            animate={{ x: marioPosition.x - 20, y: marioPosition.y }}
+            transition={{ duration: 0.8, ease: 'easeInOut' }}
+          >
+            <motion.img
+              src={marioLogo}
+              alt="Mario"
+              className="w-10 h-10 object-contain"
+              animate={{ y: [0, -5, 0] }}
+              transition={{ duration: 0.6, repeat: Infinity, ease: 'easeInOut' }}
+            />
+          </motion.div>
+        )}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="border-3 border-accent shadow-2xl bg-card/95 backdrop-blur">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-2xl">
-              <span>Notes by Denomination</span>
-            </CardTitle>
-            <MarioChartCharacter 
-              character="mario" 
-              message={`We've got ${tokens.length} notes total! Let's-a-go check the breakdown!`}
-            />
-          </CardHeader>
-          <CardContent>
-            <ChartContainer
-              config={{
-                count: {
-                  label: "Count",
-                  color: "oklch(0.65 0.28 25)",
-                },
-              }}
-              className="h-[300px]"
-            >
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={denominationData}>
-                  <CartesianGrid strokeDasharray="3 3" opacity={0.2} stroke="oklch(0.7 0.1 245)" />
-                  <XAxis 
-                    dataKey="denomination" 
-                    stroke="oklch(0.5 0.15 265)"
-                    style={{ fontSize: '14px', fontFamily: 'Inter', fontWeight: '600' }}
-                  />
-                  <YAxis 
-                    stroke="oklch(0.5 0.15 265)"
-                    style={{ fontSize: '14px', fontFamily: 'Inter', fontWeight: '600' }}
-                  />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Bar dataKey="count" radius={[8, 8, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </ChartContainer>
-          </CardContent>
-        </Card>
-
-        <Card className="border-3 border-secondary shadow-2xl bg-card/95 backdrop-blur">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-2xl">
-              <span>Value Distribution</span>
-            </CardTitle>
-            <MarioChartCharacter 
-              character="luigi" 
-              message={`Mamma mia! The total value is $${totalCirculation.toLocaleString()}!`}
-              position="right"
-            />
-          </CardHeader>
-          <CardContent>
-            <ChartContainer
-              config={{
-                value: {
-                  label: "Value",
-                  color: "oklch(0.65 0.28 25)",
-                },
-              }}
-              className="h-[300px]"
-            >
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={denominationData}
-                    dataKey="value"
-                    nameKey="denomination"
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={90}
-                    label={(entry) => `${entry.denomination}: $${entry.value.toLocaleString()}`}
-                    labelLine={{ stroke: 'oklch(0.5 0.15 265)', strokeWidth: 2 }}
-                  >
-                    {denominationData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.fill} />
-                    ))}
-                  </Pie>
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                </PieChart>
-              </ResponsiveContainer>
-            </ChartContainer>
-          </CardContent>
-        </Card>
-
-        <Card className="lg:col-span-2 border-3 border-primary shadow-2xl bg-card/95 backdrop-blur">
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between text-2xl">
-              <span>Top Minters by Output Value</span>
-            </CardTitle>
-            <div className="flex items-center justify-between mt-4">
-              <MarioChartCharacter 
-                character="mario" 
-                message={`These ${uniqueMinters} minters are working hard!`}
-              />
-              <MarioChartCharacter 
-                character="luigi" 
-                message="Yahoo! Great job everyone!"
-                position="right"
-              />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer
-              config={{
-                value: {
-                  label: "Value",
-                  color: "oklch(0.65 0.28 25)",
-                },
-              }}
-              className="h-[300px]"
-            >
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={minterData} layout="horizontal">
-                  <CartesianGrid strokeDasharray="3 3" opacity={0.2} stroke="oklch(0.7 0.1 245)" />
-                  <XAxis 
-                    type="number"
-                    stroke="oklch(0.5 0.15 265)"
-                    style={{ fontSize: '14px', fontFamily: 'Inter', fontWeight: '600' }}
-                  />
-                  <YAxis 
-                    dataKey="minter" 
-                    type="category" 
-                    width={100}
-                    stroke="oklch(0.5 0.15 265)"
-                    style={{ fontSize: '14px', fontFamily: 'Inter', fontWeight: '600' }}
-                  />
-                  <ChartTooltip 
-                    content={<ChartTooltipContent />}
-                    labelFormatter={(value, payload) => {
-                      const item = payload?.[0]?.payload
-                      return item ? item.fullMinter : value
-                    }}
-                  />
-                  <Bar dataKey="value" fill="oklch(0.65 0.28 25)" radius={[0, 8, 8, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </ChartContainer>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
+        {Object.entries(stats.contentBreakdown).map(([type, count]) => (
+          <div key={type} className="bg-muted p-4 rounded-lg text-center">
+            <p className="text-sm text-muted-foreground capitalize">{type}</p>
+            <p className="text-2xl font-bold text-foreground">{count}</p>
+          </div>
+        ))}
       </div>
-    </div>
+    </Card>
   )
 }

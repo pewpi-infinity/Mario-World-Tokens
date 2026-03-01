@@ -1,151 +1,164 @@
 # Planning Guide
 
-A playful photo manipulation app that transforms the iconic pixelated Mario image with creative effects, filters, and retro gaming aesthetics.
+A decentralized token creation and treasury management system where users mint Mario-branded coins (equivalent to USD) and attach creative content - music, videos, images, poetry, or clout connections to famous people. The Federal Reserve Mario system empowers anyone to become their own mint.
 
 **Experience Qualities**: 
-1. **Nostalgic** - Evokes memories of classic 8-bit gaming through pixel-perfect aesthetics and retro sound effects
-2. **Playful** - Encourages experimentation with whimsical effects and instant visual feedback 
-3. **Creative** - Empowers users to transform the image in surprising and delightful ways
+1. **Empowering** - Users become their own central bank, printing currency and backing it with creative content
+2. **Playful** - Mario logo brings fun to financial concepts, charts show Mario running through treasury data
+3. **Transparent** - Full visibility into treasury creation, coin minting, and attached content values
 
-**Complexity Level**: Light Application (multiple features with basic state)
-- This is a focused creative tool with multiple transformation options, filter controls, and save/export capabilities. It goes beyond single-purpose but doesn't require complex multi-view navigation or advanced state management.
+**Complexity Level**: Complex Application (advanced functionality with multiple views)
+- This is a sophisticated platform combining treasury management, token minting, content attachment, charting with animated Mario character, and a global ledger system. Requires persistent state, dynamic data visualization, and multiple interconnected features.
 
 ## Essential Features
 
-### Photo Display & Preview
-- **Functionality**: Displays the uploaded Mario image prominently with real-time effect previews
-- **Purpose**: Serves as the canvas for all creative transformations
-- **Trigger**: Loads automatically on app initialization
-- **Progression**: App loads → Image displays in center → Effects apply in real-time → Preview updates instantly
-- **Success criteria**: Image renders clearly, effects apply smoothly without lag, transformations are immediately visible
+### Mario Logo Display
+- **Functionality**: Shows Mario as the official logo/mascot of the Federal Reserve Mario system
+- **Purpose**: Brand identity and visual anchor for the currency system
+- **Trigger**: Displays prominently in header and appears as animated character in charts
+- **Progression**: App loads → Mario logo appears → Logo animates in charts → Moves with data trends
+- **Success criteria**: Clean Mario logo extraction from image, smooth animations, visible in all key areas
 
-### Retro Filters
-- **Functionality**: Apply vintage gaming-inspired filters (CRT scan lines, VHS glitch, color palettes from classic consoles)
-- **Purpose**: Enhances the nostalgic 8-bit aesthetic with period-appropriate visual treatments
-- **Trigger**: User selects filter from preset gallery
-- **Progression**: User browses filter thumbnails → Clicks filter → Preview updates → Can toggle intensity → Apply or reset
-- **Success criteria**: At least 6 distinct filters, smooth transitions, ability to adjust intensity, clear before/after comparison
+### Token Minting Interface
+- **Functionality**: Create new Mario Coins with USD-equivalent value and attach content (music, video, images, poetry, clout/fame connections)
+- **Purpose**: Democratizes currency creation - anyone can print their own treasury
+- **Trigger**: User clicks "Mint New Coin" button
+- **Progression**: User clicks mint → Enters coin value (USD) → Selects content type → Uploads/attaches content → Describes attachment → Confirms minting → Coin added to treasury
+- **Success criteria**: Intuitive form, supports multiple content types, instant visual feedback, coin appears in user's treasury
 
-### Pixel Art Tools
-- **Functionality**: Pixelation controls, color reduction, dithering effects, edge detection for pixel art enhancement
-- **Purpose**: Celebrates and enhances the pixel art nature of the source image
-- **Trigger**: User adjusts sliders in pixel tools panel
-- **Progression**: User opens pixel panel → Adjusts pixelation level → Modifies color depth → Applies dithering → Sees real-time preview
-- **Success criteria**: Smooth slider controls, values from subtle to extreme, maintains image recognizability
+### Personal Treasury Dashboard
+- **Functionality**: View all coins user has minted with total value, content attachments, and individual coin details
+- **Purpose**: Track personal currency creation and content-backed wealth
+- **Trigger**: Automatically displays user's minted coins
+- **Progression**: User views dashboard → Sees total treasury value → Browses coin cards → Clicks for details → Can transfer/gift coins
+- **Success criteria**: Real-time value calculation, searchable/filterable coin list, visual content previews
 
-### Color Transformations
-- **Functionality**: Hue shifting, saturation boost/reduction, palette swaps (fire Mario, Luigi, etc.)
-- **Purpose**: Allows creative recoloring and character variations
-- **Trigger**: User selects color tool or preset palette
-- **Progression**: User opens color panel → Adjusts hue/saturation sliders OR selects preset → Preview updates → Save preferred look
-- **Success criteria**: Accurate color transformations, preset palettes for classic Mario variations, RGB/HSL controls
+### Treasury Charts with Mario Character
+- **Functionality**: Animated charts showing treasury growth over time with Mario character running/moving through the data
+- **Purpose**: Gamifies financial data visualization and makes economics playful
+- **Trigger**: Charts update as coins are minted
+- **Progression**: User mints coins → Chart updates → Mario character moves to new data point → Animations show growth
+- **Success criteria**: Smooth Mario animations, accurate data representation, responsive to new minting activity
 
-### Stickers & Overlays
-- **Functionality**: Add retro gaming elements (coins, stars, power-ups, text overlays, pixel borders)
-- **Purpose**: Enables creative composition and personalization
-- **Trigger**: User clicks sticker button
-- **Progression**: User opens sticker panel → Browses categories → Clicks to add → Drag to position → Scale/rotate → Delete if needed
-- **Success criteria**: Minimum 12 stickers, drag-and-drop positioning, resize handles, layering controls
+### Global Ledger
+- **Functionality**: Public view of all Mario Coins minted by all users (anonymous but transparent)
+- **Purpose**: Creates transparency in the decentralized currency system
+- **Trigger**: User navigates to "Global Ledger" tab
+- **Progression**: User clicks ledger → Sees all coins → Can filter by content type → View coin details → See minting trends
+- **Success criteria**: Fast loading, filterable by content type/value, real-time updates when new coins minted
 
-### Save & Export
-- **Functionality**: Download edited image as PNG, copy to clipboard, save editing state
-- **Purpose**: Allows users to keep and share their creations
-- **Trigger**: User clicks save/download button
-- **Progression**: User finalizes edits → Clicks export → Chooses format → Image downloads OR copies to clipboard → Success confirmation
-- **Success criteria**: High-quality export, preserves pixel crispness, filename includes timestamp
+### Content Attachment System
+- **Functionality**: Attach and view music notes, video clips, images, poetry, or fame/clout connections to coins
+- **Purpose**: Backs currency with creative and social value
+- **Trigger**: During minting or when viewing coin details
+- **Progression**: User selects content type → Uploads or describes content → Content displays with coin → Others can view attached content
+- **Success criteria**: Supports 5+ content types, rich previews, descriptions stored with coins
+
+### Transfer & Receipt System
+- **Functionality**: Transfer coins to others and generate printable receipts
+- **Purpose**: Enables currency circulation and creates transaction records
+- **Trigger**: User clicks "Transfer" on a coin
+- **Progression**: User selects coin → Enters recipient info → Adds transfer note → Confirms → Receipt generated → Can print/download
+- **Success criteria**: Clear transfer flow, beautiful receipt design, tracks coin ownership changes
 
 ## Edge Case Handling
 
-- **No image loaded**: Display placeholder with prompt to upload (though initial version has hardcoded image)
-- **Extreme filter combinations**: Gracefully handle performance issues, disable conflicting effects with helpful tooltip
-- **Mobile viewport**: Collapse tool panels into drawer, make touch-friendly controls for sticker manipulation
-- **Large sticker count**: Limit to 20 active stickers with visual indicator when approaching limit
-- **Export failures**: Show error toast with retry option, fallback to canvas right-click save
+- **Empty Treasury**: Display welcoming empty state encouraging first coin minting with tutorial
+- **Duplicate Minting**: Prevent accidental double-mints with confirmation dialog
+- **Large Content Files**: Show upload progress, validate file sizes, provide compression options
+- **Chart Performance**: Limit visible data points, implement virtualization for large datasets
+- **Transfer Failures**: Graceful error handling with retry option, preserve coin ownership
+- **Mobile Minting**: Simplified form with mobile-friendly file upload, touch-optimized controls
 
 ## Design Direction
 
-The design should feel like stepping into a retro arcade - vibrant neon colors against dark backgrounds, chunky pixel fonts, and UI elements that echo classic game cartridges and CRT monitors. Every interaction should spark joy through micro-animations, satisfying clicks, and immediate visual feedback.
+The design should evoke the trustworthiness of a financial institution merged with the playful energy of Mario games. Think Federal Reserve meets Mushroom Kingdom - professional charts and data displays made delightful with Mario branding, coin imagery, and gaming aesthetics. Every interaction should feel empowering, like you're literally printing money.
 
 ## Color Selection
 
-A bold, saturated color scheme inspired by arcade cabinets and 80s/90s gaming culture.
+A vibrant gaming palette that maintains financial credibility through strategic use of gold, green (money), and trustworthy blues.
 
-- **Primary Color**: `oklch(0.58 0.24 330)` - Hot Pink/Magenta - The energetic accent color of arcade neon signs, used for primary CTAs and active states
+- **Primary Color**: `oklch(0.75 0.18 85)` - Gold Coin - Represents currency, value, and Mario's iconic coins, used for minting buttons and value displays
 - **Secondary Colors**: 
-  - `oklch(0.65 0.25 265)` - Electric Purple - Supporting UI elements and secondary buttons
-  - `oklch(0.70 0.24 190)` - Cyan Blue - Informational elements and hover states
-- **Accent Color**: `oklch(0.80 0.20 85)` - Neon Yellow - Attention-grabbing highlights for tool selections and active filters
+  - `oklch(0.65 0.15 155)` - Money Green - USD connection, treasury growth indicators, positive value changes
+  - `oklch(0.58 0.24 330)` - Mario Red - Brand color from Mario, danger/destructive actions, important alerts
+- **Accent Color**: `oklch(0.70 0.24 190)` - Power-Up Blue - Interactive elements, chart highlights, Mario character accents
 - **Foreground/Background Pairings**:
-  - Background (Deep Space) `oklch(0.15 0.02 280)`: White text `oklch(0.98 0 0)` - Ratio 12.5:1 ✓
+  - Background (Deep Navy) `oklch(0.15 0.02 280)`: White text `oklch(0.98 0 0)` - Ratio 12.5:1 ✓
   - Card (Elevated Dark) `oklch(0.22 0.03 285)`: Light Gray `oklch(0.92 0.01 280)` - Ratio 10.8:1 ✓
-  - Primary (Hot Pink) `oklch(0.58 0.24 330)`: White `oklch(0.98 0 0)` - Ratio 5.2:1 ✓
-  - Accent (Neon Yellow) `oklch(0.80 0.20 85)`: Black `oklch(0.15 0.02 280)` - Ratio 9.1:1 ✓
+  - Primary (Gold Coin) `oklch(0.75 0.18 85)`: Dark Navy `oklch(0.15 0.02 280)` - Ratio 8.3:1 ✓
+  - Secondary (Money Green) `oklch(0.65 0.15 155)`: White `oklch(0.98 0 0)` - Ratio 4.9:1 ✓
 
 ## Font Selection
 
-Typefaces should bridge retro gaming aesthetics with modern readability - chunky and bold for headings, clean and technical for controls.
+Professional yet playful typefaces that balance financial seriousness with gaming fun.
 
 - **Typographic Hierarchy**: 
-  - H1 (App Title): Press Start 2P Bold / 32px / wide letter spacing (0.1em) - Authentic pixel game font for main branding
-  - H2 (Section Headers): Space Grotesk Bold / 24px / tight tracking (-0.02em) - Modern geometric font with retro tech feel
-  - Body (Controls/Labels): JetBrains Mono Medium / 14px / normal spacing - Monospace for that console/debug aesthetic
-  - Buttons: Space Grotesk SemiBold / 16px / uppercase / letter-spacing 0.05em - Clear, confident action labels
+  - H1 (App Title): Press Start 2P Bold / 36px / wide letter spacing (0.08em) - Authentic pixel game font for "Federal Reserve Mario"
+  - H2 (Section Headers): Space Grotesk Bold / 28px / tight tracking (-0.01em) - Modern, trustworthy headlines
+  - H3 (Card Titles): Space Grotesk SemiBold / 20px / normal spacing - Clear subsection hierarchy
+  - Body (Descriptions): JetBrains Mono Regular / 14px / line-height 1.6 - Readable, technical feel for data
+  - Numbers (Values/Amounts): JetBrains Mono SemiBold / 16-24px / tabular-nums - Clear financial figures
+  - Buttons: Space Grotesk Bold / 16px / uppercase / letter-spacing 0.06em - Confident action labels
 
 ## Animations
 
-Animations should feel snappy and game-like - no slow, organic easing. Think instant reactions, pop-in effects, and satisfying micro-interactions that reward every click.
+Animations should celebrate achievement and provide clear feedback - think coin collection sounds visualized, satisfying mint confirmations, and playful Mario movements through charts.
 
-- Sticker placement: Scale-up pop (0 → 1.1 → 1) with slight rotation wobble in 200ms
-- Filter application: Quick flash overlay (100ms) followed by cross-fade transition
-- Button interactions: Immediate scale down on press (0.95), bounce back with slight overshoot
-- Tool panel transitions: Slide-in from edge with elastic easing, 300ms
-- Success states: Celebratory particle burst effect for save/export actions
+- Coin Minting: Scale-up appearance (0 → 1.2 → 1) with golden shimmer effect, 400ms with bounce easing
+- Mario Chart Movement: Smooth position transitions following data curve, subtle jump animation at peaks, 800ms
+- Treasury Value Updates: Number counter animation rolling up to new total, 600ms
+- Transfer Success: Coin slides from treasury to recipient with trail effect, 500ms
+- Button Interactions: Haptic-style scale down (0.95) on press, immediate spring back
+- Chart Updates: New data points fade in with expanding circle ripple, 300ms
 
 ## Component Selection
 
 - **Components**:
-  - Dialog for export options with format selection and quality settings
-  - Slider for all intensity/value controls (pixelation, color shifts, filter strength)
-  - Tabs for organizing tool categories (Filters, Colors, Pixels, Stickers)
-  - Card for displaying the main image canvas with border/shadow for depth
-  - Button variants for primary (save), secondary (reset), and ghost (tool toggles)
-  - Badge for active filter indicators and sticker count
-  - Tooltip for explaining advanced controls on hover
-  - ScrollArea for sticker/filter galleries when content exceeds viewport
-  - Separator between tool sections for visual organization
+  - Dialog for minting interface with multi-step form (value → content → confirm)
+  - Card for individual coin displays with content preview
+  - Tabs for main navigation (My Treasury, Charts, Global Ledger, Mint)
+  - Badge for coin value, content type labels, status indicators
+  - Button variants for primary (mint), secondary (transfer), ghost (view details)
+  - Table for global ledger with sortable columns
+  - ScrollArea for long coin lists and ledger
+  - Separator for visual organization between treasury sections
+  - Progress for upload/minting progress feedback
+  - Tooltip for explaining treasury terms and features
 
 - **Customizations**:
-  - Custom Canvas component with touch/drag handlers for sticker manipulation
-  - Pixel-perfect grid overlay toggle for alignment assistance
-  - Custom color picker with gaming palette presets
-  - Filter thumbnail previews showing actual effect on mini Mario
+  - Custom chart component with D3 showing Mario character as data point
+  - Coin card component with metallic gold shimmer effect
+  - Receipt component with printable stylesheet
+  - Content attachment preview cards for each media type
+  - Treasury balance display with animated counter
 
 - **States**:
-  - Buttons: Default has neon glow border, hover intensifies glow, active scales down with satisfying click
-  - Sliders: Track glows with accent color, thumb is oversized circle with inner shadow
-  - Tool panels: Active tool highlighted with accent border-left, inactive are muted
-  - Stickers: Selected has dashed outline with corner handles, unselected is transparent overlay on hover
+  - Mint Button: Default gold glow, hover intensifies with pulsing effect, active scales with satisfying click
+  - Coin Cards: Default subtle shadow, hover elevates with stronger shadow, selected has gold border
+  - Chart Mario: Idle state has slight bobbing animation, active state jumps when values increase
+  - Transfer Button: Default secondary style, hover shows recipient preview, disabled is greyed with tooltip
 
 - **Icon Selection**:
-  - Sparkles for filters/effects
-  - Palette for color tools
-  - GridFour for pixelation
-  - Sticker for overlay panel
-  - FloppyDisk for save (retro!)
-  - Download for export
-  - ArrowCounterClockwise for reset
-  - Play for preview toggle
+  - Coins/CurrencyDollar for minting and treasury
+  - TrendUp/TrendDown for value changes
+  - MusicNotes, Image, VideoCamera, Pen, Users for content types
+  - ArrowsLeftRight for transfers
+  - Receipt for transaction records
+  - Globe for global ledger
+  - ChartLine for analytics
 
 - **Spacing**:
-  - Tool panels: p-6 with gap-4 between control groups
-  - Button groups: gap-3 for related actions
-  - Main canvas: mx-auto with max-w-4xl, my-8
-  - Section headers: mb-4
-  - Inline controls: gap-2 for label + input pairs
+  - Main dashboard: Container with max-w-7xl, px-4, py-8
+  - Coin grid: grid-cols-1 md:grid-cols-2 lg:grid-cols-3 with gap-6
+  - Minting form: space-y-6 for form sections
+  - Treasury stats: flex with gap-4 for value cards
+  - Chart container: p-6 with aspect-video for responsive sizing
 
 - **Mobile**:
-  - Tool panels collapse into bottom sheet drawer (pulled up from bottom)
-  - Canvas takes full width with touch-zoom enabled
-  - Sticker controls switch to single-finger drag, two-finger pinch-rotate-scale
-  - Filter gallery becomes horizontal scroll strip
-  - Export menu simplified to essential options only
+  - Tabs become bottom navigation bar
+  - Coin cards stack vertically at full width
+  - Minting form becomes single-column with larger touch targets
+  - Charts maintain aspect ratio, Mario character scales appropriately
+  - Global ledger switches to card view instead of table
+  - Swipe gestures for navigating between coins
