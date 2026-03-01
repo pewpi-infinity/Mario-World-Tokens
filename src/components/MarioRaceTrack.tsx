@@ -5,8 +5,11 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import { ScienceLaboratory } from '@/components/ScienceLaboratory'
 import { toast } from 'sonner'
+import { Robot, PaperPlaneTilt, X } from '@phosphor-icons/react'
 
 interface MarioRaceTrackProps {
   open: boolean
@@ -40,6 +43,11 @@ export function MarioRaceTrack({ open, onClose }: MarioRaceTrackProps) {
   const [isRacing, setIsRacing] = useState(false)
   const [raceTime, setRaceTime] = useState(0)
   const [showLab, setShowLab] = useState(false)
+  const [showAIChat, setShowAIChat] = useState(false)
+  const [aiMessages, setAIMessages] = useState<Array<{ type: 'user' | 'bot', content: string, timestamp: number }>>([])
+  const [currentMessage, setCurrentMessage] = useState('')
+  const [isAITyping, setIsAITyping] = useState(false)
+  const chatScrollRef = useRef<HTMLDivElement>(null)
   const [racers, setRacers] = useState<Racer[]>([
     { id: 'player', name: 'You (Mario)', emoji: '🏎️', position: 0, lap: 0, speed: 0, velocity: 0, acceleration: 0, mass: 100, friction: 0.95, powerup: null },
     { id: 'luigi', name: 'Luigi', emoji: '🏁', position: 0, lap: 0, speed: 0, velocity: 0, acceleration: 0, mass: 95, friction: 0.96, powerup: null },
@@ -176,6 +184,63 @@ export function MarioRaceTrack({ open, onClose }: MarioRaceTrackProps) {
       window.removeEventListener('keyup', handleKeyUp)
     }
   }, [isRacing, open])
+
+  useEffect(() => {
+    if (chatScrollRef.current) {
+      chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight
+    }
+  }, [aiMessages])
+
+  const handleSendAIMessage = async () => {
+    if (!currentMessage.trim() || isAITyping) return
+
+    const userMsg = {
+      type: 'user' as const,
+      content: currentMessage.trim(),
+      timestamp: Date.now()
+    }
+
+    setAIMessages(prev => [...prev, userMsg])
+    setCurrentMessage('')
+    setIsAITyping(true)
+
+    try {
+      const prompt = (window as any).spark.llmPrompt`You are the Movement AI Bot for the Mario Race Track system. 
+You help users with:
+- Improving racing physics and mechanics
+- Understanding the physics simulation (velocity, acceleration, mass, friction)
+- Adding new race features
+- Creating new character animations
+- Optimizing race track design
+- Explaining how the physics calculations work
+
+User question: ${userMsg.content}
+
+Current race stats:
+- Player velocity: ${racers[0].velocity.toFixed(2)} units/s
+- Player acceleration: ${racers[0].acceleration.toFixed(2)} m/s²
+- Player mass: ${racers[0].mass} kg
+- Friction coefficient: ${racers[0].friction}
+
+Provide helpful, specific guidance related to the Mario Race Track and physics simulation. Be conversational and educational.`
+
+      const response = await (window as any).spark.llm(prompt, 'gpt-4o-mini')
+
+      const botMsg = {
+        type: 'bot' as const,
+        content: response,
+        timestamp: Date.now()
+      }
+
+      setAIMessages(prev => [...prev, botMsg])
+      toast.success('Movement AI responded!')
+    } catch (error) {
+      toast.error('AI response failed')
+      console.error(error)
+    } finally {
+      setIsAITyping(false)
+    }
+  }
 
   const sortedRacers = [...racers].sort((a, b) => {
     if (a.lap !== b.lap) return b.lap - a.lap
@@ -327,6 +392,98 @@ export function MarioRaceTrack({ open, onClose }: MarioRaceTrackProps) {
                 🔬 Enter Science Laboratory
               </Button>
             )}
+
+            <Card className="bg-[oklch(0.25_0.03_285)] border-[oklch(0.35_0.05_285)]">
+              <CardContent className="pt-6">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-xl font-bold text-[oklch(0.75_0.18_85)] flex items-center gap-2">
+                    <Robot weight="fill" />
+                    Movement AI Assistant
+                  </h3>
+                  <Button
+                    size="sm"
+                    variant={showAIChat ? "destructive" : "outline"}
+                    onClick={() => setShowAIChat(!showAIChat)}
+                    className="text-xs"
+                  >
+                    {showAIChat ? <><X size={14} /> Close</> : <><Robot size={14} weight="fill" /> Open Chat</>}
+                  </Button>
+                </div>
+
+                {showAIChat && (
+                  <div className="space-y-3">
+                    <ScrollArea className="h-64 bg-[oklch(0.18_0.02_280)] rounded p-3" ref={chatScrollRef}>
+                      {aiMessages.length === 0 ? (
+                        <div className="text-center text-[oklch(0.65_0.02_280)] py-8 text-sm">
+                          <Robot size={32} weight="fill" className="mx-auto mb-2 opacity-50" />
+                          <p>Ask me about race physics, mechanics, or improvements!</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          {aiMessages.map((msg, idx) => (
+                            <div
+                              key={idx}
+                              className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}
+                            >
+                              <div
+                                className={`max-w-[85%] rounded-lg p-3 text-sm ${
+                                  msg.type === 'user'
+                                    ? 'bg-[oklch(0.75_0.18_85)] text-[oklch(0.15_0.02_280)]'
+                                    : 'bg-[oklch(0.25_0.03_285)] text-white'
+                                }`}
+                              >
+                                {msg.type === 'bot' && (
+                                  <div className="flex items-start gap-2">
+                                    <Robot size={16} weight="fill" className="mt-0.5 flex-shrink-0" />
+                                    <div className="whitespace-pre-wrap">{msg.content}</div>
+                                  </div>
+                                )}
+                                {msg.type === 'user' && msg.content}
+                              </div>
+                            </div>
+                          ))}
+                          {isAITyping && (
+                            <div className="flex justify-start">
+                              <div className="bg-[oklch(0.25_0.03_285)] rounded-lg p-3 flex items-center gap-2">
+                                <div className="flex gap-1">
+                                  <div className="w-2 h-2 rounded-full bg-[oklch(0.75_0.18_85)] animate-bounce" style={{ animationDelay: '0ms' }} />
+                                  <div className="w-2 h-2 rounded-full bg-[oklch(0.75_0.18_85)] animate-bounce" style={{ animationDelay: '150ms' }} />
+                                  <div className="w-2 h-2 rounded-full bg-[oklch(0.75_0.18_85)] animate-bounce" style={{ animationDelay: '300ms' }} />
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </ScrollArea>
+
+                    <div className="flex gap-2">
+                      <Input
+                        value={currentMessage}
+                        onChange={(e) => setCurrentMessage(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault()
+                            handleSendAIMessage()
+                          }
+                        }}
+                        placeholder="Ask about physics, controls, or features..."
+                        className="flex-1 bg-[oklch(0.15_0.02_280)] border-[oklch(0.35_0.05_285)] text-white text-sm"
+                        disabled={isAITyping}
+                      />
+                      <Button
+                        onClick={handleSendAIMessage}
+                        disabled={!currentMessage.trim() || isAITyping}
+                        className="bg-[oklch(0.75_0.18_85)] hover:bg-[oklch(0.80_0.20_85)] text-[oklch(0.15_0.02_280)]"
+                        size="sm"
+                      >
+                        <PaperPlaneTilt weight="fill" size={16} />
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
         ) : (
           <ScienceLaboratory 

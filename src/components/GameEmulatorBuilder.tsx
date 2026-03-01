@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { GameController, Play, Pause, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, GithubLogo } from '@phosphor-icons/react'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { GameController, Play, Pause, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, GithubLogo, Robot, PaperPlaneTilt, X } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 
 interface GameEmulatorBuilderProps {
@@ -23,8 +24,13 @@ export function GameEmulatorBuilder({ open, onClose }: GameEmulatorBuilderProps)
   })
   const [isPlaying, setIsPlaying] = useState(false)
   const [keys, setKeys] = useState<Set<string>>(new Set())
+  const [showAIChat, setShowAIChat] = useState(false)
+  const [aiMessages, setAIMessages] = useState<Array<{ type: 'user' | 'bot', content: string, timestamp: number }>>([])
+  const [currentMessage, setCurrentMessage] = useState('')
+  const [isAITyping, setIsAITyping] = useState(false)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const animationRef = useRef<number>()
+  const chatScrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -162,6 +168,63 @@ export function GameEmulatorBuilder({ open, onClose }: GameEmulatorBuilderProps)
         description: 'Mario-3 game engine loaded'
       })
     }, 2000)
+  }
+
+  useEffect(() => {
+    if (chatScrollRef.current) {
+      chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight
+    }
+  }, [aiMessages])
+
+  const handleSendAIMessage = async () => {
+    if (!currentMessage.trim() || isAITyping) return
+
+    const userMsg = {
+      type: 'user' as const,
+      content: currentMessage.trim(),
+      timestamp: Date.now()
+    }
+
+    setAIMessages(prev => [...prev, userMsg])
+    setCurrentMessage('')
+    setIsAITyping(true)
+
+    try {
+      const prompt = (window as any).spark.llmPrompt`You are the Game AI Bot for the Mario Game Emulator Builder system.
+You help users with:
+- Building custom Mario games and emulators
+- Understanding game mechanics and physics
+- Creating new levels and sprites
+- Integrating with the pewpi-infinity/Mario-3 GitHub repository
+- Designing game features and power-ups
+- Optimizing game performance
+
+User question: ${userMsg.content}
+
+Current game stats:
+- Mario Position: X=${gameState.marioX}, Y=${gameState.marioY}
+- Coins Collected: ${gameState.coins}
+- Score: ${gameState.score}
+- Is Playing: ${isPlaying}
+
+Provide helpful, specific guidance related to game building, emulators, and Mario game mechanics. Be conversational and educational.`
+
+      const response = await (window as any).spark.llm(prompt, 'gpt-4o-mini')
+
+      const botMsg = {
+        type: 'bot' as const,
+        content: response,
+        timestamp: Date.now()
+      }
+
+      setAIMessages(prev => [...prev, botMsg])
+      toast.success('Game AI responded!')
+    } catch (error) {
+      toast.error('AI response failed')
+      console.error(error)
+    } finally {
+      setIsAITyping(false)
+    }
   }
 
   return (
@@ -314,6 +377,96 @@ export function GameEmulatorBuilder({ open, onClose }: GameEmulatorBuilderProps)
                   🎵 Sound Editor
                 </Button>
               </div>
+            </Card>
+
+            <Card className="p-4 bg-[oklch(0.22_0.03_285)] border-2 border-[oklch(0.75_0.18_85)]">
+              <div className="flex justify-between items-center mb-3">
+                <h3 className="font-bold text-[oklch(0.75_0.18_85)] text-sm pixel-font flex items-center gap-2">
+                  <Robot weight="fill" />
+                  GAME AI
+                </h3>
+                <Button
+                  size="sm"
+                  variant={showAIChat ? "destructive" : "outline"}
+                  onClick={() => setShowAIChat(!showAIChat)}
+                  className="text-xs h-6"
+                >
+                  {showAIChat ? <><X size={12} /> Close</> : <><Robot size={12} weight="fill" /> Chat</>}
+                </Button>
+              </div>
+
+              {showAIChat && (
+                <div className="space-y-2">
+                  <ScrollArea className="h-48 bg-[oklch(0.18_0.02_280)] rounded p-2" ref={chatScrollRef}>
+                    {aiMessages.length === 0 ? (
+                      <div className="text-center text-[oklch(0.65_0.02_280)] py-6 text-xs">
+                        <Robot size={24} weight="fill" className="mx-auto mb-2 opacity-50" />
+                        <p>Ask me about game development!</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        {aiMessages.map((msg, idx) => (
+                          <div
+                            key={idx}
+                            className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}
+                          >
+                            <div
+                              className={`max-w-[85%] rounded p-2 text-xs ${
+                                msg.type === 'user'
+                                  ? 'bg-[oklch(0.75_0.18_85)] text-[oklch(0.15_0.02_280)]'
+                                  : 'bg-[oklch(0.25_0.03_285)] text-white'
+                              }`}
+                            >
+                              {msg.type === 'bot' && (
+                                <div className="flex items-start gap-1">
+                                  <Robot size={12} weight="fill" className="mt-0.5 flex-shrink-0" />
+                                  <div className="whitespace-pre-wrap text-[10px] leading-relaxed">{msg.content}</div>
+                                </div>
+                              )}
+                              {msg.type === 'user' && msg.content}
+                            </div>
+                          </div>
+                        ))}
+                        {isAITyping && (
+                          <div className="flex justify-start">
+                            <div className="bg-[oklch(0.25_0.03_285)] rounded p-2 flex items-center gap-1">
+                              <div className="flex gap-1">
+                                <div className="w-1.5 h-1.5 rounded-full bg-[oklch(0.75_0.18_85)] animate-bounce" style={{ animationDelay: '0ms' }} />
+                                <div className="w-1.5 h-1.5 rounded-full bg-[oklch(0.75_0.18_85)] animate-bounce" style={{ animationDelay: '150ms' }} />
+                                <div className="w-1.5 h-1.5 rounded-full bg-[oklch(0.75_0.18_85)] animate-bounce" style={{ animationDelay: '300ms' }} />
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </ScrollArea>
+
+                  <div className="flex gap-1">
+                    <Input
+                      value={currentMessage}
+                      onChange={(e) => setCurrentMessage(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault()
+                          handleSendAIMessage()
+                        }
+                      }}
+                      placeholder="Ask about game features..."
+                      className="flex-1 bg-[oklch(0.15_0.02_280)] border-[oklch(0.35_0.05_285)] text-white text-xs h-8"
+                      disabled={isAITyping}
+                    />
+                    <Button
+                      onClick={handleSendAIMessage}
+                      disabled={!currentMessage.trim() || isAITyping}
+                      className="bg-[oklch(0.75_0.18_85)] hover:bg-[oklch(0.80_0.20_85)] text-[oklch(0.15_0.02_280)] h-8 px-2"
+                      size="sm"
+                    >
+                      <PaperPlaneTilt weight="fill" size={14} />
+                    </Button>
+                  </div>
+                </div>
+              )}
             </Card>
           </div>
         </div>
