@@ -15,10 +15,12 @@ import {
   Square,
   Circle,
   Sticker,
-  Coins
+  Coins,
+  Infinity
 } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { MarioCoin } from '@/lib/types'
+import { InfinityAIChat } from '@/components/InfinityAIChat'
 
 interface MarioArtStudioProps {
   open: boolean
@@ -44,6 +46,7 @@ export function MarioArtStudio({ open, onClose, onMintArt, currentUser }: MarioA
   const [showMintDialog, setShowMintDialog] = useState(false)
   const [artTitle, setArtTitle] = useState('')
   const [artDescription, setArtDescription] = useState('')
+  const [showAIChat, setShowAIChat] = useState(false)
 
   const pixelSize = 8
   const canvasWidth = 800
@@ -253,13 +256,25 @@ export function MarioArtStudio({ open, onClose, onMintArt, currentUser }: MarioA
   }
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-[95vw] h-[95vh] p-0 flex flex-col overflow-hidden bg-gradient-to-br from-[oklch(0.22_0.03_285)] to-[oklch(0.18_0.02_290)] border-2 border-[oklch(0.75_0.18_85)]">
         <div className="p-4 sm:p-6 pb-2 flex-shrink-0">
           <DialogHeader>
-            <DialogTitle className="text-xl sm:text-2xl md:text-3xl font-bold text-[oklch(0.75_0.18_85)] flex items-center gap-2 sm:gap-3 pixel-font">
-              🎨 MARIO ART STUDIO
-            </DialogTitle>
+            <div className="flex items-center justify-between">
+              <DialogTitle className="text-xl sm:text-2xl md:text-3xl font-bold text-[oklch(0.75_0.18_85)] flex items-center gap-2 sm:gap-3 pixel-font">
+                🎨 MARIO ART STUDIO
+              </DialogTitle>
+              <Button
+                onClick={() => setShowAIChat(true)}
+                size="sm"
+                variant="outline"
+                className="flex-shrink-0 text-xs sm:text-sm border-[oklch(0.75_0.18_85)] hover:bg-[oklch(0.75_0.18_85)] hover:text-[oklch(0.15_0.02_280)]"
+              >
+                <Infinity size={16} className="sm:mr-2" weight="fill" />
+                <span className="hidden sm:inline">AI Help</span>
+              </Button>
+            </div>
           </DialogHeader>
         </div>
 
@@ -462,6 +477,13 @@ export function MarioArtStudio({ open, onClose, onMintArt, currentUser }: MarioA
         )}
       </DialogContent>
     </Dialog>
+
+    <InfinityAIChat
+      open={showAIChat}
+      onClose={() => setShowAIChat(false)}
+      initialBot="art"
+    />
+  </>
   )
 }
 

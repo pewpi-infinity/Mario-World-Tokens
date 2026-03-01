@@ -23,10 +23,12 @@ import {
   Microphone,
   Circle,
   Stack,
-  Coin
+  Coin,
+  Infinity
 } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { MarioCoin } from '@/lib/types'
+import { InfinityAIChat } from '@/components/InfinityAIChat'
 
 interface UnifiedMusicStudioProps {
   open: boolean
@@ -53,6 +55,7 @@ export function UnifiedMusicStudio({ open, onClose, onMintMusic, currentUser }: 
   const [trackTitle, setTrackTitle] = useState('')
   const [artistName, setArtistName] = useState('')
   const [selectedInstrument, setSelectedInstrument] = useState('piano')
+  const [showAIChat, setShowAIChat] = useState(false)
   const [tracks, setTracks] = useState<Track[]>([
     { id: '1', name: 'Piano', instrument: 'piano', enabled: true, volume: 80, recording: null },
     { id: '2', name: 'Guitar', instrument: 'guitar', enabled: false, volume: 80, recording: null },
@@ -403,14 +406,26 @@ export function UnifiedMusicStudio({ open, onClose, onMintMusic, currentUser }: 
   }
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-[100vw] sm:max-w-[98vw] h-[100dvh] sm:h-[95vh] p-0 flex flex-col overflow-hidden bg-gradient-to-br from-[oklch(0.22_0.03_285)] to-[oklch(0.18_0.02_290)] border-2 border-[oklch(0.75_0.18_85)]">
         <div className="p-3 sm:p-4 md:p-6 pb-2 flex-shrink-0 border-b border-[oklch(0.35_0.05_285)]">
           <DialogHeader>
-            <DialogTitle className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-[oklch(0.75_0.18_85)] flex items-center gap-2">
-              <MusicNotes weight="fill" className="text-xl sm:text-2xl md:text-3xl flex-shrink-0" />
-              <span className="truncate">Mario Music Studio 🎵</span>
-            </DialogTitle>
+            <div className="flex items-center justify-between">
+              <DialogTitle className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-[oklch(0.75_0.18_85)] flex items-center gap-2">
+                <MusicNotes weight="fill" className="text-xl sm:text-2xl md:text-3xl flex-shrink-0" />
+                <span className="truncate">Mario Music Studio 🎵</span>
+              </DialogTitle>
+              <Button
+                onClick={() => setShowAIChat(true)}
+                size="sm"
+                variant="outline"
+                className="flex-shrink-0 text-xs sm:text-sm border-[oklch(0.75_0.18_85)] hover:bg-[oklch(0.75_0.18_85)] hover:text-[oklch(0.15_0.02_280)]"
+              >
+                <Infinity size={16} className="sm:mr-2" weight="fill" />
+                <span className="hidden sm:inline">AI Help</span>
+              </Button>
+            </div>
             <DialogDescription className="text-[oklch(0.65_0.02_280)] text-xs sm:text-sm">
               Full music production suite - drums, piano, synth, vocals & mint tokens
             </DialogDescription>
@@ -762,5 +777,12 @@ export function UnifiedMusicStudio({ open, onClose, onMintMusic, currentUser }: 
         </div>
       </DialogContent>
     </Dialog>
+
+    <InfinityAIChat
+      open={showAIChat}
+      onClose={() => setShowAIChat(false)}
+      initialBot="music"
+    />
+  </>
   )
 }
