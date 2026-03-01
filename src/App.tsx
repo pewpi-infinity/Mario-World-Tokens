@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useKV } from '@github/spark/hooks'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { TabsContent } from '@/components/ui/tabs'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Coins, TrendUp, Globe, Storefront } from '@phosphor-icons/react'
+import { Coins } from '@phosphor-icons/react'
 import { MintingInterface } from '@/components/MintingInterface'
 import { WalletBalance } from '@/components/WalletBalance'
 import { TreasuryCharts } from '@/components/TreasuryCharts'
@@ -12,6 +12,7 @@ import { TokenCard } from '@/components/TokenCard'
 import { Marketplace } from '@/components/Marketplace'
 import { AnimatedMarioButtons } from '@/components/AnimatedMarioButtons'
 import { MarioLogo } from '@/components/MarioLogo'
+import { MarioBrickTabs } from '@/components/MarioBrickTabs'
 import { UnifiedMusicStudio } from '@/components/UnifiedMusicStudio'
 import { CollaborativeMusicStudio } from '@/components/CollaborativeMusicStudio'
 import { MarioArtStudio } from '@/components/MarioArtStudio'
@@ -212,88 +213,60 @@ function App() {
       <main className="w-full px-2 sm:px-4 py-4 sm:py-8 max-w-7xl mx-auto">
         <WalletBalance stats={treasuryStats} />
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-4 sm:mt-8">
-          <TabsList className="grid grid-cols-4 w-full max-w-2xl mx-auto bg-muted p-1 h-auto">
-            <TabsTrigger
-              value="treasury"
-              className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 data-[state=active]:bg-[oklch(0.75_0.18_85)] data-[state=active]:text-[oklch(0.15_0.02_280)] px-1 sm:px-3 py-2 text-xs sm:text-sm"
-            >
-              <Coins size={16} className="sm:w-5 sm:h-5" weight="fill" />
-              <span className="hidden sm:inline">Treasury</span>
-              <span className="sm:hidden">Vault</span>
-            </TabsTrigger>
-            <TabsTrigger
-              value="marketplace"
-              className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 data-[state=active]:bg-[oklch(0.65_0.15_155)] data-[state=active]:text-white px-1 sm:px-3 py-2 text-xs sm:text-sm"
-            >
-              <Storefront size={16} className="sm:w-5 sm:h-5" weight="fill" />
-              <span>Market</span>
-            </TabsTrigger>
-            <TabsTrigger
-              value="charts"
-              className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 data-[state=active]:bg-[oklch(0.70_0.24_190)] data-[state=active]:text-white px-1 sm:px-3 py-2 text-xs sm:text-sm"
-            >
-              <TrendUp size={16} className="sm:w-5 sm:h-5" weight="fill" />
-              <span>Charts</span>
-            </TabsTrigger>
-            <TabsTrigger
-              value="ledger"
-              className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 data-[state=active]:bg-[oklch(0.58_0.24_330)] data-[state=active]:text-white px-1 sm:px-3 py-2 text-xs sm:text-sm"
-            >
-              <Globe size={16} className="sm:w-5 sm:h-5" weight="fill" />
-              <span>Ledger</span>
-            </TabsTrigger>
-          </TabsList>
+        <MarioBrickTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
-          <TabsContent value="treasury" className="mt-4 sm:mt-8">
-            {userCoins.length === 0 ? (
-              <Card className="p-6 sm:p-12 text-center bg-card border-2 border-border">
-                <div className="max-w-md mx-auto">
-                  <Coins size={48} className="sm:w-16 sm:h-16 mx-auto mb-4 text-muted-foreground" weight="fill" />
-                  <h3 className="text-xl sm:text-2xl font-bold mb-2">No Coins Yet</h3>
-                  <p className="text-sm sm:text-base text-muted-foreground mb-6">
-                    Start minting Mario Coins backed by your creative content. You are your own central bank!
-                  </p>
-                  <Button
-                    size="lg"
-                    onClick={() => setShowMinting(true)}
-                    className="bg-[oklch(0.75_0.18_85)] text-[oklch(0.15_0.02_280)] hover:bg-[oklch(0.80_0.20_85)] w-full sm:w-auto"
-                  >
-                    <span>🟡 Mint Your First Coin</span>
-                  </Button>
+        <div className="mt-4 sm:mt-8">
+          {activeTab === 'treasury' && (
+            <>
+              {userCoins.length === 0 ? (
+                <Card className="p-6 sm:p-12 text-center bg-card border-2 border-border">
+                  <div className="max-w-md mx-auto">
+                    <Coins size={48} className="sm:w-16 sm:h-16 mx-auto mb-4 text-muted-foreground" weight="fill" />
+                    <h3 className="text-xl sm:text-2xl font-bold mb-2">No Coins Yet</h3>
+                    <p className="text-sm sm:text-base text-muted-foreground mb-6">
+                      Start minting Mario Coins backed by your creative content. You are your own central bank!
+                    </p>
+                    <Button
+                      size="lg"
+                      onClick={() => setShowMinting(true)}
+                      className="bg-[oklch(0.75_0.18_85)] text-[oklch(0.15_0.02_280)] hover:bg-[oklch(0.80_0.20_85)] w-full sm:w-auto"
+                    >
+                      <span>🟡 Mint Your First Coin</span>
+                    </Button>
+                  </div>
+                </Card>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
+                  {userCoins.map((coin) => (
+                    <TokenCard
+                      key={coin.id}
+                      coin={coin}
+                      onTransfer={(coinId) => {
+                        toast.info('Transfer feature coming soon!')
+                      }}
+                    />
+                  ))}
                 </div>
-              </Card>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
-                {userCoins.map((coin) => (
-                  <TokenCard
-                    key={coin.id}
-                    coin={coin}
-                    onTransfer={(coinId) => {
-                      toast.info('Transfer feature coming soon!')
-                    }}
-                  />
-                ))}
-              </div>
-            )}
-          </TabsContent>
+              )}
+            </>
+          )}
 
-          <TabsContent value="marketplace" className="mt-4 sm:mt-8">
+          {activeTab === 'marketplace' && (
             <Marketplace
               userCoins={userCoins}
               currentUser={currentUser}
               onTransferComplete={handleTransfer}
             />
-          </TabsContent>
+          )}
 
-          <TabsContent value="charts" className="mt-4 sm:mt-8">
+          {activeTab === 'charts' && (
             <TreasuryCharts stats={treasuryStats} marioLogo={marioImage} />
-          </TabsContent>
+          )}
 
-          <TabsContent value="ledger" className="mt-4 sm:mt-8">
+          {activeTab === 'ledger' && (
             <GlobalLedger globalCoins={globalCoins || []} />
-          </TabsContent>
-        </Tabs>
+          )}
+        </div>
       </main>
 
       <MintingInterface
