@@ -13,12 +13,12 @@ interface TreasuryChartsProps {
 }
 
 const DENOMINATION_COLORS = {
-  1: 'oklch(0.75 0.20 85)',
-  5: 'oklch(0.55 0.24 30)',
-  10: 'oklch(0.45 0.18 145)',
-  20: 'oklch(0.60 0.22 260)',
-  50: 'oklch(0.70 0.18 330)',
-  100: 'oklch(0.65 0.20 60)'
+  1: 'oklch(0.80 0.25 95)',
+  5: 'oklch(0.65 0.28 25)',
+  10: 'oklch(0.55 0.25 145)',
+  20: 'oklch(0.65 0.25 270)',
+  50: 'oklch(0.75 0.25 340)',
+  100: 'oklch(0.70 0.25 60)'
 }
 
 export function TreasuryCharts({ tokens, transactions }: TreasuryChartsProps) {
@@ -61,18 +61,18 @@ export function TreasuryCharts({ tokens, transactions }: TreasuryChartsProps) {
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.5 }}
         >
-          <Card className="bg-gradient-to-br from-[oklch(0.75_0.20_85)] to-[oklch(0.65_0.20_85)] border-none text-accent-foreground">
+          <Card className="bg-gradient-to-br from-accent via-[oklch(0.85_0.28_100)] to-[oklch(0.75_0.25_90)] border-none text-accent-foreground shadow-2xl">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium opacity-90">Total Circulation</p>
-                  <p className="text-3xl font-bold font-serif">${totalCirculation.toLocaleString()}</p>
+                  <p className="text-sm font-bold opacity-90">Total Circulation</p>
+                  <p className="text-4xl font-bold font-serif drop-shadow-lg">${totalCirculation.toLocaleString()}</p>
                 </div>
                 <motion.div
-                  animate={{ rotate: [0, 10, -10, 0] }}
-                  transition={{ duration: 2, repeat: Infinity }}
+                  animate={{ rotate: [0, 360] }}
+                  transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
                 >
-                  <Coins size={40} weight="fill" />
+                  <Coins size={56} weight="fill" className="drop-shadow-lg" />
                 </motion.div>
               </div>
             </CardContent>
@@ -84,18 +84,18 @@ export function TreasuryCharts({ tokens, transactions }: TreasuryChartsProps) {
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.1 }}
         >
-          <Card className="bg-gradient-to-br from-[oklch(0.65_0.25_25)] to-[oklch(0.55_0.25_25)] border-none text-white">
+          <Card className="bg-gradient-to-br from-primary via-[oklch(0.55_0.30_30)] to-[oklch(0.45_0.28_25)] border-none text-white shadow-2xl">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium opacity-90">Notes in Circulation</p>
-                  <p className="text-3xl font-bold font-serif">{tokens.length.toLocaleString()}</p>
+                  <p className="text-sm font-bold opacity-90">Notes in Circulation</p>
+                  <p className="text-4xl font-bold font-serif drop-shadow-lg">{tokens.length.toLocaleString()}</p>
                 </div>
                 <motion.div
-                  animate={{ y: [0, -8, 0] }}
-                  transition={{ duration: 1.5, repeat: Infinity }}
+                  animate={{ y: [0, -12, 0] }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
                 >
-                  <TrendUp size={40} weight="fill" />
+                  <TrendUp size={56} weight="fill" className="drop-shadow-lg" />
                 </motion.div>
               </div>
             </CardContent>
@@ -107,18 +107,18 @@ export function TreasuryCharts({ tokens, transactions }: TreasuryChartsProps) {
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
-          <Card className="bg-gradient-to-br from-[oklch(0.55_0.20_145)] to-[oklch(0.45_0.20_145)] border-none text-white">
+          <Card className="bg-gradient-to-br from-secondary via-[oklch(0.50_0.25_150)] to-[oklch(0.40_0.22_145)] border-none text-white shadow-2xl">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium opacity-90">Active Minters</p>
-                  <p className="text-3xl font-bold font-serif">{uniqueMinters}</p>
+                  <p className="text-sm font-bold opacity-90">Active Minters</p>
+                  <p className="text-4xl font-bold font-serif drop-shadow-lg">{uniqueMinters}</p>
                 </div>
                 <motion.div
-                  animate={{ scale: [1, 1.1, 1] }}
-                  transition={{ duration: 2, repeat: Infinity }}
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
                 >
-                  <Users size={40} weight="fill" />
+                  <Users size={56} weight="fill" className="drop-shadow-lg" />
                 </motion.div>
               </div>
             </CardContent>
@@ -127,9 +127,9 @@ export function TreasuryCharts({ tokens, transactions }: TreasuryChartsProps) {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="border-2 border-primary/20">
+        <Card className="border-3 border-accent shadow-2xl bg-card/95 backdrop-blur">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-2xl">
               <span>Notes by Denomination</span>
             </CardTitle>
             <MarioChartCharacter 
@@ -142,7 +142,7 @@ export function TreasuryCharts({ tokens, transactions }: TreasuryChartsProps) {
               config={{
                 count: {
                   label: "Count",
-                  color: "oklch(0.55 0.24 30)",
+                  color: "oklch(0.65 0.28 25)",
                 },
               }}
               className="h-[300px]"
@@ -152,12 +152,12 @@ export function TreasuryCharts({ tokens, transactions }: TreasuryChartsProps) {
                   <CartesianGrid strokeDasharray="3 3" opacity={0.2} stroke="oklch(0.7 0.1 245)" />
                   <XAxis 
                     dataKey="denomination" 
-                    stroke="oklch(0.8 0.05 245)"
-                    style={{ fontSize: '12px', fontFamily: 'Inter' }}
+                    stroke="oklch(0.5 0.15 265)"
+                    style={{ fontSize: '14px', fontFamily: 'Inter', fontWeight: '600' }}
                   />
                   <YAxis 
-                    stroke="oklch(0.8 0.05 245)"
-                    style={{ fontSize: '12px', fontFamily: 'Inter' }}
+                    stroke="oklch(0.5 0.15 265)"
+                    style={{ fontSize: '14px', fontFamily: 'Inter', fontWeight: '600' }}
                   />
                   <ChartTooltip content={<ChartTooltipContent />} />
                   <Bar dataKey="count" radius={[8, 8, 0, 0]} />
@@ -167,9 +167,9 @@ export function TreasuryCharts({ tokens, transactions }: TreasuryChartsProps) {
           </CardContent>
         </Card>
 
-        <Card className="border-2 border-secondary/20">
+        <Card className="border-3 border-secondary shadow-2xl bg-card/95 backdrop-blur">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-2xl">
               <span>Value Distribution</span>
             </CardTitle>
             <MarioChartCharacter 
@@ -183,7 +183,7 @@ export function TreasuryCharts({ tokens, transactions }: TreasuryChartsProps) {
               config={{
                 value: {
                   label: "Value",
-                  color: "oklch(0.55 0.24 30)",
+                  color: "oklch(0.65 0.28 25)",
                 },
               }}
               className="h-[300px]"
@@ -198,7 +198,7 @@ export function TreasuryCharts({ tokens, transactions }: TreasuryChartsProps) {
                     cy="50%"
                     outerRadius={90}
                     label={(entry) => `${entry.denomination}: $${entry.value.toLocaleString()}`}
-                    labelLine={{ stroke: 'oklch(0.7 0.1 245)', strokeWidth: 1 }}
+                    labelLine={{ stroke: 'oklch(0.5 0.15 265)', strokeWidth: 2 }}
                   >
                     {denominationData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.fill} />
@@ -211,9 +211,9 @@ export function TreasuryCharts({ tokens, transactions }: TreasuryChartsProps) {
           </CardContent>
         </Card>
 
-        <Card className="lg:col-span-2 border-2 border-accent/20">
+        <Card className="lg:col-span-2 border-3 border-primary shadow-2xl bg-card/95 backdrop-blur">
           <CardHeader>
-            <CardTitle className="flex items-center justify-between">
+            <CardTitle className="flex items-center justify-between text-2xl">
               <span>Top Minters by Output Value</span>
             </CardTitle>
             <div className="flex items-center justify-between mt-4">
@@ -233,7 +233,7 @@ export function TreasuryCharts({ tokens, transactions }: TreasuryChartsProps) {
               config={{
                 value: {
                   label: "Value",
-                  color: "oklch(0.55 0.24 30)",
+                  color: "oklch(0.65 0.28 25)",
                 },
               }}
               className="h-[300px]"
@@ -243,15 +243,15 @@ export function TreasuryCharts({ tokens, transactions }: TreasuryChartsProps) {
                   <CartesianGrid strokeDasharray="3 3" opacity={0.2} stroke="oklch(0.7 0.1 245)" />
                   <XAxis 
                     type="number"
-                    stroke="oklch(0.8 0.05 245)"
-                    style={{ fontSize: '12px', fontFamily: 'Inter' }}
+                    stroke="oklch(0.5 0.15 265)"
+                    style={{ fontSize: '14px', fontFamily: 'Inter', fontWeight: '600' }}
                   />
                   <YAxis 
                     dataKey="minter" 
                     type="category" 
                     width={100}
-                    stroke="oklch(0.8 0.05 245)"
-                    style={{ fontSize: '12px', fontFamily: 'Inter' }}
+                    stroke="oklch(0.5 0.15 265)"
+                    style={{ fontSize: '14px', fontFamily: 'Inter', fontWeight: '600' }}
                   />
                   <ChartTooltip 
                     content={<ChartTooltipContent />}
@@ -260,7 +260,7 @@ export function TreasuryCharts({ tokens, transactions }: TreasuryChartsProps) {
                       return item ? item.fullMinter : value
                     }}
                   />
-                  <Bar dataKey="value" fill="oklch(0.55 0.24 30)" radius={[0, 8, 8, 0]} />
+                  <Bar dataKey="value" fill="oklch(0.65 0.28 25)" radius={[0, 8, 8, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </ChartContainer>

@@ -50,6 +50,20 @@ function App() {
     loadUser()
   }, [setAppState])
 
+  useEffect(() => {
+    const debugState = async () => {
+      const keys = await window.spark.kv.keys()
+      console.log('KV Keys:', keys)
+      const state = await window.spark.kv.get<AppState>('mario-tokens-state')
+      console.log('Current State:', state)
+      console.log('Total Tokens:', state?.allTokens?.length || 0)
+      console.log('Total Transactions:', state?.allTransactions?.length || 0)
+    }
+    debugState()
+    const interval = setInterval(debugState, 10000)
+    return () => clearInterval(interval)
+  }, [])
+
   const isMinter = user && appState && appState.minters.includes(user.login)
   const userTokens = appState ? appState.allTokens.filter(token => token.currentOwner === user?.login) : []
 
@@ -123,41 +137,47 @@ function App() {
 
   return (
     <div className="min-h-screen mario-bg">
-      <header className="border-b-4 border-primary/30 bg-gradient-to-r from-[oklch(0.60_0.10_25)] to-[oklch(0.58_0.12_30)] shadow-lg">
-        <div className="container mx-auto px-4 py-4 md:px-8">
+      <header className="border-b-4 border-accent bg-gradient-to-r from-primary via-[oklch(0.55_0.30_30)] to-primary shadow-2xl relative overflow-hidden">
+        <div className="absolute inset-0 bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,oklch(1_0_0_/_0.05)_10px,oklch(1_0_0_/_0.05)_20px)]"></div>
+        <div className="container mx-auto px-4 py-5 md:px-8 relative z-10">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <motion.div
-                animate={{ rotate: [0, 10, -10, 0] }}
-                transition={{ duration: 2, repeat: Infinity }}
-                className="bg-accent p-3 rounded-xl shadow-lg"
+                animate={{ 
+                  rotate: [0, 10, -10, 10, 0],
+                  y: [0, -5, 0, -5, 0]
+                }}
+                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                className="bg-accent p-4 rounded-2xl shadow-2xl border-4 border-white/30"
               >
-                <Coins size={40} className="text-accent-foreground" weight="fill" />
+                <Coins size={48} className="text-accent-foreground drop-shadow-lg" weight="fill" />
               </motion.div>
               <div>
-                <h1 className="text-3xl md:text-4xl font-bold font-serif text-white drop-shadow-lg">Mario Tokens</h1>
-                <p className="text-sm text-white/90 font-medium">Federal Reserve Notes 🍄</p>
+                <h1 className="text-4xl md:text-5xl font-bold font-serif text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.4)] tracking-tight">
+                  Mario Tokens
+                </h1>
+                <p className="text-base md:text-lg text-accent font-bold drop-shadow-md">Federal Reserve Notes 🍄⭐</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
               {isMinter && (
-                <Badge className="hidden md:flex items-center gap-1 bg-accent text-accent-foreground border-2 border-accent-foreground/20">
-                  <Seal size={16} weight="fill" />
+                <Badge className="hidden md:flex items-center gap-2 bg-accent text-accent-foreground border-3 border-accent-foreground/30 text-base px-4 py-2 shadow-lg">
+                  <Seal size={20} weight="fill" />
                   Authorized Minter
                 </Badge>
               )}
               <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.08, rotate: 5 }}
+                whileTap={{ scale: 0.92 }}
               >
-                <Avatar className="ring-4 ring-accent/50">
+                <Avatar className="ring-4 ring-accent shadow-2xl w-14 h-14">
                   <AvatarImage src={user.avatarUrl} alt={user.login} />
-                  <AvatarFallback className="bg-primary text-primary-foreground">{user.login[0].toUpperCase()}</AvatarFallback>
+                  <AvatarFallback className="bg-secondary text-secondary-foreground text-xl font-bold">{user.login[0].toUpperCase()}</AvatarFallback>
                 </Avatar>
               </motion.div>
               <div className="hidden md:block text-white">
-                <div className="font-bold">{user.login}</div>
-                <div className="text-xs opacity-90">@{user.login}</div>
+                <div className="font-bold text-lg drop-shadow">{user.login}</div>
+                <div className="text-sm text-accent/90 drop-shadow">@{user.login}</div>
               </div>
             </div>
           </div>
@@ -166,23 +186,35 @@ function App() {
 
       <main className="container mx-auto px-4 py-8 md:px-8">
         <Tabs defaultValue="wallet" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:w-auto bg-card border-2 border-primary/20 p-1">
-            <TabsTrigger value="wallet" className="flex items-center gap-2 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
-              <Coins size={18} weight="fill" />
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:w-auto bg-card/95 backdrop-blur border-3 border-accent/30 p-1.5 shadow-xl">
+            <TabsTrigger 
+              value="wallet" 
+              className="flex items-center gap-2 data-[state=active]:bg-gradient-to-br data-[state=active]:from-accent data-[state=active]:to-[oklch(0.75_0.22_90)] data-[state=active]:text-accent-foreground data-[state=active]:shadow-lg font-semibold transition-all"
+            >
+              <Coins size={20} weight="fill" />
               <span className="hidden sm:inline">Wallet</span>
             </TabsTrigger>
             {isMinter && (
-              <TabsTrigger value="mint" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                <Printer size={18} weight="fill" />
+              <TabsTrigger 
+                value="mint" 
+                className="flex items-center gap-2 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-[oklch(0.45_0.30_25)] data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg font-semibold transition-all"
+              >
+                <Printer size={20} weight="fill" />
                 <span className="hidden sm:inline">Mint</span>
               </TabsTrigger>
             )}
-            <TabsTrigger value="treasury" className="flex items-center gap-2 data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
-              <ChartBar size={18} weight="fill" />
+            <TabsTrigger 
+              value="treasury" 
+              className="flex items-center gap-2 data-[state=active]:bg-gradient-to-br data-[state=active]:from-secondary data-[state=active]:to-[oklch(0.40_0.24_145)] data-[state=active]:text-secondary-foreground data-[state=active]:shadow-lg font-semibold transition-all"
+            >
+              <ChartBar size={20} weight="fill" />
               <span className="hidden sm:inline">Treasury</span>
             </TabsTrigger>
-            <TabsTrigger value="ledger" className="flex items-center gap-2 data-[state=active]:bg-gradient-to-br data-[state=active]:from-[oklch(0.65_0.25_25)] data-[state=active]:to-[oklch(0.55_0.25_25)] data-[state=active]:text-white">
-              <Scroll size={18} weight="fill" />
+            <TabsTrigger 
+              value="ledger" 
+              className="flex items-center gap-2 data-[state=active]:bg-gradient-to-br data-[state=active]:from-[oklch(0.60_0.25_270)] data-[state=active]:to-[oklch(0.50_0.25_270)] data-[state=active]:text-white data-[state=active]:shadow-lg font-semibold transition-all"
+            >
+              <Scroll size={20} weight="fill" />
               <span className="hidden sm:inline">Ledger</span>
             </TabsTrigger>
           </TabsList>

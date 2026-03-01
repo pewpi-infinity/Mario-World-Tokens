@@ -16,26 +16,26 @@
 }
 
 :root {
-  --background: oklch(0.55 0.08 245);
+  --background: oklch(0.45 0.15 265);
   --foreground: oklch(0.98 0 0);
-  --card: oklch(0.60 0.10 25);
-  --card-foreground: oklch(0.98 0 0);
-  --popover: oklch(0.60 0.10 25);
-  --popover-foreground: oklch(0.98 0 0);
-  --primary: oklch(0.55 0.24 30);
+  --card: oklch(0.92 0.05 85);
+  --card-foreground: oklch(0.25 0.05 30);
+  --popover: oklch(0.92 0.05 85);
+  --popover-foreground: oklch(0.25 0.05 30);
+  --primary: oklch(0.50 0.28 25);
   --primary-foreground: oklch(0.98 0 0);
-  --secondary: oklch(0.45 0.18 145);
+  --secondary: oklch(0.45 0.22 145);
   --secondary-foreground: oklch(0.98 0 0);
-  --muted: oklch(0.45 0.08 240);
-  --muted-foreground: oklch(0.85 0.05 60);
-  --accent: oklch(0.75 0.20 85);
-  --accent-foreground: oklch(0.20 0.05 90);
-  --destructive: oklch(0.55 0.22 25);
+  --muted: oklch(0.35 0.12 265);
+  --muted-foreground: oklch(0.85 0.05 85);
+  --accent: oklch(0.80 0.25 95);
+  --accent-foreground: oklch(0.25 0.08 95);
+  --destructive: oklch(0.55 0.25 25);
   --destructive-foreground: oklch(0.98 0 0);
-  --border: oklch(0.40 0.10 245);
-  --input: oklch(0.40 0.10 245);
-  --ring: oklch(0.75 0.20 85);
-  --radius: 0.5rem;
+  --border: oklch(0.75 0.08 95);
+  --input: oklch(0.88 0.05 95);
+  --ring: oklch(0.80 0.25 95);
+  --radius: 0.75rem;
 }
 
 @theme {
@@ -83,10 +83,15 @@
 }
 
 .mario-bg {
-  background: linear-gradient(135deg, 
-    oklch(0.55 0.08 245) 0%, 
-    oklch(0.48 0.12 260) 50%, 
-    oklch(0.55 0.08 245) 100%);
+  background: 
+    radial-gradient(circle at 15% 25%, oklch(0.55 0.28 25 / 0.15) 0%, transparent 40%),
+    radial-gradient(circle at 85% 75%, oklch(0.80 0.25 95 / 0.2) 0%, transparent 50%),
+    radial-gradient(circle at 50% 90%, oklch(0.45 0.22 145 / 0.15) 0%, transparent 60%),
+    linear-gradient(135deg, 
+      oklch(0.45 0.15 265) 0%, 
+      oklch(0.50 0.18 270) 30%,
+      oklch(0.48 0.16 260) 60%,
+      oklch(0.45 0.15 265) 100%);
   position: relative;
 }
 
@@ -98,9 +103,20 @@
   right: 0;
   bottom: 0;
   background-image: 
-    radial-gradient(circle at 20% 30%, oklch(0.75 0.20 85 / 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 80% 70%, oklch(0.55 0.24 30 / 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 50% 50%, oklch(0.45 0.18 145 / 0.08) 0%, transparent 70%);
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 100px,
+      oklch(0.55 0.18 270 / 0.03) 100px,
+      oklch(0.55 0.18 270 / 0.03) 200px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 100px,
+      oklch(0.55 0.18 270 / 0.03) 100px,
+      oklch(0.55 0.18 270 / 0.03) 200px
+    );
   pointer-events: none;
 }
 
