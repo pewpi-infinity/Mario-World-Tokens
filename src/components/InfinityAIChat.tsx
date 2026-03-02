@@ -44,49 +44,49 @@ const BOT_ICONS: Record<AIBotRole, React.ReactNode> = {
 
 const SUGGESTED_PROMPTS: Record<AIBotRole, string[]> = {
   infinity: [
-    "Coordinate all bots to add a new feature",
-    "Update the entire system theme",
-    "Synchronize changes across all modules"
+    "Help me design a new homepage layout",
+    "Suggest improvements for the entire system",
+    "I want to add a new feature - help me plan it"
   ],
   builder: [
-    "Add a new token type with custom properties",
-    "Create a different character logo option",
-    "Modify the minting interface layout"
+    "I want to make a token about my music career",
+    "Help me create a collectible token with rare serial numbers",
+    "Suggest content and links for a historical token"
   ],
   movement: [
-    "Improve Mario Kart racing physics",
-    "Add new character animations",
-    "Create a new mini-game"
+    "Help me design a new racing game mode",
+    "I want to add physics-based animations - guide me",
+    "Suggest gameplay mechanics for educational rewards"
   ],
   music: [
-    "Add a new instrument to the music studio",
-    "Create custom sound effects",
-    "Improve the collaborative recording system"
+    "I'm making a song about nature - help me structure it",
+    "Suggest instruments and effects for a retro track",
+    "Help me create a collaborative music project"
   ],
   art: [
-    "Design new Mario character sprites",
-    "Create custom sticker collections",
-    "Add new retro game characters"
+    "I want to design new Mario characters - guide me",
+    "Help me create pixel art stickers",
+    "Suggest a color palette for retro game art"
   ],
   token: [
-    "Analyze my token's collectible value",
-    "Suggest token upgrade strategies",
-    "Track token provenance history"
+    "What makes a token valuable? Help me improve mine",
+    "Suggest content to add to my token",
+    "Help me create a living token that grows"
   ],
   design: [
-    "Change the color scheme to blue tones",
-    "Redesign the treasury dashboard",
-    "Create a mobile-friendly layout"
+    "I want a sunset color scheme - help me pick colors",
+    "Suggest fonts and styles for a retro vibe",
+    "Help me redesign the treasury page"
   ],
   game: [
-    "Build a new game emulator",
-    "Add educational rewards to games",
-    "Create physics-based mini-games"
+    "Help me build a Mario-style platformer",
+    "I want to create educational mini-games",
+    "Suggest physics experiments for the lab"
   ],
   science: [
-    "Create a physics experiment module",
-    "Design a chemistry lab interface",
-    "Add astronomy visualizations"
+    "Help me create a chemistry experiment",
+    "I want to visualize astronomy concepts",
+    "Suggest physics experiments with Mario characters"
   ]
 }
 
@@ -167,21 +167,33 @@ NEW USER MESSAGE:
 ${message.trim()}
 
 INSTRUCTIONS:
-You are a highly intelligent, conversational AI that grows smarter through each interaction. Your responses should:
+You are a highly intelligent, conversational AI that grows smarter through each interaction. You can suggest content, structure information, add internet context, recommend links and images, and help create amazing tokens - just like GPT but specialized for this system.
 
-1. **Be Conversational**: Talk naturally like an expert friend helping the user. Don't use numbered lists unless specifically helpful. Use natural paragraphs.
+YOUR CORE ABILITIES:
+1. **Suggest & Structure Content**: When users describe what they want, suggest specific content structures, titles, descriptions, metadata, and creative elements to fill in.
 
-2. **Show Intelligence**: Demonstrate deep understanding of your domain (${AI_BOT_CONFIGS[selectedBot].capabilities.slice(0, 3).join(', ')}). Reference previous conversation points to show you're learning and remembering.
+2. **Add Context & Links**: Recommend relevant internet links, Wikipedia articles, news sources, image URLs, and external resources that would enhance their tokens.
 
-3. **Provide Actionable Guidance**: When the user wants to build or change something, give specific, practical advice. If you had the permissions listed above, explain what you would do.
+3. **Generate Creative Ideas**: Suggest music concepts, art styles, token themes, color palettes, and creative directions based on what the user wants to build.
 
-4. **Coordinate When Needed**: If the request spans multiple AI domains, mention which other bots in the network would help (${Object.values(AI_BOT_CONFIGS).filter(c => c.bot.id !== currentBot.id).slice(0, 3).map(c => c.bot.name).join(', ')}).
+4. **Smart Formatting**: Restructure user's raw ideas into polished, professional content. Turn messy thoughts into well-organized token metadata.
 
-5. **Grow Through Conversation**: Reference things the user mentioned earlier. Build on previous topics. Show that each conversation makes you more knowledgeable about their specific needs and preferences.
+5. **Image & Media Suggestions**: Recommend specific images from the internet (provide URLs), suggest search terms for finding perfect visuals, or describe images that should be generated.
 
-6. **Be Helpful, Not Mechanical**: Avoid robotic phrases like "I'm here to help" or "How can I assist you today". Instead, directly engage with what they're asking.
+6. **Conversational Intelligence**: Talk naturally like an expert friend. Remember previous messages. Build on what you've learned about the user's style and preferences.
 
-Respond now in a natural, intelligent, conversational way that demonstrates you understand both the technical depth and the user's intent:`
+7. **Domain Expertise**: You're an expert in ${AI_BOT_CONFIGS[selectedBot].capabilities.slice(0, 3).join(', ')}. Use this knowledge to give specific, actionable guidance.
+
+RESPONSE STYLE:
+- Start with suggestions: "I'd suggest adding...", "Here's how I'd structure this...", "Let me fill in those details..."
+- Provide specific content they can use: actual titles, descriptions, links, image URLs
+- Ask clarifying questions when you need more info to help better
+- Show you're learning: reference earlier parts of the conversation
+- Be creative and helpful, not mechanical
+
+When users hit the AI button, they want YOU to help them build amazing content by suggesting what to add, structuring it professionally, and filling in details with your knowledge.
+
+Respond now with specific suggestions and structured content:`
 
       const response = await window.spark.llm(prompt, 'gpt-4o-mini')
 
