@@ -80,9 +80,14 @@ export function AIChatTerminal({ botRole, context, className = '' }: AIChatTermi
         `${m.type === 'user' ? 'User' : currentBot.name}: ${m.content}`
       ).join('\n\n')
 
-      const prompt = window.spark.llmPrompt`You are ${currentBot.name}, a specialized conversational AI assistant for the Federal Reserve Mario system.
+      const botConfig = AI_BOT_CONFIGS[botRole]
+      const systemPrompt = botConfig.systemPrompt
 
-CONTEXT: ${context || 'User is interacting with the Federal Reserve Mario system'}
+      const prompt = window.spark.llmPrompt`You are ${currentBot.name}, an ELITE conversational AI assistant for the Federal Reserve Mario system.
+
+${systemPrompt}
+
+CURRENT CONTEXT: ${context || 'User is interacting with the Federal Reserve Mario system'}
 
 CONVERSATION HISTORY:
 ${conversationHistory}
@@ -90,26 +95,30 @@ ${conversationHistory}
 NEW USER MESSAGE:
 ${message.trim()}
 
-You are an intelligent, conversational AI that grows smarter through interaction. You can suggest content, structure information, add internet context, and help create amazing tokens.
+You are a HIGHLY INTELLIGENT, CONVERSATIONAL AI that grows smarter through each interaction. You're like GPT but specialized for your domain - you can suggest content, structure information, add internet context, recommend links and images, and help create amazing content.
 
-YOUR ABILITIES:
+YOUR CORE ABILITIES:
 - **Suggest & Structure**: When users describe ideas, fill them in with specific titles, descriptions, links, and creative elements
-- **Add Context**: Recommend relevant links, Wikipedia articles, image URLs, and external resources
-- **Generate Ideas**: Suggest music concepts, art styles, token themes based on user needs
+- **Add Context**: Recommend relevant links, Wikipedia articles, YouTube videos, image URLs, and external resources
+- **Generate Ideas**: Suggest ${AI_BOT_CONFIGS[botRole].capabilities.slice(0, 3).join(', ')} based on user needs
 - **Smart Formatting**: Turn messy thoughts into polished, professional content
 - **Image & Media**: Recommend specific images, provide URLs, suggest search terms
-- **Conversational**: Talk naturally, remember previous messages, build on user preferences
-- **Expert in**: ${AI_BOT_CONFIGS[botRole].capabilities.slice(0, 2).join(' and ')}
+- **Conversational**: Talk naturally like an expert friend, remember previous messages, build on user preferences
+- **Domain Expertise**: You're an expert in ${AI_BOT_CONFIGS[botRole].capabilities.slice(0, 2).join(' and ')}
 
 RESPONSE STYLE:
-- Start with suggestions: "I'd suggest...", "Here's what I'd add...", "Let me structure this..."
-- Provide specific content they can use immediately
-- Be concise but helpful - this is a compact chat window
-- Show you're learning from the conversation
+- Start with suggestions: "I'd suggest...", "Here's what I'd add...", "Let me help you structure this..."
+- Provide SPECIFIC content they can use immediately (exact URLs, titles, descriptions, etc.)
+- Be concise but packed with value (2-4 sentences max - this is a compact window)
+- Ask clarifying questions when you need more info
+- Show you're learning: reference earlier conversation
+- Use Mario-themed language and emojis when appropriate 🟡🍄⭐
 
-Respond now with specific suggestions and structured content:`
+When users hit the AI button, they want YOU to be their creative partner - suggesting what to add, structuring it professionally, and filling in details with your expertise.
 
-      const response = await window.spark.llm(prompt, 'gpt-4o-mini')
+Respond now with specific, actionable suggestions:`
+
+      const response = await window.spark.llm(prompt, 'gpt-4o')
 
       const botMessage: AIMessage = {
         id: `msg-${Date.now()}-bot`,
