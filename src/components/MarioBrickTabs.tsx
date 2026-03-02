@@ -15,59 +15,21 @@ const tabs = [
 ]
 
 export function MarioBrickTabs({ activeTab, onTabChange }: MarioBrickTabsProps) {
-  const [marioPosition, setMarioPosition] = useState(0)
-  const [isJumping, setIsJumping] = useState(false)
   const [hitBrick, setHitBrick] = useState<number | null>(null)
   const [poppedEmoji, setPoppedEmoji] = useState<{ emoji: string; index: number } | null>(null)
-  const [marioDirection, setMarioDirection] = useState<'right' | 'left'>('right')
-  const [isRunning, setIsRunning] = useState(true)
-
-  useEffect(() => {
-    if (!isRunning) return
-
-    const interval = setInterval(() => {
-      setMarioPosition((prev) => {
-        if (marioDirection === 'right') {
-          if (prev >= 3) {
-            setMarioDirection('left')
-            return 3
-          }
-          return prev + 1
-        } else {
-          if (prev <= 0) {
-            setMarioDirection('right')
-            return 0
-          }
-          return prev - 1
-        }
-      })
-    }, 1500)
-
-    return () => clearInterval(interval)
-  }, [marioDirection, isRunning])
 
   const handleBrickClick = (index: number) => {
-    if (isJumping) return
-    
-    setIsRunning(false)
-    setMarioPosition(index)
+    setHitBrick(index)
+    setPoppedEmoji({ emoji: tabs[index].emoji, index })
+    onTabChange(tabs[index].value)
     
     setTimeout(() => {
-      setIsJumping(true)
-      setHitBrick(index)
-      setPoppedEmoji({ emoji: tabs[index].emoji, index })
-      onTabChange(tabs[index].value)
+      setHitBrick(null)
       
       setTimeout(() => {
-        setIsJumping(false)
-        setHitBrick(null)
-        
-        setTimeout(() => {
-          setPoppedEmoji(null)
-          setIsRunning(true)
-        }, 1000)
+        setPoppedEmoji(null)
       }, 500)
-    }, 200)
+    }, 300)
   }
 
   return (
@@ -123,37 +85,7 @@ export function MarioBrickTabs({ activeTab, onTabChange }: MarioBrickTabsProps) 
           ))}
         </div>
 
-        <motion.div
-          className="absolute bottom-0 left-0 z-20 text-5xl sm:text-7xl"
-          animate={{
-            x: `${(marioPosition / 3) * 100}%`,
-            y: isJumping ? -80 : 0,
-            scaleX: marioDirection === 'left' ? -1 : 1,
-          }}
-          transition={{
-            x: { duration: 0.8, ease: 'easeInOut' },
-            y: { duration: 0.3, ease: 'easeOut' },
-          }}
-          style={{
-            transformOrigin: 'center',
-            filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.3))',
-          }}
-        >
-          <div className="relative flex items-center justify-center w-16 sm:w-20">
-            {isJumping ? '🏃' : '🏃‍♂️'}
-          </div>
-        </motion.div>
-
         <div className="absolute bottom-0 left-0 right-0 h-2 bg-gradient-to-r from-[oklch(0.30_0.04_285)] via-[oklch(0.35_0.05_285)] to-[oklch(0.30_0.04_285)] rounded-full"></div>
-      </div>
-
-      <div className="mt-8 flex justify-center gap-2">
-        <button
-          onClick={() => setIsRunning(!isRunning)}
-          className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-xs sm:text-sm font-semibold hover:opacity-80 transition-opacity"
-        >
-          {isRunning ? '⏸️ Pause Mario' : '▶️ Run Mario'}
-        </button>
       </div>
     </div>
   )

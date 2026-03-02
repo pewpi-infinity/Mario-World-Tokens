@@ -142,34 +142,48 @@ export function InfinityAIChat({ open, onClose, initialBot = 'builder' }: Infini
     setIsTyping(true)
 
     try {
-      const systemPrompt = formatBotSystemPrompt(currentBot, {
-        userMessage: message.trim(),
-        conversationHistory: updatedConversation.messages.slice(-5).map(m => ({
-          role: m.type === 'user' ? 'user' : 'assistant',
-          content: m.content
-        })),
-        botCapabilities: AI_BOT_CONFIGS[selectedBot].capabilities,
-        permissions: currentBot.permissions
-      })
+      const conversationHistory = updatedConversation.messages.slice(-10).map(m => 
+        `${m.type === 'user' ? 'User' : currentBot.name}: ${m.content}`
+      ).join('\n\n')
 
-      const prompt = spark.llmPrompt`${systemPrompt}
+      const contextInfo = `
+Bot Identity: ${currentBot.name}
+Role: ${currentBot.role}
+Description: ${currentBot.description}
+Capabilities: ${AI_BOT_CONFIGS[selectedBot].capabilities.join(', ')}
+Permissions: ${currentBot.permissions.join(', ')}
+Parent Bot: ${currentBot.parentBotId || 'None (Top-level AI)'}
+Child Bots: ${childBots.map(b => b.name).join(', ') || 'None'}
+`
 
-User Message: ${message.trim()}
+      const prompt = window.spark.llmPrompt`You are ${currentBot.name}, an advanced conversational AI assistant within the Federal Reserve Mario token system's Infinity AI Network.
 
-You are ${currentBot.name} with the following permissions: ${currentBot.permissions.join(', ')}.
+${contextInfo}
 
-Your task is to:
-1. Understand what the user wants to change, build, or modify
-2. Provide specific, actionable guidance on how to implement their request
-3. If you need to coordinate with other bots in the network, explain which bots would handle what
-4. Offer concrete examples, code snippets, or step-by-step instructions when relevant
-5. Be conversational and helpful, but focus on practical solutions
+CONVERSATION HISTORY:
+${conversationHistory}
 
-If the user's request is within your domain (${AI_BOT_CONFIGS[selectedBot].capabilities.join(', ')}), provide detailed implementation guidance. If it spans multiple domains, suggest which other AI bots should be consulted.
+NEW USER MESSAGE:
+${message.trim()}
 
-Respond in a friendly, helpful tone as if you're an expert assistant ready to help build and modify the Federal Reserve Mario system.`
+INSTRUCTIONS:
+You are a highly intelligent, conversational AI that grows smarter through each interaction. Your responses should:
 
-      const response = await spark.llm(prompt, 'gpt-4o-mini')
+1. **Be Conversational**: Talk naturally like an expert friend helping the user. Don't use numbered lists unless specifically helpful. Use natural paragraphs.
+
+2. **Show Intelligence**: Demonstrate deep understanding of your domain (${AI_BOT_CONFIGS[selectedBot].capabilities.slice(0, 3).join(', ')}). Reference previous conversation points to show you're learning and remembering.
+
+3. **Provide Actionable Guidance**: When the user wants to build or change something, give specific, practical advice. If you had the permissions listed above, explain what you would do.
+
+4. **Coordinate When Needed**: If the request spans multiple AI domains, mention which other bots in the network would help (${Object.values(AI_BOT_CONFIGS).filter(c => c.bot.id !== currentBot.id).slice(0, 3).map(c => c.bot.name).join(', ')}).
+
+5. **Grow Through Conversation**: Reference things the user mentioned earlier. Build on previous topics. Show that each conversation makes you more knowledgeable about their specific needs and preferences.
+
+6. **Be Helpful, Not Mechanical**: Avoid robotic phrases like "I'm here to help" or "How can I assist you today". Instead, directly engage with what they're asking.
+
+Respond now in a natural, intelligent, conversational way that demonstrates you understand both the technical depth and the user's intent:`
+
+      const response = await window.spark.llm(prompt, 'gpt-4o-mini')
 
       const botMessage: AIMessage = {
         id: `msg-${Date.now()}-bot`,

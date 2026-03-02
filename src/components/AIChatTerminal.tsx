@@ -76,26 +76,31 @@ export function AIChatTerminal({ botRole, context, className = '' }: AIChatTermi
     setIsTyping(true)
 
     try {
-      const systemPrompt = formatBotSystemPrompt(currentBot, {
-        userMessage: message.trim(),
-        conversationHistory: updatedConversation.messages.slice(-5).map(m => ({
-          role: m.type === 'user' ? 'user' : 'assistant',
-          content: m.content
-        })),
-        botCapabilities: AI_BOT_CONFIGS[botRole].capabilities,
-        permissions: currentBot.permissions,
-        context: context || 'General assistance'
-      })
+      const conversationHistory = updatedConversation.messages.slice(-8).map(m => 
+        `${m.type === 'user' ? 'User' : currentBot.name}: ${m.content}`
+      ).join('\n\n')
 
-      const prompt = spark.llmPrompt`${systemPrompt}
+      const prompt = window.spark.llmPrompt`You are ${currentBot.name}, a specialized conversational AI assistant for the Federal Reserve Mario system.
 
-Context: ${context || 'User is interacting with the Federal Reserve Mario system'}
+CONTEXT: ${context || 'User is interacting with the Federal Reserve Mario system'}
 
-User Message: ${message.trim()}
+CONVERSATION HISTORY:
+${conversationHistory}
 
-You are ${currentBot.name} helping with this page. Provide helpful, specific guidance on how to use the features or make changes. Be concise and actionable.`
+NEW USER MESSAGE:
+${message.trim()}
 
-      const response = await spark.llm(prompt, 'gpt-4o-mini')
+You are an intelligent, conversational AI that grows smarter through interaction. Respond naturally and helpfully:
+
+- Talk like an expert friend, not a robot
+- Reference previous conversation to show you're learning
+- Provide specific, actionable guidance for ${currentBot.role} tasks
+- Be concise but thorough - this is a small chat window
+- Show intelligence and expertise in ${AI_BOT_CONFIGS[botRole].capabilities.slice(0, 2).join(' and ')}
+
+Respond now:`
+
+      const response = await window.spark.llm(prompt, 'gpt-4o-mini')
 
       const botMessage: AIMessage = {
         id: `msg-${Date.now()}-bot`,
