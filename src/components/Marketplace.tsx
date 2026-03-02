@@ -3,9 +3,8 @@ import { useKV } from '@github/spark/hooks'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
-import { Storefront, PaperPlaneTilt, ArrowsLeftRight, CheckCircle } from '@phosphor-icons/react'
+import { CheckCircle } from '@phosphor-icons/react'
 import { MarioCoin } from '@/lib/types'
 import { TokenCard } from '@/components/TokenCard'
 import { toast } from 'sonner'
@@ -93,34 +92,58 @@ export function Marketplace({ userCoins, currentUser, onTransferComplete }: Mark
     toast.success(`Purchased coin for $${listing.price.toFixed(2)}!`)
   }
 
+  const [activeView, setActiveView] = useState<'transfer' | 'mylistings' | 'browse'>('transfer')
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <Storefront size={32} weight="fill" className="text-primary" />
+        <div className="text-4xl">🏪</div>
         <div>
-          <h2 className="text-2xl font-bold">Mario Coin Marketplace</h2>
-          <p className="text-muted-foreground">Transfer coins directly or list them for others</p>
+          <h2 className="text-xl sm:text-2xl font-bold">Mario Coin Marketplace</h2>
+          <p className="text-sm sm:text-base text-muted-foreground">Transfer coins directly or list them for others</p>
         </div>
       </div>
 
-      <Tabs defaultValue="transfer" className="w-full">
-        <TabsList className="grid grid-cols-3 w-full max-w-md">
-          <TabsTrigger value="transfer">
-            <PaperPlaneTilt size={18} weight="fill" />
-            <span className="ml-2">Send</span>
-          </TabsTrigger>
-          <TabsTrigger value="mylistings">
-            <ArrowsLeftRight size={18} weight="fill" />
-            <span className="ml-2">My Listings</span>
-          </TabsTrigger>
-          <TabsTrigger value="browse">
-            <Storefront size={18} weight="fill" />
-            <span className="ml-2">Browse</span>
-          </TabsTrigger>
-        </TabsList>
+      <div className="flex flex-wrap gap-2">
+        <Button
+          onClick={() => setActiveView('transfer')}
+          className={`text-lg sm:text-2xl px-4 sm:px-6 py-4 sm:py-6 ${
+            activeView === 'transfer'
+              ? 'bg-[oklch(0.75_0.18_85)] text-[oklch(0.15_0.02_280)] hover:bg-[oklch(0.80_0.20_85)]'
+              : 'bg-[oklch(0.45_0.08_30)] hover:bg-[oklch(0.50_0.10_30)] text-white'
+          } border-2 shadow-lg transition-all`}
+        >
+          <span className="mr-2">📤</span>
+          <span className="text-sm sm:text-base">Send</span>
+        </Button>
+        <Button
+          onClick={() => setActiveView('mylistings')}
+          className={`text-lg sm:text-2xl px-4 sm:px-6 py-4 sm:py-6 ${
+            activeView === 'mylistings'
+              ? 'bg-[oklch(0.65_0.15_155)] text-white hover:bg-[oklch(0.70_0.17_155)]'
+              : 'bg-[oklch(0.45_0.08_30)] hover:bg-[oklch(0.50_0.10_30)] text-white'
+          } border-2 shadow-lg transition-all`}
+        >
+          <span className="mr-2">📋</span>
+          <span className="text-sm sm:text-base">My Listings</span>
+        </Button>
+        <Button
+          onClick={() => setActiveView('browse')}
+          className={`text-lg sm:text-2xl px-4 sm:px-6 py-4 sm:py-6 ${
+            activeView === 'browse'
+              ? 'bg-[oklch(0.70_0.24_190)] text-white hover:bg-[oklch(0.75_0.26_190)]'
+              : 'bg-[oklch(0.45_0.08_30)] hover:bg-[oklch(0.50_0.10_30)] text-white'
+          } border-2 shadow-lg transition-all`}
+        >
+          <span className="mr-2">🏬</span>
+          <span className="text-sm sm:text-base">Browse</span>
+        </Button>
+      </div>
 
-        <TabsContent value="transfer" className="mt-6">
-          <Card className="p-6">
+      <div className="w-full">
+
+        {activeView === 'transfer' && (
+          <Card className="p-4 sm:p-6">
             <h3 className="text-lg font-semibold mb-4">Direct Transfer</h3>
             
             <div className="space-y-4">
@@ -185,16 +208,16 @@ export function Marketplace({ userCoins, currentUser, onTransferComplete }: Mark
                   disabled={!selectedCoin || !recipientId || isTransferring}
                   className="flex-1 bg-[oklch(0.75_0.18_85)] text-[oklch(0.15_0.02_280)] hover:bg-[oklch(0.80_0.20_85)]"
                 >
-                  <PaperPlaneTilt size={20} weight="fill" />
+                  <span className="text-lg">📤</span>
                   <span className="ml-2">{isTransferring ? 'Sending...' : 'Send Coin'}</span>
                 </Button>
               </div>
             </div>
           </Card>
-        </TabsContent>
+        )}
 
-        <TabsContent value="mylistings" className="mt-6">
-          <Card className="p-6">
+        {activeView === 'mylistings' && (
+          <Card className="p-4 sm:p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold">My Marketplace Listings</h3>
               <Badge variant="secondary">{myListings.length} Listed</Badge>
@@ -256,10 +279,10 @@ export function Marketplace({ userCoins, currentUser, onTransferComplete }: Mark
               )}
             </div>
           </Card>
-        </TabsContent>
+        )}
 
-        <TabsContent value="browse" className="mt-6">
-          <Card className="p-6">
+        {activeView === 'browse' && (
+          <Card className="p-4 sm:p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold">Available Coins</h3>
               <Badge variant="secondary">{otherListings.length} Available</Badge>
@@ -267,7 +290,7 @@ export function Marketplace({ userCoins, currentUser, onTransferComplete }: Mark
 
             {otherListings.length === 0 ? (
               <div className="text-center py-12">
-                <Storefront size={64} className="mx-auto mb-4 text-muted-foreground" weight="fill" />
+                <div className="text-6xl mx-auto mb-4">🏬</div>
                 <p className="text-muted-foreground">No coins listed for sale yet</p>
                 <p className="text-sm text-muted-foreground mt-2">Check back later!</p>
               </div>
@@ -293,8 +316,8 @@ export function Marketplace({ userCoins, currentUser, onTransferComplete }: Mark
               </div>
             )}
           </Card>
-        </TabsContent>
-      </Tabs>
+        )}
+      </div>
     </div>
   )
 }

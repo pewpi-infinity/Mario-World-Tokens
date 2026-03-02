@@ -1,8 +1,7 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { Card } from '@/components/ui/card'
 import { TreasuryStats } from '@/lib/types'
 import * as d3 from 'd3'
-import { motion } from 'framer-motion'
 
 export interface TreasuryChartsProps {
   stats: TreasuryStats
@@ -12,7 +11,6 @@ export interface TreasuryChartsProps {
 export function TreasuryCharts({ stats, marioLogo }: TreasuryChartsProps) {
   const svgRef = useRef<SVGSVGElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
-  const [marioPosition, setMarioPosition] = useState({ x: 0, y: 0 })
 
   useEffect(() => {
     if (!svgRef.current || !containerRef.current || stats.mintingHistory.length === 0) return
@@ -104,13 +102,6 @@ export function TreasuryCharts({ stats, marioLogo }: TreasuryChartsProps) {
       .attr('stroke', 'oklch(0.15 0.02 280)')
       .attr('stroke-width', 2)
 
-    const lastPoint = stats.mintingHistory[stats.mintingHistory.length - 1]
-    if (lastPoint) {
-      const marioX = x(new Date(lastPoint.timestamp)) + margin.left
-      const marioY = y(lastPoint.totalValue) + margin.top - 30
-      setMarioPosition({ x: marioX, y: marioY })
-    }
-
   }, [stats])
 
   if (stats.mintingHistory.length === 0) {
@@ -126,22 +117,6 @@ export function TreasuryCharts({ stats, marioLogo }: TreasuryChartsProps) {
       <h3 className="text-lg sm:text-2xl font-bold mb-4 sm:mb-6">Treasury Growth</h3>
       <div ref={containerRef} className="relative w-full overflow-x-auto">
         <svg ref={svgRef} className="min-w-full"></svg>
-        {marioPosition.x > 0 && (
-          <motion.div
-            className="absolute pointer-events-none"
-            initial={{ x: 0, y: marioPosition.y }}
-            animate={{ x: marioPosition.x - 20, y: marioPosition.y }}
-            transition={{ duration: 0.8, ease: 'easeInOut' }}
-          >
-            <motion.img
-              src={marioLogo}
-              alt="Mario"
-              className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
-              animate={{ y: [0, -5, 0] }}
-              transition={{ duration: 0.6, repeat: Infinity, ease: 'easeInOut' }}
-            />
-          </motion.div>
-        )}
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-4 mt-4 sm:mt-8">
