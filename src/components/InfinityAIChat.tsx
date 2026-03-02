@@ -44,14 +44,14 @@ const BOT_ICONS: Record<AIBotRole, React.ReactNode> = {
 
 const SUGGESTED_PROMPTS: Record<AIBotRole, string[]> = {
   infinity: [
-    "Help me design a new homepage layout",
+    "Help me design a new homepage layout with modern styling",
     "Suggest improvements for the entire system",
     "I want to add a new feature - help me plan it"
   ],
   builder: [
-    "I want to make a token about my music career",
-    "Help me create a collectible token with rare serial numbers",
-    "Suggest content and links for a historical token"
+    "I want to redesign the homepage - help me plan it",
+    "How can I add a new button that creates time capsules?",
+    "Help me customize the token minting workflow"
   ],
   movement: [
     "Help me design a new racing game mode",
@@ -69,9 +69,9 @@ const SUGGESTED_PROMPTS: Record<AIBotRole, string[]> = {
     "Suggest a color palette for retro game art"
   ],
   token: [
-    "What makes a token valuable? Help me improve mine",
-    "Suggest content to add to my token",
-    "Help me create a living token that grows"
+    "I want to make a token about my music - help me structure it",
+    "Help me create a valuable token from my concert video",
+    "Suggest links and content to add to my token"
   ],
   design: [
     "I want a sunset color scheme - help me pick colors",
