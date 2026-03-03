@@ -1,5 +1,6 @@
 export class SoundEffects {
   private audioContext: AudioContext | null = null
+  private audioCache: Map<string, AudioBuffer> = new Map()
 
   private getAudioContext(): AudioContext {
     if (!this.audioContext) {
@@ -8,7 +9,47 @@ export class SoundEffects {
     return this.audioContext
   }
 
-  playCoinCollect() {
+  private async loadAudioFile(url: string): Promise<AudioBuffer | null> {
+    if (this.audioCache.has(url)) {
+      return this.audioCache.get(url)!
+    }
+
+    try {
+      const response = await fetch(url)
+      const arrayBuffer = await response.arrayBuffer()
+      const audioBuffer = await this.getAudioContext().decodeAudioData(arrayBuffer)
+      this.audioCache.set(url, audioBuffer)
+      return audioBuffer
+    } catch (error) {
+      console.warn('Failed to load audio file:', url, error)
+      return null
+    }
+  }
+
+  private async playAudioBuffer(buffer: AudioBuffer, volume: number = 0.3) {
+    const ctx = this.getAudioContext()
+    const source = ctx.createBufferSource()
+    const gainNode = ctx.createGain()
+
+    source.buffer = buffer
+    source.connect(gainNode)
+    gainNode.connect(ctx.destination)
+    gainNode.gain.value = volume
+
+    source.start(0)
+  }
+
+  async playCoinCollect() {
+    const buffer = await this.loadAudioFile('https://archive.org/download/mario-sound-effects/smb_coin.wav')
+    
+    if (buffer) {
+      await this.playAudioBuffer(buffer, 0.4)
+    } else {
+      this.playCoinCollectFallback()
+    }
+  }
+
+  private playCoinCollectFallback() {
     const ctx = this.getAudioContext()
     const oscillator = ctx.createOscillator()
     const gainNode = ctx.createGain()
@@ -29,7 +70,17 @@ export class SoundEffects {
     oscillator.stop(now + 0.3)
   }
 
-  playPowerUp() {
+  async playPowerUp() {
+    const buffer = await this.loadAudioFile('https://archive.org/download/mario-sound-effects/smb_powerup.wav')
+    
+    if (buffer) {
+      await this.playAudioBuffer(buffer, 0.3)
+    } else {
+      this.playPowerUpFallback()
+    }
+  }
+
+  private playPowerUpFallback() {
     const ctx = this.getAudioContext()
     const oscillator = ctx.createOscillator()
     const gainNode = ctx.createGain()
@@ -53,7 +104,17 @@ export class SoundEffects {
     oscillator.stop(now + 0.5)
   }
 
-  playBrickBreak() {
+  async playBrickBreak() {
+    const buffer = await this.loadAudioFile('https://archive.org/download/mario-sound-effects/smb_breakblock.wav')
+    
+    if (buffer) {
+      await this.playAudioBuffer(buffer, 0.35)
+    } else {
+      this.playBrickBreakFallback()
+    }
+  }
+
+  private playBrickBreakFallback() {
     const ctx = this.getAudioContext()
     const oscillator = ctx.createOscillator()
     const gainNode = ctx.createGain()
@@ -93,7 +154,17 @@ export class SoundEffects {
     noise.stop(now + 0.15)
   }
 
-  playJump() {
+  async playJump() {
+    const buffer = await this.loadAudioFile('https://archive.org/download/mario-sound-effects/smb_jump-small.wav')
+    
+    if (buffer) {
+      await this.playAudioBuffer(buffer, 0.3)
+    } else {
+      this.playJumpFallback()
+    }
+  }
+
+  private playJumpFallback() {
     const ctx = this.getAudioContext()
     const oscillator = ctx.createOscillator()
     const gainNode = ctx.createGain()
