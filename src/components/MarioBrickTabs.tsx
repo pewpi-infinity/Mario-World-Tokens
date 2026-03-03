@@ -8,10 +8,10 @@ interface MarioBrickTabsProps {
 }
 
 const tabs = [
-  { value: 'treasury', icon: Coins, label: 'Treasury', emoji: '🟡', color: 'oklch(0.75 0.18 85)' },
-  { value: 'marketplace', icon: Storefront, label: 'Market', emoji: '🤑', color: 'oklch(0.65 0.15 155)' },
-  { value: 'charts', icon: TrendUp, label: 'Charts', emoji: '📊', color: 'oklch(0.70 0.24 190)' },
-  { value: 'ledger', icon: Globe, label: 'Ledger', emoji: '🌍', color: 'oklch(0.58 0.24 330)' },
+  { value: 'treasury', icon: Coins, label: 'Treasury', emoji: '🟡', brick: '🧱' },
+  { value: 'marketplace', icon: Storefront, label: 'Market', emoji: '🤑', brick: '🧱' },
+  { value: 'charts', icon: TrendUp, label: 'Charts', emoji: '📊', brick: '🧱' },
+  { value: 'ledger', icon: Globe, label: 'Ledger', emoji: '🌍', brick: '?' },
 ]
 
 export function MarioBrickTabs({ activeTab, onTabChange }: MarioBrickTabsProps) {
@@ -53,25 +53,34 @@ export function MarioBrickTabs({ activeTab, onTabChange }: MarioBrickTabsProps) 
 
               <motion.button
                 onClick={() => handleBrickClick(index)}
-                className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-md flex items-center justify-center text-2xl sm:text-3xl transition-all cursor-pointer ${
-                  activeTab === tab.value ? 'ring-4 ring-white' : ''
+                className={`relative w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center text-2xl sm:text-3xl transition-all cursor-pointer ${
+                  activeTab === tab.value ? 'ring-4 ring-[oklch(0.75_0.18_85)]' : ''
                 }`}
                 style={{
-                  background: `linear-gradient(135deg, ${tab.color} 0%, oklch(0.35 0.05 285) 100%)`,
+                  background: tab.brick === '?' 
+                    ? 'linear-gradient(135deg, oklch(0.75 0.18 85) 0%, oklch(0.65 0.15 85) 100%)'
+                    : 'linear-gradient(135deg, oklch(0.58 0.24 30) 0%, oklch(0.48 0.20 30) 100%)',
+                  borderRadius: '6px',
                   boxShadow: hitBrick === index 
-                    ? '0 0 0 0' 
-                    : `0 4px 0 oklch(0.20 0.03 285), 0 8px 20px oklch(0 0 0 / 0.4)`,
+                    ? '0 0 0 0, inset 0 -2px 0 oklch(0 0 0 / 0.3)' 
+                    : `0 4px 0 oklch(0.38 0.18 30), 0 8px 20px oklch(0 0 0 / 0.4), inset 0 2px 0 oklch(1 0 0 / 0.2)`,
+                  border: tab.brick === '?' ? '3px solid oklch(0.85 0.20 85)' : '3px solid oklch(0.48 0.20 30)',
                 }}
                 animate={{
-                  y: hitBrick === index ? -4 : 0,
+                  y: hitBrick === index ? 4 : 0,
                 }}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <div className="absolute inset-1 border-2 border-white/20 rounded"></div>
+                <div className="absolute inset-0.5 rounded border-2 border-white/10"></div>
+                <div className="absolute inset-0 rounded" style={{
+                  background: tab.brick === '?' 
+                    ? 'repeating-linear-gradient(90deg, transparent 0px, transparent 8px, oklch(1 0 0 / 0.1) 8px, oklch(1 0 0 / 0.1) 9px)'
+                    : 'repeating-linear-gradient(90deg, transparent 0px, transparent 7px, oklch(0 0 0 / 0.15) 7px, oklch(0 0 0 / 0.15) 8px), repeating-linear-gradient(0deg, transparent 0px, transparent 7px, oklch(0 0 0 / 0.15) 7px, oklch(0 0 0 / 0.15) 8px)'
+                }}></div>
                 <div className="relative z-10 flex flex-col items-center gap-1">
-                  {index === 1 ? (
-                    <span className="text-3xl sm:text-4xl">?</span>
+                  {tab.brick === '?' ? (
+                    <span className="text-3xl sm:text-4xl text-white drop-shadow-lg font-bold">?</span>
                   ) : (
                     <tab.icon size={24} weight="fill" className="text-white drop-shadow-lg" />
                   )}
