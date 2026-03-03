@@ -52,13 +52,26 @@ function App() {
       interactionHappened = true
       
       console.log('👆 User interaction detected - enabling sounds...')
+      
       initializeAudioContext()
-      preloadAllSounds()
-      enableAutoPlay()
-      initBackgroundMusic('main')
+      
+      setTimeout(() => {
+        preloadAllSounds()
+        console.log('✅ All sounds preloaded!')
+      }, 100)
+      
+      setTimeout(() => {
+        enableAutoPlay()
+        initBackgroundMusic('main')
+        console.log('🎵 Background music started!')
+      }, 200)
+      
       setSoundEnabled(true)
       
-      playCoinSound()
+      setTimeout(() => {
+        playCoinSound()
+        console.log('🪙 Test coin sound played!')
+      }, 300)
       
       toast.success('🔊 Sound Enabled!', {
         description: 'Mario sound effects and music are now active!',
@@ -79,9 +92,9 @@ function App() {
       }
     }, 1500)
     
-    document.addEventListener('click', handleUserInteraction)
-    document.addEventListener('keydown', handleUserInteraction)
-    document.addEventListener('touchstart', handleUserInteraction)
+    document.addEventListener('click', handleUserInteraction, { once: false })
+    document.addEventListener('keydown', handleUserInteraction, { once: false })
+    document.addEventListener('touchstart', handleUserInteraction, { once: false })
     
     return () => {
       clearTimeout(showPrompt)

@@ -1,11 +1,11 @@
 export const MARIO_BACKGROUND_MUSIC = {
-  mainTheme: 'https://ia601509.us.archive.org/7/items/SMB-Soundtrack/01%20-%20Super%20Mario%20Bros.%20-%20Main%20Theme.mp3',
-  underground: 'https://ia601509.us.archive.org/7/items/SMB-Soundtrack/02%20-%20Super%20Mario%20Bros.%20-%20Underground%20Theme.mp3',
-  underwater: 'https://ia601509.us.archive.org/7/items/SMB-Soundtrack/03%20-%20Super%20Mario%20Bros.%20-%20Underwater%20Theme.mp3',
-  castle: 'https://ia601509.us.archive.org/7/items/SMB-Soundtrack/04%20-%20Super%20Mario%20Bros.%20-%20Castle%20Theme.mp3',
-  starPower: 'https://ia601509.us.archive.org/7/items/SMB-Soundtrack/05%20-%20Super%20Mario%20Bros.%20-%20Star%20Theme.mp3',
-  ghostHouse: 'https://ia601509.us.archive.org/7/items/SMB-Soundtrack/06%20-%20Super%20Mario%20Bros.%20-%20Ending.mp3',
-  fortress: 'https://ia601509.us.archive.org/7/items/SMB-Soundtrack/04%20-%20Super%20Mario%20Bros.%20-%20Castle%20Theme.mp3',
+  mainTheme: 'https://archive.org/download/marioSoundEffects/main-theme.mp3',
+  underground: 'https://archive.org/download/marioSoundEffects/underground.mp3',
+  underwater: 'https://archive.org/download/marioSoundEffects/underwater.mp3',
+  castle: 'https://archive.org/download/marioSoundEffects/castle.mp3',
+  starPower: 'https://archive.org/download/marioSoundEffects/athletic.mp3',
+  ghostHouse: 'https://archive.org/download/marioSoundEffects/ghost-house.mp3',
+  fortress: 'https://archive.org/download/marioSoundEffects/fortress.mp3',
 }
 
 export type BackgroundMusicPage = 'treasury' | 'marketplace' | 'charts' | 'ledger' | 'main' | 'ghost' | 'star' | 'fortress'

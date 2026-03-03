@@ -1,53 +1,50 @@
 export const MARIO_SOUNDS = {
-  coin: 'https://ia600200.us.archive.org/35/items/marioSoundEffects/smb_coin.wav',
-  brick: 'https://ia600200.us.archive.org/35/items/marioSoundEffects/smb_breakblock.wav',
-  bump: 'https://ia600200.us.archive.org/35/items/marioSoundEffects/smb_bump.wav',
-  jump: 'https://ia600200.us.archive.org/35/items/marioSoundEffects/smb_jump-small.wav',
-  powerUp: 'https://ia600200.us.archive.org/35/items/marioSoundEffects/smb_powerup.wav',
-  oneUp: 'https://ia600200.us.archive.org/35/items/marioSoundEffects/smb_1-up.wav',
-  pipe: 'https://ia600200.us.archive.org/35/items/marioSoundEffects/smb_pipe.wav',
-  fireball: 'https://ia600200.us.archive.org/35/items/marioSoundEffects/smb_fireball.wav',
-  kick: 'https://ia600200.us.archive.org/35/items/marioSoundEffects/smb_kick.wav',
-  pause: 'https://ia600200.us.archive.org/35/items/marioSoundEffects/smb_pause.wav',
-  stomp: 'https://ia600200.us.archive.org/35/items/marioSoundEffects/smb_stomp.wav',
-  gameOver: 'https://ia600200.us.archive.org/35/items/marioSoundEffects/smb_gameover.wav',
-  stageClear: 'https://ia600200.us.archive.org/35/items/marioSoundEffects/smb_stage_clear.wav',
-  warning: 'https://ia600200.us.archive.org/35/items/marioSoundEffects/smb_warning.wav',
-  bowserFall: 'https://ia600200.us.archive.org/35/items/marioSoundEffects/smb_bowserfall.wav',
-  bowserFire: 'https://ia600200.us.archive.org/35/items/marioSoundEffects/smb_bowserfire.wav',
-  mariodie: 'https://ia600200.us.archive.org/35/items/marioSoundEffects/smb_mariodie.wav',
+  coin: 'https://ia800304.us.archive.org/27/items/arcade-sounds/coin.wav',
+  brick: 'https://ia800304.us.archive.org/27/items/arcade-sounds/break.wav',
+  bump: 'https://ia800304.us.archive.org/27/items/arcade-sounds/bump.wav',
+  jump: 'https://ia800304.us.archive.org/27/items/arcade-sounds/jump.wav',
+  powerUp: 'https://ia800304.us.archive.org/27/items/arcade-sounds/powerup.wav',
+  oneUp: 'https://ia800304.us.archive.org/27/items/arcade-sounds/1up.wav',
+  pipe: 'https://ia800304.us.archive.org/27/items/arcade-sounds/pipe.wav',
+  fireball: 'https://ia800304.us.archive.org/27/items/arcade-sounds/fireball.wav',
+  kick: 'https://ia800304.us.archive.org/27/items/arcade-sounds/kick.wav',
+  pause: 'https://ia800304.us.archive.org/27/items/arcade-sounds/pause.wav',
+  stomp: 'https://ia800304.us.archive.org/27/items/arcade-sounds/stomp.wav',
+  gameOver: 'https://ia800304.us.archive.org/27/items/arcade-sounds/gameover.wav',
+  stageClear: 'https://ia800304.us.archive.org/27/items/arcade-sounds/stage_clear.wav',
+  warning: 'https://ia800304.us.archive.org/27/items/arcade-sounds/warning.wav',
+  bowserFall: 'https://ia800304.us.archive.org/27/items/arcade-sounds/bowserfall.wav',
+  bowserFire: 'https://ia800304.us.archive.org/27/items/arcade-sounds/bowserfire.wav',
+  mariodie: 'https://ia800304.us.archive.org/27/items/arcade-sounds/mariodie.wav',
 }
 
 const audioCache: Map<string, HTMLAudioElement[]> = new Map()
 let audioContext: AudioContext | null = null
 let userInteracted = false
 let soundsEnabled = false
-const POOL_SIZE = 5
+const POOL_SIZE = 3
 
 export function initializeAudioContext() {
+  if (!userInteracted) {
+    userInteracted = true
+    soundsEnabled = true
+  }
+  
   if (!audioContext) {
     try {
       audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
+      console.log('🔊 AudioContext created!')
     } catch (e) {
-      console.warn('AudioContext not supported')
-      soundsEnabled = true
-      userInteracted = true
-      return
+      console.warn('AudioContext not supported, using HTML5 Audio fallback')
     }
   }
   
-  if (audioContext.state === 'suspended') {
+  if (audioContext && audioContext.state === 'suspended') {
     audioContext.resume().then(() => {
-      soundsEnabled = true
-      userInteracted = true
-      console.log('🔊 Audio enabled!')
-    }).catch(() => {
-      soundsEnabled = true
-      userInteracted = true
+      console.log('🔊 AudioContext resumed!')
+    }).catch((err) => {
+      console.warn('Could not resume AudioContext:', err)
     })
-  } else {
-    soundsEnabled = true
-    userInteracted = true
   }
 }
 
@@ -58,7 +55,7 @@ export function preloadSound(soundUrl: string) {
       const audio = new Audio()
       audio.src = soundUrl
       audio.preload = 'auto'
-      audio.load()
+      audio.crossOrigin = 'anonymous'
       pool.push(audio)
     }
     audioCache.set(soundUrl, pool)
@@ -66,12 +63,7 @@ export function preloadSound(soundUrl: string) {
   return audioCache.get(soundUrl)!
 }
 
-export function playSound(soundUrl: string, volume = 0.5) {
-  if (!userInteracted) {
-    console.log('Waiting for user interaction...')
-    return
-  }
-  
+export function playSound(soundUrl: string, volume = 0.6) {
   try {
     let pool = audioCache.get(soundUrl)
     
@@ -89,11 +81,13 @@ export function playSound(soundUrl: string, volume = 0.5) {
     
     if (playPromise !== undefined) {
       playPromise.catch((error) => {
-        console.log('Playback issue:', error.message)
+        if (error.name !== 'AbortError') {
+          console.warn('Sound playback failed:', error.message)
+        }
       })
     }
   } catch (error) {
-    console.log('Error playing sound:', error)
+    console.warn('Error playing sound:', error)
   }
 }
 
