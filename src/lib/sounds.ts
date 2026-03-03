@@ -21,7 +21,9 @@ export const MARIO_SOUNDS = {
 const audioCache: Map<string, HTMLAudioElement[]> = new Map()
 let audioContext: AudioContext | null = null
 let isAudioInitialized = false
-const AUDIO_POOL_SIZE = 3
+const AUDIO_POOL_SIZE = 5
+let unlockAttempts = 0
+const MAX_UNLOCK_ATTEMPTS = 10
 
 export function initializeAudioContext() {
   if (audioContext) return audioContext
@@ -46,25 +48,33 @@ export function initializeAudioContext() {
 }
 
 export function forceUnlockAudio() {
+  if (unlockAttempts >= MAX_UNLOCK_ATTEMPTS) return
+  unlockAttempts++
+  
   if (!audioContext) {
     initializeAudioContext()
   }
   
   if (audioContext?.state === 'suspended') {
     audioContext.resume().then(() => {
-      console.log('🔊 Audio force-unlocked!')
+      console.log(`🔊 Audio force-unlocked! (attempt ${unlockAttempts})`)
       isAudioInitialized = true
     }).catch(() => {})
   }
   
-  const silentAudio = new Audio()
-  silentAudio.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA'
-  silentAudio.volume = 0.01
-  silentAudio.play().then(() => {
-    silentAudio.pause()
-    isAudioInitialized = true
-    console.log('🔊 Silent audio unlock successful')
-  }).catch(() => {})
+  try {
+    const silentAudio = new Audio()
+    silentAudio.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA'
+    silentAudio.volume = 0.01
+    const playPromise = silentAudio.play()
+    if (playPromise) {
+      playPromise.then(() => {
+        silentAudio.pause()
+        isAudioInitialized = true
+        console.log(`🔊 Silent audio unlock successful (attempt ${unlockAttempts})`)
+      }).catch(() => {})
+    }
+  } catch (e) {}
 }
 
 export function preloadSound(soundUrl: string): HTMLAudioElement {
@@ -100,23 +110,41 @@ export function playSound(soundUrl: string, volume = 0.7): void {
     
     audio.volume = volume
     
-    const playPromise = audio.play()
-    if (playPromise !== undefined) {
-      playPromise
-        .then(() => {
-          console.log('🔊 PLAYING:', soundUrl.split('/').pop())
-        })
-        .catch((error) => {
-          console.warn('Play attempt failed:', error.message)
-          
-          setTimeout(() => {
-            const retryAudio = new Audio(soundUrl)
-            retryAudio.volume = volume
-            retryAudio.crossOrigin = 'anonymous'
-            retryAudio.play().catch(() => {})
-          }, 50)
-        })
+    const attemptPlay = (retryCount = 0) => {
+      const playPromise = audio!.play()
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            console.log('🔊 PLAYING:', soundUrl.split('/').pop())
+          })
+          .catch((error) => {
+            console.warn(`Play attempt ${retryCount + 1} failed:`, error.message)
+            
+            if (retryCount < 3) {
+              setTimeout(() => {
+                forceUnlockAudio()
+                
+                const retryAudio = new Audio(soundUrl)
+                retryAudio.volume = volume
+                retryAudio.crossOrigin = 'anonymous'
+                
+                const retryPromise = retryAudio.play()
+                if (retryPromise) {
+                  retryPromise
+                    .then(() => console.log('🔊 RETRY SUCCESS:', soundUrl.split('/').pop()))
+                    .catch(() => {
+                      if (retryCount < 2) {
+                        attemptPlay(retryCount + 1)
+                      }
+                    })
+                }
+              }, 100 * (retryCount + 1))
+            }
+          })
+      }
     }
+    
+    attemptPlay()
   } catch (e) {
     console.error('Sound error:', e)
   }
@@ -147,3 +175,5 @@ export const playBowserFall = () => { console.log('🐉 BOWSER FALL'); playSound
 export const playBowserFire = () => { console.log('🔥 BOWSER FIRE'); playSound(MARIO_SOUNDS.bowserFire, 0.6) }
 export const playBump = () => { console.log('💥 BUMP'); playSound(MARIO_SOUNDS.bump, 0.7) }
 export const playMarioDie = () => { console.log('☠️ MARIO DIE'); playSound(MARIO_SOUNDS.mariodie, 0.7) }
+
+export const getAudioContext = () => audioContext

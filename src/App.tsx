@@ -25,7 +25,7 @@ import { MarioJukebox } from '@/components/MarioJukebox'
 import { MarioCoin, TreasuryStats } from '@/lib/types'
 import { Toaster } from '@/components/ui/sonner'
 import { toast } from 'sonner'
-import { preloadAllSounds, playCoinSound, playOneUp, playPowerUp, initializeAudioContext, playPipe, playFireball, playKick, playStageClear, playJump, playStomp } from '@/lib/sounds'
+import { preloadAllSounds, playCoinSound, playOneUp, playPowerUp, initializeAudioContext, playPipe, playFireball, playKick, playStageClear, playJump, playStomp, getAudioContext } from '@/lib/sounds'
 import { initBackgroundMusic, playBackgroundMusic, enableAutoPlay, BackgroundMusicPage } from '@/lib/background-music'
 import marioImage from '@/assets/images/Screenshot_20260225-192747.png'
 
@@ -58,20 +58,30 @@ function App() {
     }
     
     setTimeout(tryUnlock, 100)
+    setTimeout(tryUnlock, 300)
     setTimeout(tryUnlock, 500)
     setTimeout(tryUnlock, 1000)
+    setTimeout(tryUnlock, 2000)
     
-    const events = ['click', 'keydown', 'touchstart', 'mousedown', 'pointerdown']
+    const events = ['click', 'keydown', 'touchstart', 'mousedown', 'pointerdown', 'touchend']
     const handler = () => {
       tryUnlock()
     }
     
     events.forEach(e => {
-      document.addEventListener(e, handler, { once: true, capture: true })
+      document.addEventListener(e, handler, { once: false, capture: true })
     })
+    
+    const intervalUnlock = setInterval(() => {
+      const ctx = getAudioContext()
+      if (ctx && ctx.state === 'suspended') {
+        ctx.resume()
+      }
+    }, 500)
     
     return () => {
       events.forEach(e => document.removeEventListener(e, handler, true))
+      clearInterval(intervalUnlock)
     }
   }, [])
   

@@ -48,6 +48,7 @@ export function AnimatedMarioButtons(props: AnimatedMarioButtonsProps) {
   const [activeDialog, setActiveDialog] = useState<string | null>(null)
   const [hitButton, setHitButton] = useState<number | null>(null)
   const [poppedEmoji, setPoppedEmoji] = useState<{ emoji: string; index: number } | null>(null)
+  const [revealedButtons, setRevealedButtons] = useState<Set<number>>(new Set())
 
   const buttons: ButtonData[] = [
     { emoji: '🟡', label: 'Mint', action: () => props.onMintToken(), sound: playCoinSound },
@@ -74,6 +75,8 @@ export function AnimatedMarioButtons(props: AnimatedMarioButtonsProps) {
     
     setTimeout(() => {
       setHitButton(null)
+      setRevealedButtons(prev => new Set(prev).add(index))
+      
       buttons[index].sound()
       buttons[index].action()
       
@@ -106,9 +109,11 @@ export function AnimatedMarioButtons(props: AnimatedMarioButtonsProps) {
                 onClick={() => handleButtonClick(idx)}
                 className="relative w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center transition-all cursor-pointer overflow-visible"
                 style={{
-                  background: hitButton === idx 
-                    ? 'oklch(0.48 0.12 40)'
-                    : 'linear-gradient(135deg, oklch(0.60 0.15 47) 0%, oklch(0.55 0.13 45) 100%)',
+                  background: revealedButtons.has(idx)
+                    ? 'linear-gradient(135deg, oklch(0.75 0.18 85) 0%, oklch(0.70 0.16 80) 100%)'
+                    : hitButton === idx 
+                      ? 'oklch(0.48 0.12 40)'
+                      : 'linear-gradient(135deg, oklch(0.60 0.15 47) 0%, oklch(0.55 0.13 45) 100%)',
                   borderRadius: '3px',
                   boxShadow: hitButton === idx 
                     ? 'inset 0 2px 4px oklch(0 0 0 / 0.5)' 
@@ -119,7 +124,7 @@ export function AnimatedMarioButtons(props: AnimatedMarioButtonsProps) {
                 }}
                 whileHover={{ 
                   scale: 1.05,
-                  background: 'oklch(0.65 0.17 48)'
+                  background: revealedButtons.has(idx) ? 'oklch(0.80 0.20 85)' : 'oklch(0.65 0.17 48)'
                 }}
                 whileTap={{ scale: 0.95 }}
               >
@@ -127,11 +132,9 @@ export function AnimatedMarioButtons(props: AnimatedMarioButtonsProps) {
                   background: 'repeating-linear-gradient(0deg, transparent 0px, transparent 3px, oklch(0 0 0 / 0.08) 3px, oklch(0 0 0 / 0.08) 4px), repeating-linear-gradient(90deg, transparent 0px, transparent 3px, oklch(0 0 0 / 0.08) 3px, oklch(0 0 0 / 0.08) 4px)',
                   pointerEvents: 'none'
                 }}></div>
-                {hitButton !== idx && (
-                  <span className="relative z-10 text-2xl sm:text-3xl">
-                    🧱
-                  </span>
-                )}
+                <span className="relative z-10 text-2xl sm:text-3xl">
+                  {revealedButtons.has(idx) ? btn.emoji : '🧱'}
+                </span>
               </motion.button>
             </div>
           ))}
