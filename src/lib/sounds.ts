@@ -24,29 +24,6 @@ let isAudioInitialized = false
 const AUDIO_POOL_SIZE = 5
 let unlockAttempts = 0
 const MAX_UNLOCK_ATTEMPTS = 10
-const SOUND_FREQUENCIES: Record<string, number> = {
-  coin: 880,
-  break: 220,
-  bump: 330,
-  jump: 660,
-  powerup: 740,
-  '1up': 988,
-  pipe: 262,
-  fireball: 392,
-  kick: 294,
-  pause: 247,
-  stomp: 196,
-  gameover: 165,
-  stage_clear: 523,
-  warning: 698,
-  bowserfall: 175,
-  bowserfire: 415,
-  mariodie: 147,
-}
-const NORMALIZED_SOUND_FREQUENCIES = Object.entries(SOUND_FREQUENCIES)
-  .map(([name, frequency]) => [name.replace(/[^a-z0-9]/g, ''), frequency] as const)
-  .sort((a, b) => b[0].length - a[0].length)
-
 export function getAudioContext(): AudioContext | null {
   if (!audioContext) {
     initializeAudioContext()
@@ -172,20 +149,17 @@ export function playSound(soundUrl: string, volume = 0.7): void {
                     .catch(() => {
                       if (retryCount < 2) {
                         attemptPlay(retryCount + 1)
-                      } else {
-                        playFallbackTone(soundUrl, volume)
                       }
                     })
                 } else {
-                  playFallbackTone(soundUrl, volume)
                 }
               }, 100 * (retryCount + 1))
             } else {
-              playFallbackTone(soundUrl, volume)
+              console.warn('Unable to play Mario sound after retries:', soundUrl)
             }
           })
       } else {
-        playFallbackTone(soundUrl, volume)
+        console.warn('Audio play promise not available for:', soundUrl)
       }
     }
     
@@ -201,28 +175,6 @@ export function preloadAllSounds() {
     preloadSound(url)
   })
   console.log('✅ All sounds preloaded!')
-}
-
-function playFallbackTone(soundUrl: string, volume = 0.7) {
-  const ctx = getAudioContext()
-  if (!ctx) return
-  const fileName = soundUrl.split('/').pop() || ''
-  const normalizedFileName = decodeURIComponent(fileName)
-    .toLowerCase()
-    .replace(/\.(wav|mp3)$/, '')
-    .replace(/[^a-z0-9]/g, '')
-  const frequency = NORMALIZED_SOUND_FREQUENCIES.find(([name]) =>
-    normalizedFileName.includes(name)
-  )?.[1] || 440
-  const oscillator = ctx.createOscillator()
-  const gainNode = ctx.createGain()
-  oscillator.type = 'square'
-  oscillator.frequency.value = frequency
-  gainNode.gain.value = Math.max(0.02, Math.min(0.2, volume * 0.25))
-  oscillator.connect(gainNode)
-  gainNode.connect(ctx.destination)
-  oscillator.start()
-  oscillator.stop(ctx.currentTime + 0.12)
 }
 
 export const playBrickBreak = () => { console.log('🧱 BRICK BREAK'); playSound(MARIO_SOUNDS.brick, 0.7) }

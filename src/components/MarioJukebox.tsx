@@ -446,6 +446,7 @@ Keep your response friendly and concise (2-3 sentences max).`
           <DialogTitle className="text-lg sm:text-2xl pixel-font text-[oklch(0.75_0.18_85)] text-center">
             🎵 MARIO JUKEBOX 🎵
           </DialogTitle>
+          <p className="text-center text-xs text-[oklch(0.85_0.02_280)]">Internet Archive playlist of Koji Kondo-era Mario tracks</p>
         </DialogHeader>
 
         <div className="flex flex-col gap-3 sm:gap-4 overflow-hidden flex-1">
@@ -646,6 +647,8 @@ Keep your response friendly and concise (2-3 sentences max).`
           onEnded={handleSongEnd}
           loop={false}
           preload="auto"
+          crossOrigin="anonymous"
+          playsInline
         />
       </DialogContent>
     </Dialog>
