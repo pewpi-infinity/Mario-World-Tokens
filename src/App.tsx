@@ -25,7 +25,7 @@ import { MarioJukebox } from '@/components/MarioJukebox'
 import { MarioCoin, TreasuryStats } from '@/lib/types'
 import { Toaster } from '@/components/ui/sonner'
 import { toast } from 'sonner'
-import { preloadAllSounds, playCoinSound, playOneUp, playPowerUp } from '@/lib/sounds'
+import { preloadAllSounds, playCoinSound, playOneUp, playPowerUp, initializeAudioContext } from '@/lib/sounds'
 import { initBackgroundMusic, playBackgroundMusic, enableAutoPlay, BackgroundMusicPage } from '@/lib/background-music'
 import marioImage from '@/assets/images/Screenshot_20260225-192747.png'
 
@@ -46,7 +46,6 @@ function App() {
   
   useEffect(() => {
     const handleUserInteraction = () => {
-      const { initializeAudioContext } = require('@/lib/sounds')
       initializeAudioContext()
       preloadAllSounds()
       enableAutoPlay()
