@@ -45,62 +45,64 @@ function App() {
   const [currentUser] = useState(() => `user-${Math.random().toString(36).substr(2, 9)}`)
   
   useEffect(() => {
-    let interactionHappened = false
+    let isAudioReady = false
     
-    const handleUserInteraction = () => {
-      if (interactionHappened) return
-      interactionHappened = true
+    const handleUserInteraction = async () => {
+      if (isAudioReady) return
+      isAudioReady = true
       
-      console.log('👆 User interaction detected - enabling sounds...')
+      console.log('🎮 FIRST INTERACTION - Initializing all audio systems...')
       
       initializeAudioContext()
       
-      setTimeout(() => {
-        preloadAllSounds()
-        console.log('✅ All sounds preloaded!')
-      }, 100)
+      await new Promise(resolve => setTimeout(resolve, 50))
       
-      setTimeout(() => {
-        enableAutoPlay()
-        initBackgroundMusic('main')
-        console.log('🎵 Background music started!')
-      }, 200)
+      preloadAllSounds()
+      console.log('✅ Sound effects preloaded!')
+      
+      await new Promise(resolve => setTimeout(resolve, 50))
+      
+      initBackgroundMusic('main')
+      enableAutoPlay()
+      console.log('🎵 Background music initialized!')
       
       setSoundEnabled(true)
       
-      setTimeout(() => {
-        playCoinSound()
-        console.log('🪙 Test coin sound played!')
-      }, 300)
+      await new Promise(resolve => setTimeout(resolve, 100))
       
-      toast.success('🔊 Sound Enabled!', {
-        description: 'Mario sound effects and music are now active!',
-        duration: 3000
+      playCoinSound()
+      console.log('🪙 Test coin sound played!')
+      
+      toast.success('🔊 Mario Sound System Online!', {
+        description: 'All sound effects and background music activated!',
+        duration: 2000
       })
     }
     
-    const showPrompt = setTimeout(() => {
-      if (!soundEnabled && !interactionHappened) {
-        toast.info('🎵 Click anywhere to enable sound', {
-          description: 'Hear all the classic Mario sound effects!',
-          duration: 8000,
+    const events = ['click', 'keydown', 'touchstart', 'mousedown']
+    
+    events.forEach(event => {
+      document.addEventListener(event, handleUserInteraction, { once: true, capture: true })
+    })
+    
+    const promptTimer = setTimeout(() => {
+      if (!soundEnabled && !isAudioReady) {
+        toast.info('🎵 Tap anywhere for sound!', {
+          description: 'Hear classic Mario sound effects and music!',
+          duration: 6000,
           action: {
             label: 'Enable',
             onClick: handleUserInteraction
           }
         })
       }
-    }, 1500)
-    
-    document.addEventListener('click', handleUserInteraction, { once: false })
-    document.addEventListener('keydown', handleUserInteraction, { once: false })
-    document.addEventListener('touchstart', handleUserInteraction, { once: false })
+    }, 1000)
     
     return () => {
-      clearTimeout(showPrompt)
-      document.removeEventListener('click', handleUserInteraction)
-      document.removeEventListener('keydown', handleUserInteraction)
-      document.removeEventListener('touchstart', handleUserInteraction)
+      clearTimeout(promptTimer)
+      events.forEach(event => {
+        document.removeEventListener(event, handleUserInteraction)
+      })
     }
   }, [soundEnabled])
   

@@ -21,19 +21,20 @@ export const MARIO_SOUNDS = {
 const audioCache: Map<string, HTMLAudioElement[]> = new Map()
 let audioContext: AudioContext | null = null
 let userInteracted = false
-let soundsEnabled = false
-const POOL_SIZE = 3
+let soundsEnabled = true
+const POOL_SIZE = 5
 
 export function initializeAudioContext() {
   if (!userInteracted) {
     userInteracted = true
     soundsEnabled = true
+    console.log('✅ User interaction detected - sounds enabled!')
   }
   
   if (!audioContext) {
     try {
       audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
-      console.log('🔊 AudioContext created!')
+      console.log('🔊 AudioContext created:', audioContext.state)
     } catch (e) {
       console.warn('AudioContext not supported, using HTML5 Audio fallback')
     }
@@ -41,11 +42,13 @@ export function initializeAudioContext() {
   
   if (audioContext && audioContext.state === 'suspended') {
     audioContext.resume().then(() => {
-      console.log('🔊 AudioContext resumed!')
+      console.log('🔊 AudioContext resumed! State:', audioContext?.state)
     }).catch((err) => {
       console.warn('Could not resume AudioContext:', err)
     })
   }
+  
+  return audioContext
 }
 
 export function preloadSound(soundUrl: string) {
@@ -56,18 +59,30 @@ export function preloadSound(soundUrl: string) {
       audio.src = soundUrl
       audio.preload = 'auto'
       audio.crossOrigin = 'anonymous'
+      audio.load()
       pool.push(audio)
     }
     audioCache.set(soundUrl, pool)
+    console.log(`📦 Preloaded: ${soundUrl}`)
   }
   return audioCache.get(soundUrl)!
 }
 
-export function playSound(soundUrl: string, volume = 0.6) {
+export function playSound(soundUrl: string, volume = 0.7) {
+  if (!soundsEnabled) {
+    console.log('⚠️ Sound not enabled yet - call initializeAudioContext first')
+    return
+  }
+  
   try {
+    if (audioContext && audioContext.state === 'suspended') {
+      audioContext.resume()
+    }
+    
     let pool = audioCache.get(soundUrl)
     
     if (!pool) {
+      console.log('🔄 Sound not preloaded, loading on-demand:', soundUrl)
       pool = preloadSound(soundUrl)
     }
     
@@ -80,24 +95,30 @@ export function playSound(soundUrl: string, volume = 0.6) {
     const playPromise = audio.play()
     
     if (playPromise !== undefined) {
-      playPromise.catch((error) => {
-        if (error.name !== 'AbortError') {
-          console.warn('Sound playback failed:', error.message)
-        }
-      })
+      playPromise
+        .then(() => {
+          console.log('🔊 Sound played successfully!')
+        })
+        .catch((error) => {
+          if (error.name !== 'AbortError' && error.name !== 'NotAllowedError') {
+            console.warn('❌ Sound playback failed:', error.message, error.name)
+          } else if (error.name === 'NotAllowedError') {
+            console.log('🔇 Autoplay blocked - need user interaction')
+          }
+        })
     }
   } catch (error) {
-    console.warn('Error playing sound:', error)
+    console.warn('❌ Error playing sound:', error)
   }
 }
 
 export function preloadAllSounds() {
-  console.log('Preloading all Mario sounds...')
+  console.log('🎮 Preloading all Mario sounds...')
   Object.entries(MARIO_SOUNDS).forEach(([name, soundUrl]) => {
     preloadSound(soundUrl)
-    console.log(`Loaded: ${name}`)
   })
-  console.log('All sounds preloaded!')
+  console.log('✅ All sounds preloaded! Total:', Object.keys(MARIO_SOUNDS).length)
+  return true
 }
 
 export const playBrickBreak = () => { console.log('🧱 Brick!'); playSound(MARIO_SOUNDS.brick, 0.6) }

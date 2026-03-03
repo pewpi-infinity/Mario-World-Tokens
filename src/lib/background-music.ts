@@ -24,10 +24,13 @@ const PAGE_MUSIC_MAP: Record<BackgroundMusicPage, string> = {
 let currentAudio: HTMLAudioElement | null = null
 let currentPage: BackgroundMusicPage = 'main'
 let isMuted = false
-let volume = 0.3
+let volume = 0.4
+let isInitialized = false
 
 export function initBackgroundMusic(page: BackgroundMusicPage = 'main') {
+  isInitialized = true
   currentPage = page
+  console.log(`🎵 Initializing background music for page: ${page}`)
   playBackgroundMusic(page)
 }
 
@@ -35,12 +38,14 @@ export function playBackgroundMusic(page: BackgroundMusicPage) {
   const musicUrl = PAGE_MUSIC_MAP[page]
   
   if (currentAudio && currentPage === page && !currentAudio.paused) {
+    console.log(`🎵 Music already playing for ${page}`)
     return
   }
   
   if (currentAudio) {
     currentAudio.pause()
     currentAudio.currentTime = 0
+    currentAudio = null
   }
   
   currentPage = page
@@ -48,14 +53,17 @@ export function playBackgroundMusic(page: BackgroundMusicPage) {
   currentAudio.loop = true
   currentAudio.volume = isMuted ? 0 : volume
   currentAudio.preload = 'auto'
+  currentAudio.load()
   
   const playPromise = currentAudio.play()
   if (playPromise !== undefined) {
-    playPromise.then(() => {
-      console.log(`🎵 Playing background music: ${page}`)
-    }).catch((error) => {
-      console.log('Music autoplay blocked:', error.message)
-    })
+    playPromise
+      .then(() => {
+        console.log(`🎵 Successfully playing background music: ${page}`)
+      })
+      .catch((error) => {
+        console.log(`⚠️ Music autoplay blocked for ${page}:`, error.message)
+      })
   }
 }
 
@@ -92,9 +100,17 @@ export function getBackgroundMusicState() {
 }
 
 export function enableAutoPlay() {
+  console.log('🔊 Enabling auto-play...')
   if (currentAudio && currentAudio.paused) {
-    currentAudio.play().catch(() => {
-      console.log('Could not auto-play')
-    })
+    currentAudio.play()
+      .then(() => {
+        console.log('✅ Auto-play successful!')
+      })
+      .catch((err) => {
+        console.log('⚠️ Could not auto-play:', err.message)
+      })
+  } else if (!isInitialized) {
+    console.log('🎵 Initializing music on auto-play enable...')
+    initBackgroundMusic('main')
   }
 }
