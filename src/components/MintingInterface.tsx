@@ -14,6 +14,7 @@ import { MarioStickers } from '@/components/MarioStickers'
 import { AIChatAssistant } from '@/components/AIChatAssistant'
 import { InfinitySpiritGenerator } from '@/components/InfinitySpiritGenerator'
 import { InfinityAIChat } from '@/components/InfinityAIChat'
+import { TokenMintingChat } from '@/components/TokenMintingChat'
 import { toast } from 'sonner'
 import { playCoinSound } from '@/lib/sounds'
 
@@ -46,6 +47,7 @@ export function MintingInterface({ open, onClose, onMint, currentUser }: Minting
   const [isMinting, setIsMinting] = useState(false)
   const [showInfinitySpiritGenerator, setShowInfinitySpiritGenerator] = useState(false)
   const [showAIChat, setShowAIChat] = useState(false)
+  const [showTokenChat, setShowTokenChat] = useState(true)
   const [aiSuggestions, setAiSuggestions] = useState<string[]>([])
   const [isGeneratingSuggestions, setIsGeneratingSuggestions] = useState(false)
 
@@ -157,6 +159,15 @@ Format as a JSON object with a "suggestions" array of 3 concise strings.`
 
           <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 min-h-0">
             <div className="space-y-4 sm:space-y-6">
+          
+          {showTokenChat && (
+            <TokenMintingChat
+              currentTitle={title}
+              currentDescription={description}
+              currentValue={value}
+              contentType={contentType}
+            />
+          )}
           <div>
             <Label htmlFor="value" className="text-base font-semibold">USD Value</Label>
             <div className="relative mt-2">

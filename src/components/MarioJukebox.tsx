@@ -13,16 +13,16 @@ interface Song {
 }
 
 const MARIO_SONGS: Song[] = [
-  { id: '1', name: 'Main Theme', level: 'Level 1-1', url: 'https://ia800504.us.archive.org/33/items/TvtokmanPart1/Super%20Mario%20Bros.mp3' },
-  { id: '2', name: 'Underground', level: 'Level 1-2', url: 'https://ia800208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/01%20Super%20Mario%20Bros.%20-%20Underground%20BGM.mp3' },
-  { id: '3', name: 'Star Theme', level: 'Level 1-3', url: 'https://ia800208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/07%20Super%20Mario%20Bros.%20-%20Starman%20BGM.mp3' },
-  { id: '4', name: 'Water World', level: 'Level 2-1', url: 'https://ia800208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/09%20Super%20Mario%20Bros.%20-%20Underwater%20BGM.mp3' },
-  { id: '5', name: 'Castle', level: 'Level 2-2', url: 'https://ia800208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/03%20Super%20Mario%20Bros.%20-%20Castle%20BGM.mp3' },
-  { id: '6', name: 'Hurry Up', level: 'Level 2-3', url: 'https://ia800208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/02%20Super%20Mario%20Bros.%20-%20Hurry%21.mp3' },
-  { id: '7', name: 'Game Over', level: 'Level 3-1', url: 'https://ia800208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/05%20Super%20Mario%20Bros.%20-%20Game%20Over.mp3' },
-  { id: '8', name: 'World Clear', level: 'Level 3-2', url: 'https://ia800208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/08%20Super%20Mario%20Bros.%20-%20World%20Clear%20Fanfare.mp3' },
-  { id: '9', name: 'Ending', level: 'Level 3-3', url: 'https://ia800208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/04%20Super%20Mario%20Bros.%20-%20Ending.mp3' },
-  { id: '10', name: 'Bonus Stage', level: 'Bonus', url: 'https://ia800208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/10%20Super%20Mario%20Bros.%202%20-%20Invincibility%20BGM.mp3' }
+  { id: '1', name: 'Main Theme', level: 'Level 1-1', url: 'https://ia600304.us.archive.org/33/items/TvtokmanPart1/Super%20Mario%20Bros.mp3' },
+  { id: '2', name: 'Underground', level: 'Level 1-2', url: 'https://ia600208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/01%20Super%20Mario%20Bros.%20-%20Underground%20BGM.mp3' },
+  { id: '3', name: 'Star Theme', level: 'Level 1-3', url: 'https://ia600208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/07%20Super%20Mario%20Bros.%20-%20Starman%20BGM.mp3' },
+  { id: '4', name: 'Water World', level: 'Level 2-1', url: 'https://ia600208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/09%20Super%20Mario%20Bros.%20-%20Underwater%20BGM.mp3' },
+  { id: '5', name: 'Castle', level: 'Level 2-2', url: 'https://ia600208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/03%20Super%20Mario%20Bros.%20-%20Castle%20BGM.mp3' },
+  { id: '6', name: 'Hurry Up', level: 'Level 2-3', url: 'https://ia600208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/02%20Super%20Mario%20Bros.%20-%20Hurry%21.mp3' },
+  { id: '7', name: 'Game Over', level: 'Level 3-1', url: 'https://ia600208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/05%20Super%20Mario%20Bros.%20-%20Game%20Over.mp3' },
+  { id: '8', name: 'World Clear', level: 'Level 3-2', url: 'https://ia600208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/08%20Super%20Mario%20Bros.%20-%20World%20Clear%20Fanfare.mp3' },
+  { id: '9', name: 'Ending', level: 'Level 3-3', url: 'https://ia600208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/04%20Super%20Mario%20Bros.%20-%20Ending.mp3' },
+  { id: '10', name: 'Bonus Stage', level: 'Bonus', url: 'https://ia600208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/10%20Super%20Mario%20Bros.%202%20-%20Invincibility%20BGM.mp3' }
 ]
 
 interface MarioJukeboxProps {
@@ -60,13 +60,21 @@ export function MarioJukebox({ open, onClose, initialLevel }: MarioJukeboxProps)
     audio.load()
 
     if (isPlaying && open) {
+      audio.currentTime = 0
       const playPromise = audio.play()
       if (playPromise !== undefined) {
-        playPromise.catch((error) => {
-          console.error('Play failed:', error)
-          setIsPlaying(false)
-        })
+        playPromise
+          .then(() => {
+            console.log('🎵 Jukebox playing:', currentSong.name)
+          })
+          .catch((error) => {
+            console.error('❌ Jukebox play failed:', error.message)
+            setIsPlaying(false)
+          })
       }
+    } else if (!open && audio) {
+      audio.pause()
+      setIsPlaying(false)
     }
   }, [currentSong, isPlaying, open])
 
@@ -244,6 +252,7 @@ export function MarioJukebox({ open, onClose, initialLevel }: MarioJukeboxProps)
           onEnded={handleSongEnd}
           loop={false}
           preload="auto"
+          crossOrigin="anonymous"
         />
       </DialogContent>
     </Dialog>
