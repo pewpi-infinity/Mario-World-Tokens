@@ -24,16 +24,24 @@ interface Message {
   timestamp: number
 }
 
+interface AttachedFile {
+  name: string
+  content: string
+}
+
 interface HomepageAIDesignerProps {
   className?: string
 }
+
+const MAX_ATTACHED_FILES = 3
+const MAX_FILE_CONTENT_LENGTH = 2000
 
 export function HomepageAIDesigner({ className = '' }: HomepageAIDesignerProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [isMinimized, setIsMinimized] = useState(false)
   const [message, setMessage] = useState('')
   const [isTyping, setIsTyping] = useState(false)
-  const [attachedFiles, setAttachedFiles] = useState<Array<{ name: string; content: string }>>([])
+  const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([])
   const [messages, setMessages] = useKV<Message[]>('homepage-ai-messages', [])
   const scrollRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -146,16 +154,22 @@ Respond now with specific, creative suggestions:`
     if (files.length === 0) return
 
     Promise.all(
-      files.slice(0, 3).map(async (file) => ({
+      files.map(async (file) => ({
         name: file.name,
-        content: (await file.text()).slice(0, 2000)
+        content: (await file.text()).slice(0, MAX_FILE_CONTENT_LENGTH)
       }))
     )
       .then((nextFiles) => {
-        setAttachedFiles(nextFiles)
-        toast.success(`Attached ${nextFiles.length} file${nextFiles.length > 1 ? 's' : ''} for iteration context`)
+        setAttachedFiles((current) => {
+          const merged = [...current, ...nextFiles].slice(0, MAX_ATTACHED_FILES)
+          if (current.length + nextFiles.length > MAX_ATTACHED_FILES) {
+            toast.info(`Kept ${MAX_ATTACHED_FILES} files maximum for iteration context`)
+          }
+          toast.success(`Attached ${merged.length} file${merged.length > 1 ? 's' : ''} for iteration context`)
+          return merged
+        })
       })
-      .catch(() => toast.error('Failed to attach file context'))
+      .catch(() => toast.error('Failed to attach file context. Please use readable text-based files.'))
       .finally(() => {
         if (fileInputRef.current) fileInputRef.current.value = ''
       })
@@ -360,10 +374,18 @@ Respond now with specific, creative suggestions:`
                 className="hidden"
                 onChange={handleAttachFiles}
               />
-              {attachedFiles.map((file) => (
-                <Badge key={file.name} variant="secondary" className="text-[10px]">
+              {attachedFiles.map((file, index) => (
+                <Badge key={`${file.name}-${index}`} variant="secondary" className="text-[10px]">
                   <FileText size={10} className="mr-1" />
                   {file.name}
+                  <button
+                    type="button"
+                    className="ml-1 opacity-80 hover:opacity-100"
+                    onClick={() => setAttachedFiles((current) => current.filter((_, i) => i !== index))}
+                    aria-label={`Remove ${file.name}`}
+                  >
+                    ×
+                  </button>
                 </Badge>
               ))}
             </div>
