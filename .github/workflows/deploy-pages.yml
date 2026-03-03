@@ -31,6 +31,7 @@ jobs:
           cache: npm
 
       - name: Install dependencies
+        # Required because the current lockfile/install set depends on npm legacy peer resolution.
         run: npm ci --legacy-peer-deps
 
       - name: Build
