@@ -30,6 +30,14 @@ import { preloadAllSounds, playCoinSound, playOneUp, playPowerUp, initializeAudi
 import { initBackgroundMusic, playBackgroundMusic, enableAutoPlay, BackgroundMusicPage } from '@/lib/background-music'
 import marioImage from '@/assets/images/Screenshot_20260225-192747.png'
 
+const sanitizeUserId = (value: string) => value.trim().replace(/[^a-zA-Z0-9-]/g, '').slice(0, 39)
+const createGuestUserId = () => {
+  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
+    return `guest-${crypto.randomUUID()}`
+  }
+  return `guest-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
+}
+
 function App() {
   const [coins, setCoins] = useKV<MarioCoin[]>('mario-coins', [])
   const [globalCoins, setGlobalCoins] = useKV<MarioCoin[]>('global-mario-coins', [])
@@ -44,7 +52,14 @@ function App() {
   const [showGameBuilder, setShowGameBuilder] = useState(false)
   const [showAIAssistant, setShowAIAssistant] = useState(false)
   const [showJukebox, setShowJukebox] = useState(false)
-  const [currentUser] = useState(() => `user-${Math.random().toString(36).substr(2, 9)}`)
+  const [currentUser, setCurrentUser] = useState(() => {
+    const storedUser = sanitizeUserId(localStorage.getItem('mario-current-user')?.trim() || '')
+    if (storedUser) return storedUser
+    const guestUser = createGuestUserId()
+    localStorage.setItem('mario-current-user', guestUser)
+    return guestUser
+  })
+  const [githubLogin, setGithubLogin] = useState<string | null>(null)
   const pageMap: Record<string, BackgroundMusicPage> = {
     treasury: 'treasury',
     marketplace: 'marketplace',
@@ -73,6 +88,23 @@ function App() {
     anchor.click()
     URL.revokeObjectURL(url)
     toast.success('📁 Treasury notes exported for repository commit')
+  }
+
+  const exportUserTokens = () => {
+    const payload = {
+      exportedAt: new Date().toISOString(),
+      user: currentUser,
+      tokens: userCoins
+    }
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const anchor = document.createElement('a')
+    anchor.href = url
+    const safeFileUser = sanitizeUserId(currentUser) || 'user'
+    anchor.download = `${safeFileUser}-tokens.json`
+    anchor.click()
+    URL.revokeObjectURL(url)
+    toast.success('🗂️ User tokens exported as JSON')
   }
 
   const activateAudioSystem = () => {
@@ -110,6 +142,25 @@ function App() {
     const page = pageMap[activeTab] || 'main'
     playBackgroundMusic(page)
   }, [activeTab])
+
+  useEffect(() => {
+    let mounted = true
+    window.spark.user()
+      .then((user) => {
+        if (!mounted || !user?.login) return
+        const safeLogin = sanitizeUserId(user.login)
+        if (!safeLogin) return
+        setGithubLogin(safeLogin)
+        setCurrentUser(safeLogin)
+        localStorage.setItem('mario-current-user', safeLogin)
+      })
+      .catch(() => {
+        // keep guest fallback user
+      })
+    return () => {
+      mounted = false
+    }
+  }, [])
   
   const getCurrentContext = () => {
     switch (activeTab) {
@@ -126,7 +177,9 @@ function App() {
     }
   }
 
-  const userCoins = coins || []
+  const userCoins = githubLogin
+    ? (coins || []).filter((coin) => coin.mintedBy === currentUser)
+    : (coins || [])
 
   const treasuryStats: TreasuryStats = {
     totalValue: userCoins.reduce((sum, coin) => sum + coin.value, 0),
@@ -321,6 +374,9 @@ function App() {
               <p className="text-xs sm:text-sm md:text-base text-[oklch(0.75_0.18_85)] font-semibold drop-shadow truncate">
                 People's Treasury 🪙
               </p>
+              <p className="text-xs text-white/90 font-medium drop-shadow truncate">
+                {githubLogin ? `Signed in with GitHub as @${githubLogin}` : `Using local user: ${currentUser}`}
+              </p>
             </div>
           </div>
           
@@ -362,6 +418,9 @@ function App() {
           </Button>
           <Button onClick={exportTreasuryNotes} variant="outline">
             💾 Export Treasury Notes
+          </Button>
+          <Button onClick={exportUserTokens} variant="outline">
+            🗂️ Export My Tokens
           </Button>
         </div>
 
