@@ -66,13 +66,23 @@ export function MarioJukebox({ open, onClose, initialLevel }: MarioJukeboxProps)
   }, [volume, isMuted])
 
   const handlePlayPause = () => {
-    if (audioRef.current) {
-      if (isPlaying) {
-        audioRef.current.pause()
-      } else {
-        audioRef.current.play()
+    if (!audioRef.current) return
+    
+    if (isPlaying) {
+      audioRef.current.pause()
+      setIsPlaying(false)
+    } else {
+      const playPromise = audioRef.current.play()
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            setIsPlaying(true)
+          })
+          .catch((error) => {
+            console.error('Play failed:', error)
+            setIsPlaying(false)
+          })
       }
-      setIsPlaying(!isPlaying)
     }
   }
 
@@ -80,20 +90,19 @@ export function MarioJukebox({ open, onClose, initialLevel }: MarioJukeboxProps)
     const currentIndex = MARIO_SONGS.findIndex(s => s.id === currentSong.id)
     const nextIndex = (currentIndex + 1) % MARIO_SONGS.length
     setCurrentSong(MARIO_SONGS[nextIndex])
+    setIsPlaying(true)
   }
 
   const handlePrevious = () => {
     const currentIndex = MARIO_SONGS.findIndex(s => s.id === currentSong.id)
     const prevIndex = currentIndex === 0 ? MARIO_SONGS.length - 1 : currentIndex - 1
     setCurrentSong(MARIO_SONGS[prevIndex])
+    setIsPlaying(true)
   }
 
   const handleSongSelect = (song: Song) => {
     setCurrentSong(song)
-    if (audioRef.current) {
-      audioRef.current.play()
-      setIsPlaying(true)
-    }
+    setIsPlaying(true)
   }
 
   const handleSongEnd = () => {
@@ -101,13 +110,20 @@ export function MarioJukebox({ open, onClose, initialLevel }: MarioJukeboxProps)
   }
 
   useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.load()
-      if (isPlaying) {
-        audioRef.current.play()
+    if (!audioRef.current) return
+    
+    audioRef.current.load()
+    
+    if (isPlaying) {
+      const playPromise = audioRef.current.play()
+      if (playPromise !== undefined) {
+        playPromise.catch((error) => {
+          console.error('Auto-play failed:', error)
+          setIsPlaying(false)
+        })
       }
     }
-  }, [currentSong])
+  }, [currentSong, isPlaying])
 
   const getLevelColor = (level: string) => {
     if (level.includes('1-')) return 'bg-[oklch(0.75_0.18_85)]'
