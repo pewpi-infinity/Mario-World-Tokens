@@ -25,6 +25,7 @@ import { MarioCoin, TreasuryStats } from '@/lib/types'
 import { Toaster } from '@/components/ui/sonner'
 import { toast } from 'sonner'
 import { preloadAllSounds, playCoinSound, playOneUp, playPowerUp } from '@/lib/sounds'
+import { initBackgroundMusic, playBackgroundMusic, enableAutoPlay, BackgroundMusicPage } from '@/lib/background-music'
 import marioImage from '@/assets/images/Screenshot_20260225-192747.png'
 
 function App() {
@@ -43,7 +44,34 @@ function App() {
   
   useEffect(() => {
     preloadAllSounds()
+    initBackgroundMusic('main')
+    
+    const handleUserInteraction = () => {
+      enableAutoPlay()
+      document.removeEventListener('click', handleUserInteraction)
+      document.removeEventListener('keydown', handleUserInteraction)
+    }
+    
+    document.addEventListener('click', handleUserInteraction)
+    document.addEventListener('keydown', handleUserInteraction)
+    
+    return () => {
+      document.removeEventListener('click', handleUserInteraction)
+      document.removeEventListener('keydown', handleUserInteraction)
+    }
   }, [])
+  
+  useEffect(() => {
+    const pageMap: Record<string, BackgroundMusicPage> = {
+      'treasury': 'treasury',
+      'marketplace': 'marketplace',
+      'charts': 'charts',
+      'ledger': 'ledger'
+    }
+    
+    const page = pageMap[activeTab] || 'main'
+    playBackgroundMusic(page)
+  }, [activeTab])
   
   const getCurrentContext = () => {
     switch (activeTab) {

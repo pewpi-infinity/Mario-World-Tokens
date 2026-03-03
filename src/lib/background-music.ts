@@ -1,0 +1,89 @@
+export const MARIO_BACKGROUND_MUSIC = {
+  mainTheme: 'https://archive.org/download/SMB-Soundtrack/01%20-%20Super%20Mario%20Bros.%20-%20Main%20Theme.mp3',
+  underground: 'https://archive.org/download/SMB-Soundtrack/02%20-%20Super%20Mario%20Bros.%20-%20Underground%20Theme.mp3',
+  underwater: 'https://archive.org/download/SMB-Soundtrack/03%20-%20Super%20Mario%20Bros.%20-%20Underwater%20Theme.mp3',
+  castle: 'https://archive.org/download/SMB-Soundtrack/04%20-%20Super%20Mario%20Bros.%20-%20Castle%20Theme.mp3',
+  starPower: 'https://archive.org/download/SMB-Soundtrack/05%20-%20Super%20Mario%20Bros.%20-%20Star%20Theme.mp3',
+}
+
+export type BackgroundMusicPage = 'treasury' | 'marketplace' | 'charts' | 'ledger' | 'main'
+
+const PAGE_MUSIC_MAP: Record<BackgroundMusicPage, string> = {
+  main: MARIO_BACKGROUND_MUSIC.mainTheme,
+  treasury: MARIO_BACKGROUND_MUSIC.mainTheme,
+  marketplace: MARIO_BACKGROUND_MUSIC.underground,
+  charts: MARIO_BACKGROUND_MUSIC.castle,
+  ledger: MARIO_BACKGROUND_MUSIC.underwater,
+}
+
+let currentAudio: HTMLAudioElement | null = null
+let currentPage: BackgroundMusicPage = 'main'
+let isMuted = false
+let volume = 0.3
+
+export function initBackgroundMusic(page: BackgroundMusicPage = 'main') {
+  currentPage = page
+  playBackgroundMusic(page)
+}
+
+export function playBackgroundMusic(page: BackgroundMusicPage) {
+  const musicUrl = PAGE_MUSIC_MAP[page]
+  
+  if (currentAudio && currentPage === page) {
+    return
+  }
+  
+  if (currentAudio) {
+    currentAudio.pause()
+    currentAudio.currentTime = 0
+  }
+  
+  currentPage = page
+  currentAudio = new Audio(musicUrl)
+  currentAudio.loop = true
+  currentAudio.volume = isMuted ? 0 : volume
+  
+  currentAudio.play().catch((error) => {
+    console.log('Auto-play blocked, user interaction needed:', error)
+  })
+}
+
+export function stopBackgroundMusic() {
+  if (currentAudio) {
+    currentAudio.pause()
+    currentAudio.currentTime = 0
+    currentAudio = null
+  }
+}
+
+export function setBackgroundMusicVolume(newVolume: number) {
+  volume = Math.max(0, Math.min(1, newVolume))
+  if (currentAudio && !isMuted) {
+    currentAudio.volume = volume
+  }
+}
+
+export function toggleBackgroundMusicMute() {
+  isMuted = !isMuted
+  if (currentAudio) {
+    currentAudio.volume = isMuted ? 0 : volume
+  }
+  return isMuted
+}
+
+export function getBackgroundMusicState() {
+  return {
+    isPlaying: currentAudio !== null && !currentAudio.paused,
+    isMuted,
+    volume,
+    currentPage,
+  }
+}
+
+export function enableAutoPlay() {
+  if (currentAudio && currentAudio.paused) {
+    currentAudio.play().catch(() => {
+      console.log('Could not auto-play')
+    })
+  }
+}
