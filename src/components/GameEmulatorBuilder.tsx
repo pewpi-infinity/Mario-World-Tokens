@@ -47,6 +47,17 @@ export function GameEmulatorBuilder({ open, onClose }: GameEmulatorBuilderProps)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const animationRef = useRef<number>()
   const chatScrollRef = useRef<HTMLDivElement>(null)
+  const setVirtualKey = useCallback((key: string, isPressed: boolean) => {
+    setKeys(prev => {
+      const newKeys = new Set(prev)
+      if (isPressed) {
+        newKeys.add(key)
+      } else {
+        newKeys.delete(key)
+      }
+      return newKeys
+    })
+  }, [])
   const drawFrame = useCallback((ctx: CanvasRenderingContext2D, marioX: number, marioY: number, coins: number, score: number) => {
     ctx.fillStyle = '#5dade2'
     ctx.fillRect(0, 0, 800, 400)
@@ -349,6 +360,74 @@ Provide helpful, specific guidance related to game building, emulators, and Mari
                 <div className="flex items-center gap-2">
                   <div className="bg-[oklch(0.75_0.18_85)] text-[oklch(0.15_0.02_280)] px-2 py-1 rounded font-mono">↑</div>
                   <span>or W/SPACE - Jump</span>
+                </div>
+              </div>
+              <div className="mt-4">
+                <p className="text-xs text-[oklch(0.75_0.18_85)] mb-2 font-semibold">ANDROID JOYSTICK</p>
+                <div className="flex items-center justify-between gap-4">
+                  <div className="grid grid-cols-3 gap-2 w-fit">
+                    <div />
+                    <Button
+                      size="icon"
+                      variant="outline"
+                      className="h-10 w-10 border-[oklch(0.75_0.18_85)] bg-[oklch(0.18_0.02_280)] text-white touch-none"
+                      onTouchStart={(e) => { e.preventDefault(); setVirtualKey('ArrowUp', true) }}
+                      onTouchEnd={() => setVirtualKey('ArrowUp', false)}
+                      onMouseDown={() => setVirtualKey('ArrowUp', true)}
+                      onMouseUp={() => setVirtualKey('ArrowUp', false)}
+                      onMouseLeave={() => setVirtualKey('ArrowUp', false)}
+                    >
+                      <ArrowUp size={18} weight="bold" />
+                    </Button>
+                    <div />
+                    <Button
+                      size="icon"
+                      variant="outline"
+                      className="h-10 w-10 border-[oklch(0.75_0.18_85)] bg-[oklch(0.18_0.02_280)] text-white touch-none"
+                      onTouchStart={(e) => { e.preventDefault(); setVirtualKey('ArrowLeft', true) }}
+                      onTouchEnd={() => setVirtualKey('ArrowLeft', false)}
+                      onMouseDown={() => setVirtualKey('ArrowLeft', true)}
+                      onMouseUp={() => setVirtualKey('ArrowLeft', false)}
+                      onMouseLeave={() => setVirtualKey('ArrowLeft', false)}
+                    >
+                      <ArrowLeft size={18} weight="bold" />
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="outline"
+                      className="h-10 w-10 border-[oklch(0.75_0.18_85)] bg-[oklch(0.18_0.02_280)] text-white touch-none"
+                      onTouchStart={(e) => { e.preventDefault(); setVirtualKey('ArrowDown', true) }}
+                      onTouchEnd={() => setVirtualKey('ArrowDown', false)}
+                      onMouseDown={() => setVirtualKey('ArrowDown', true)}
+                      onMouseUp={() => setVirtualKey('ArrowDown', false)}
+                      onMouseLeave={() => setVirtualKey('ArrowDown', false)}
+                    >
+                      <ArrowDown size={18} weight="bold" />
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="outline"
+                      className="h-10 w-10 border-[oklch(0.75_0.18_85)] bg-[oklch(0.18_0.02_280)] text-white touch-none"
+                      onTouchStart={(e) => { e.preventDefault(); setVirtualKey('ArrowRight', true) }}
+                      onTouchEnd={() => setVirtualKey('ArrowRight', false)}
+                      onMouseDown={() => setVirtualKey('ArrowRight', true)}
+                      onMouseUp={() => setVirtualKey('ArrowRight', false)}
+                      onMouseLeave={() => setVirtualKey('ArrowRight', false)}
+                    >
+                      <ArrowRight size={18} weight="bold" />
+                    </Button>
+                  </div>
+                  <Button
+                    variant="outline"
+                    className="h-14 px-5 border-[oklch(0.75_0.18_85)] bg-[oklch(0.18_0.02_280)] text-white touch-none"
+                    onTouchStart={(e) => { e.preventDefault(); setVirtualKey(' ', true) }}
+                    onTouchEnd={() => setVirtualKey(' ', false)}
+                    onMouseDown={() => setVirtualKey(' ', true)}
+                    onMouseUp={() => setVirtualKey(' ', false)}
+                    onMouseLeave={() => setVirtualKey(' ', false)}
+                  >
+                    JUMP
+                  </Button>
                 </div>
               </div>
             </Card>
