@@ -26,7 +26,7 @@ import { MarioJukebox } from '@/components/MarioJukebox'
 import { MarioCoin, TreasuryStats } from '@/lib/types'
 import { Toaster } from '@/components/ui/sonner'
 import { toast } from 'sonner'
-import { preloadAllSounds, playCoinSound, playOneUp, playPowerUp, initializeAudioContext, playPipe, playFireball, playKick, playStageClear, playJump, playStomp, getAudioContext } from '@/lib/sounds'
+import { preloadAllSounds, playCoinSound, playOneUp, playPowerUp, initializeAudioContext, playPipe, playFireball, playKick, playStageClear, playJump, playStomp, forceUnlockAudio } from '@/lib/sounds'
 import { initBackgroundMusic, playBackgroundMusic, enableAutoPlay, BackgroundMusicPage } from '@/lib/background-music'
 import marioImage from '@/assets/images/Screenshot_20260225-192747.png'
 
@@ -43,6 +43,27 @@ function App() {
   const [showAIAssistant, setShowAIAssistant] = useState(false)
   const [showJukebox, setShowJukebox] = useState(false)
   const [currentUser] = useState(() => `user-${Math.random().toString(36).substr(2, 9)}`)
+  const pageMap: Record<string, BackgroundMusicPage> = {
+    treasury: 'treasury',
+    marketplace: 'marketplace',
+    charts: 'charts',
+    ledger: 'ledger'
+  }
+
+  const openGameEmulator = () => {
+    playJump()
+    setShowGameBuilder(true)
+    toast.success('🕹️ Game Builder & Mario-3 Emulator activated!')
+  }
+
+  const activateAudioSystem = () => {
+    initializeAudioContext()
+    forceUnlockAudio()
+    enableAutoPlay()
+    playBackgroundMusic(pageMap[activeTab] || 'main')
+    playCoinSound()
+    toast.success('🔊 Sound & music enabled!')
+  }
   
   useEffect(() => {
     console.log('🎮 MARIO WORLD AUDIO SYSTEM INITIALIZING...')
@@ -51,49 +72,22 @@ function App() {
     preloadAllSounds()
     initBackgroundMusic('main')
     
-    const tryUnlock = () => {
-      console.log('🔓 Attempting audio unlock...')
-      enableAutoPlay()
-      playCoinSound()
-      toast.success('🔊 Sound System Active! Listen for coin sound!', { duration: 3000 })
-    }
-    
-    setTimeout(tryUnlock, 100)
-    setTimeout(tryUnlock, 300)
-    setTimeout(tryUnlock, 500)
-    setTimeout(tryUnlock, 1000)
-    setTimeout(tryUnlock, 2000)
-    
     const events = ['click', 'keydown', 'touchstart', 'mousedown', 'pointerdown', 'touchend']
     const handler = () => {
-      tryUnlock()
+      activateAudioSystem()
+      events.forEach(e => document.removeEventListener(e, handler, { capture: true }))
     }
     
     events.forEach(e => {
-      document.addEventListener(e, handler, { once: false, capture: true })
+      document.addEventListener(e, handler, { capture: true })
     })
     
-    const intervalUnlock = setInterval(() => {
-      const ctx = getAudioContext()
-      if (ctx && ctx.state === 'suspended') {
-        ctx.resume()
-      }
-    }, 500)
-    
     return () => {
-      events.forEach(e => document.removeEventListener(e, handler, true))
-      clearInterval(intervalUnlock)
+      events.forEach(e => document.removeEventListener(e, handler, { capture: true }))
     }
   }, [])
   
   useEffect(() => {
-    const pageMap: Record<string, BackgroundMusicPage> = {
-      'treasury': 'treasury',
-      'marketplace': 'marketplace',
-      'charts': 'charts',
-      'ledger': 'ledger'
-    }
-    
     const page = pageMap[activeTab] || 'main'
     playBackgroundMusic(page)
   }, [activeTab])
@@ -230,9 +224,7 @@ function App() {
       setShowCollabMusic(true)
     },
     onValueJump: (fromValue: number, toValue: number) => {
-      playJump()
-      setShowGameBuilder(true)
-      toast.success(`🕹️ Game Builder & Mario-3 Emulator activated!`)
+      openGameEmulator()
     },
     onLivingToken: () => {
       playStageClear()
@@ -301,6 +293,15 @@ function App() {
         <MarioBrickTabs activeTab={activeTab} onTabChange={setActiveTab} />
         
         <QuickTuneChanger activeTab={activeTab} />
+
+        <div className="mt-3 flex flex-wrap gap-2 justify-center">
+          <Button onClick={openGameEmulator} className="bg-[oklch(0.70_0.24_190)] hover:bg-[oklch(0.75_0.26_190)]">
+            🕹️ Open Emulator
+          </Button>
+          <Button onClick={activateAudioSystem} variant="secondary">
+            🔊 Enable Sound & Music
+          </Button>
+        </div>
 
         <div className="mt-4 sm:mt-8">
           {activeTab === 'treasury' && (
