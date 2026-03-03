@@ -40,10 +40,10 @@ export class SoundEffects {
   }
 
   async playCoinCollect() {
-    const buffer = await this.loadAudioFile('https://archive.org/download/mario-sound-effects/smb_coin.wav')
+    const buffer = await this.loadAudioFile('https://themushroomkingdom.net/sounds/wav/smb/smb_coin.wav')
     
     if (buffer) {
-      await this.playAudioBuffer(buffer, 0.4)
+      await this.playAudioBuffer(buffer, 0.5)
     } else {
       this.playCoinCollectFallback()
     }
@@ -71,10 +71,10 @@ export class SoundEffects {
   }
 
   async playPowerUp() {
-    const buffer = await this.loadAudioFile('https://archive.org/download/mario-sound-effects/smb_powerup.wav')
+    const buffer = await this.loadAudioFile('https://themushroomkingdom.net/sounds/wav/smb/smb_powerup.wav')
     
     if (buffer) {
-      await this.playAudioBuffer(buffer, 0.3)
+      await this.playAudioBuffer(buffer, 0.35)
     } else {
       this.playPowerUpFallback()
     }
@@ -105,10 +105,10 @@ export class SoundEffects {
   }
 
   async playBrickBreak() {
-    const buffer = await this.loadAudioFile('https://archive.org/download/mario-sound-effects/smb_breakblock.wav')
+    const buffer = await this.loadAudioFile('https://themushroomkingdom.net/sounds/wav/smb/smb_breakblock.wav')
     
     if (buffer) {
-      await this.playAudioBuffer(buffer, 0.35)
+      await this.playAudioBuffer(buffer, 0.45)
     } else {
       this.playBrickBreakFallback()
     }
@@ -155,7 +155,7 @@ export class SoundEffects {
   }
 
   async playJump() {
-    const buffer = await this.loadAudioFile('https://archive.org/download/mario-sound-effects/smb_jump-small.wav')
+    const buffer = await this.loadAudioFile('https://themushroomkingdom.net/sounds/wav/smb/smb_jump-small.wav')
     
     if (buffer) {
       await this.playAudioBuffer(buffer, 0.3)
@@ -183,6 +183,37 @@ export class SoundEffects {
 
     oscillator.start(now)
     oscillator.stop(now + 0.2)
+  }
+
+  async playBump() {
+    const buffer = await this.loadAudioFile('https://themushroomkingdom.net/sounds/wav/smb/smb_bump.wav')
+    
+    if (buffer) {
+      await this.playAudioBuffer(buffer, 0.4)
+    } else {
+      this.playBumpFallback()
+    }
+  }
+
+  private playBumpFallback() {
+    const ctx = this.getAudioContext()
+    const oscillator = ctx.createOscillator()
+    const gainNode = ctx.createGain()
+
+    oscillator.connect(gainNode)
+    gainNode.connect(ctx.destination)
+
+    oscillator.type = 'triangle'
+    
+    const now = ctx.currentTime
+    oscillator.frequency.setValueAtTime(250, now)
+    oscillator.frequency.setValueAtTime(200, now + 0.05)
+    
+    gainNode.gain.setValueAtTime(0.3, now)
+    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.15)
+
+    oscillator.start(now)
+    oscillator.stop(now + 0.15)
   }
 }
 
