@@ -30,6 +30,14 @@ import { preloadAllSounds, playCoinSound, playOneUp, playPowerUp, initializeAudi
 import { initBackgroundMusic, playBackgroundMusic, enableAutoPlay, BackgroundMusicPage } from '@/lib/background-music'
 import marioImage from '@/assets/images/Screenshot_20260225-192747.png'
 
+const sanitizeUserId = (value: string) => value.trim().replace(/[^a-zA-Z0-9-]/g, '').slice(0, 39)
+const createGuestUserId = () => {
+  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
+    return `guest-${crypto.randomUUID()}`
+  }
+  return `guest-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
+}
+
 function App() {
   const [coins, setCoins] = useKV<MarioCoin[]>('mario-coins', [])
   const [globalCoins, setGlobalCoins] = useKV<MarioCoin[]>('global-mario-coins', [])
@@ -45,9 +53,9 @@ function App() {
   const [showAIAssistant, setShowAIAssistant] = useState(false)
   const [showJukebox, setShowJukebox] = useState(false)
   const [currentUser, setCurrentUser] = useState(() => {
-    const storedUser = localStorage.getItem('mario-current-user')
+    const storedUser = sanitizeUserId(localStorage.getItem('mario-current-user')?.trim() || '')
     if (storedUser) return storedUser
-    const guestUser = `guest-${Math.random().toString(36).slice(2, 9)}`
+    const guestUser = createGuestUserId()
     localStorage.setItem('mario-current-user', guestUser)
     return guestUser
   })
@@ -92,7 +100,8 @@ function App() {
     const url = URL.createObjectURL(blob)
     const anchor = document.createElement('a')
     anchor.href = url
-    anchor.download = `${currentUser}-tokens.json`
+    const safeFileUser = sanitizeUserId(currentUser) || 'user'
+    anchor.download = `${safeFileUser}-tokens.json`
     anchor.click()
     URL.revokeObjectURL(url)
     toast.success('🗂️ User tokens exported as JSON')
@@ -139,9 +148,11 @@ function App() {
     window.spark.user()
       .then((user) => {
         if (!mounted || !user?.login) return
-        setGithubLogin(user.login)
-        setCurrentUser(user.login)
-        localStorage.setItem('mario-current-user', user.login)
+        const safeLogin = sanitizeUserId(user.login)
+        if (!safeLogin) return
+        setGithubLogin(safeLogin)
+        setCurrentUser(safeLogin)
+        localStorage.setItem('mario-current-user', safeLogin)
       })
       .catch(() => {
         // keep guest fallback user
@@ -166,7 +177,9 @@ function App() {
     }
   }
 
-  const userCoins = (coins || []).filter((coin) => coin.mintedBy === currentUser)
+  const userCoins = githubLogin
+    ? (coins || []).filter((coin) => coin.mintedBy === currentUser)
+    : (coins || [])
 
   const treasuryStats: TreasuryStats = {
     totalValue: userCoins.reduce((sum, coin) => sum + coin.value, 0),
