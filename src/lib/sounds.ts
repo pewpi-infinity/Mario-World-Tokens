@@ -26,6 +26,9 @@ let unlockAttempts = 0
 const MAX_UNLOCK_ATTEMPTS = 10
 
 export function getAudioContext(): AudioContext | null {
+  if (!audioContext) {
+    initializeAudioContext()
+  }
   return audioContext
 }
 

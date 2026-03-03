@@ -415,7 +415,7 @@ export function UnifiedMusicStudio({ open, onClose, onMintMusic, currentUser }: 
   const generateAIBeatPattern = async () => {
     setIsAIGenerating(true)
     try {
-      const prompt = spark.llmPrompt`You are a professional music producer AI. Generate a drum beat pattern for ${musicStyle} style music.
+      const prompt = window.spark.llmPrompt`You are a professional music producer AI. Generate a drum beat pattern for ${musicStyle} style music.
       
       Return a JSON object with:
       - pattern: an 8x16 array of booleans where each row is a drum sound (kick, snare, hihat, clap, tom1, tom2, cymbal, perc) and each column is a step in the sequence
@@ -423,7 +423,7 @@ export function UnifiedMusicStudio({ open, onClose, onMintMusic, currentUser }: 
       
       Create a pattern that is musically interesting and fits the ${musicStyle} genre.`
       
-      const response = await spark.llm(prompt, 'gpt-4o-mini', true)
+      const response = await window.spark.llm(prompt, 'gpt-4o-mini', true)
       const data = JSON.parse(response)
       
       if (data.pattern && Array.isArray(data.pattern)) {
@@ -444,7 +444,7 @@ export function UnifiedMusicStudio({ open, onClose, onMintMusic, currentUser }: 
     setIsAIGenerating(true)
     try {
       const activeInstruments = tracks.filter(t => t.enabled).map(t => t.instrument).join(', ')
-      const prompt = spark.llmPrompt`You are a professional music producer AI assistant. 
+      const prompt = window.spark.llmPrompt`You are a professional music producer AI assistant. 
       
       The user is creating music with these instruments: ${activeInstruments}
       Music style preference: ${musicStyle}
@@ -454,7 +454,7 @@ export function UnifiedMusicStudio({ open, onClose, onMintMusic, currentUser }: 
       
       Return a JSON object with a "suggestions" property containing an array of 3 strings.`
       
-      const response = await spark.llm(prompt, 'gpt-4o-mini', true)
+      const response = await window.spark.llm(prompt, 'gpt-4o-mini', true)
       const data = JSON.parse(response)
       
       if (data.suggestions && Array.isArray(data.suggestions)) {
@@ -477,7 +477,7 @@ export function UnifiedMusicStudio({ open, onClose, onMintMusic, currentUser }: 
     
     setIsAIGenerating(true)
     try {
-      const prompt = spark.llmPrompt`You are a music composition AI. The user wants: "${aiCompositionPrompt}"
+      const prompt = window.spark.llmPrompt`You are a music composition AI. The user wants: "${aiCompositionPrompt}"
       
       Provide creative guidance for creating this melody, including:
       - Suggested key and scale
@@ -488,7 +488,7 @@ export function UnifiedMusicStudio({ open, onClose, onMintMusic, currentUser }: 
       
       Return a JSON object with these properties as strings or arrays.`
       
-      const response = await spark.llm(prompt, 'gpt-4o-mini', true)
+      const response = await window.spark.llm(prompt, 'gpt-4o-mini', true)
       const data = JSON.parse(response)
       
       toast.success('🎹 Melody Ideas Generated!', {
@@ -513,7 +513,7 @@ export function UnifiedMusicStudio({ open, onClose, onMintMusic, currentUser }: 
   const autoCompose = async () => {
     setIsAIGenerating(true)
     try {
-      const prompt = spark.llmPrompt`You are an AI music composer. Create a simple melody using piano frequencies.
+      const prompt = window.spark.llmPrompt`You are an AI music composer. Create a simple melody using piano frequencies.
       
       Generate a sequence of 16 notes for a ${musicStyle} style melody. Use these available notes:
       C4 (261.63 Hz), D4 (293.66 Hz), E4 (329.63 Hz), F4 (349.23 Hz), G4 (392.00 Hz), A4 (440.00 Hz), B4 (493.88 Hz), C5 (523.25 Hz)
@@ -524,7 +524,7 @@ export function UnifiedMusicStudio({ open, onClose, onMintMusic, currentUser }: 
       
       Make it musically pleasing and appropriate for ${musicStyle} style.`
       
-      const response = await spark.llm(prompt, 'gpt-4o-mini', true)
+      const response = await window.spark.llm(prompt, 'gpt-4o-mini', true)
       const data = JSON.parse(response)
       
       if (data.notes && Array.isArray(data.notes)) {
