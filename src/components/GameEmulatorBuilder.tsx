@@ -434,8 +434,8 @@ Provide helpful, specific guidance related to game building, emulators, and Mari
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid md:grid-cols-3 gap-4 mt-4">
-          <div className="md:col-span-2 space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 overflow-x-hidden">
+          <div className="md:col-span-2 space-y-4 min-w-0">
             <Card className="p-2 sm:p-4 bg-[oklch(0.15_0.02_280)] border-2 border-[oklch(0.75_0.18_85)]">
               <div className="mb-2 flex items-center justify-between gap-2">
                 <p className="text-xs sm:text-sm text-[oklch(0.75_0.18_85)] font-semibold">REAL NES ROM PLAYER</p>
@@ -468,7 +468,7 @@ Provide helpful, specific guidance related to game building, emulators, and Mari
               />
             </Card>
 
-            <div className="flex gap-2 justify-center">
+            <div className="flex gap-2 justify-center flex-wrap">
               <Button
                 onClick={handleTogglePlay}
                 className="bg-[oklch(0.75_0.18_85)] hover:bg-[oklch(0.85_0.20_85)] text-[oklch(0.15_0.02_280)]"
@@ -506,7 +506,7 @@ Provide helpful, specific guidance related to game building, emulators, and Mari
               <h3 className="font-bold text-[oklch(0.75_0.18_85)] mb-2 text-sm pixel-font">TOUCH CONTROLS</h3>
               <div className="mt-4">
                 <p className="text-xs text-[oklch(0.75_0.18_85)] mb-2 font-semibold">ANDROID JOYSTICK</p>
-                <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center justify-between gap-4 flex-wrap">
                   <div className="grid grid-cols-3 gap-2 w-fit">
                     <div />
                     <Button
@@ -575,7 +575,7 @@ Provide helpful, specific guidance related to game building, emulators, and Mari
             </Card>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-4 min-w-0">
             <Card className="p-4 bg-gradient-to-br from-[oklch(0.70_0.24_190)] to-[oklch(0.58_0.24_330)] border-2 border-[oklch(0.75_0.18_85)]">
               <h3 className="font-bold text-white mb-3 text-sm pixel-font">GAME STATS</h3>
               <div className="space-y-2 text-white">
