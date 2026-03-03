@@ -33,6 +33,8 @@ import marioImage from '@/assets/images/Screenshot_20260225-192747.png'
 function App() {
   const [coins, setCoins] = useKV<MarioCoin[]>('mario-coins', [])
   const [globalCoins, setGlobalCoins] = useKV<MarioCoin[]>('global-mario-coins', [])
+  const [, setUserResearchDictionary] = useKV<Record<string, string[]>>('user-research-dictionary', {})
+  const [, setTreasuryResearchNotes] = useKV<Record<string, string>>('treasury-research-notes', {})
   const [activeTab, setActiveTab] = useState('treasury')
   const [showMinting, setShowMinting] = useState(false)
   const [showMusicStudio, setShowMusicStudio] = useState(false)
@@ -174,6 +176,21 @@ function App() {
   }
 
   const handleResearchTokenCollected = (token: ResearchTokenDraft) => {
+    const treasuryNote = `${token.gameTitle} coin #${token.coinCount}: ${token.description}`
+    setUserResearchDictionary((current) => {
+      const next = { ...(current || {}) }
+      token.keywords.forEach((keyword) => {
+        const normalizedKeyword = keyword.toLowerCase()
+        const existingLinks = next[normalizedKeyword] || []
+        next[normalizedKeyword] = Array.from(new Set([...existingLinks, ...token.researchLinks]))
+      })
+      return next
+    })
+    setTreasuryResearchNotes((current) => ({
+      ...(current || {}),
+      [token.id]: treasuryNote
+    }))
+
     const newCoin: MarioCoin = {
       id: typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `coin-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       value: Math.max(0.25, token.coinCount * 0.1),
@@ -183,7 +200,13 @@ function App() {
         type: 'text',
         title: token.title,
         description: `${token.description} Sources: ${token.researchLinks.join(', ')}`,
-        data: JSON.stringify({ game: token.gameTitle, keywords: token.keywords, score: token.score })
+        data: JSON.stringify({
+          game: token.gameTitle,
+          keywords: token.keywords,
+          score: token.score,
+          researchLinks: token.researchLinks,
+          treasuryNote
+        })
       },
       transferHistory: []
     }
