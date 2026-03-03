@@ -44,39 +44,34 @@ function App() {
   const [currentUser] = useState(() => `user-${Math.random().toString(36).substr(2, 9)}`)
   
   useEffect(() => {
-    let initialized = false
+    console.log('🎮 MARIO WORLD AUDIO SYSTEM INITIALIZING...')
     
-    const init = () => {
-      if (initialized) return
-      initialized = true
-      
-      console.log('🎮 Initializing Mario World Audio System...')
-      initializeAudioContext()
-      preloadAllSounds()
-      initBackgroundMusic('main')
-      
-      setTimeout(() => {
-        enableAutoPlay()
-        playCoinSound()
-        console.log('🔊 Audio initialized and playing!')
-        toast.success('🔊 Sound System Active!', { duration: 2000 })
-      }, 100)
+    initializeAudioContext()
+    preloadAllSounds()
+    initBackgroundMusic('main')
+    
+    const tryUnlock = () => {
+      console.log('🔓 Attempting audio unlock...')
+      enableAutoPlay()
+      playCoinSound()
+      toast.success('🔊 Sound System Active! Listen for coin sound!', { duration: 3000 })
     }
     
-    const events = ['click', 'keydown', 'touchstart', 'mousedown']
+    setTimeout(tryUnlock, 100)
+    setTimeout(tryUnlock, 500)
+    setTimeout(tryUnlock, 1000)
+    
+    const events = ['click', 'keydown', 'touchstart', 'mousedown', 'pointerdown']
     const handler = () => {
-      init()
+      tryUnlock()
     }
     
-    events.forEach(e => document.addEventListener(e, handler, { once: true }))
-    
-    const immediateInit = setTimeout(() => {
-      init()
-    }, 100)
+    events.forEach(e => {
+      document.addEventListener(e, handler, { once: true, capture: true })
+    })
     
     return () => {
-      clearTimeout(immediateInit)
-      events.forEach(e => document.removeEventListener(e, handler))
+      events.forEach(e => document.removeEventListener(e, handler, true))
     }
   }, [])
   

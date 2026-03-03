@@ -7,7 +7,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Badge } from '@/components/ui/badge'
 import { Sparkle, PaperPlaneTilt, Robot, Microphone, MicrophoneSlash } from '@phosphor-icons/react'
 import { toast } from 'sonner'
-import { playCoinSound } from '@/lib/sounds'
+import { playCoinSound, playPowerUp } from '@/lib/sounds'
 import { useVoiceInput } from '@/hooks/use-voice-input'
 
 interface ChatMessage {
@@ -17,12 +17,19 @@ interface ChatMessage {
   timestamp: number
 }
 
+interface StructuredContent {
+  type: 'text' | 'link' | 'image' | 'data'
+  label: string
+  value: string
+}
+
 interface TokenMintingChatProps {
   currentTitle: string
   currentDescription: string
   currentValue: string
   contentType: string
   onSuggestion?: (field: string, value: string) => void
+  onAddStructuredContent?: (content: StructuredContent) => void
 }
 
 export function TokenMintingChat({
@@ -30,7 +37,8 @@ export function TokenMintingChat({
   currentDescription,
   currentValue,
   contentType,
-  onSuggestion
+  onSuggestion,
+  onAddStructuredContent
 }: TokenMintingChatProps) {
   const [messages, setMessages] = useKV<ChatMessage[]>('token-minting-chat', [])
   const [input, setInput] = useState('')
@@ -100,19 +108,50 @@ ${contextInfo}
 Your job is to:
 1. Answer the user's question helpfully and specifically
 2. Suggest concrete improvements to their token (better title, description, value, content to add)
-3. Be encouraging and creative
-4. Keep responses concise (2-3 sentences max)
+3. If the user asks for research, images, links, or additional information, provide structured data
+4. Be encouraging and creative
+5. Keep conversational responses concise (2-3 sentences max)
 
-If the user asks for help with specific fields, provide actionable suggestions they can implement immediately.
+When providing structured content (images, links, research data), format your response as JSON with this structure:
+{
+  "message": "Your conversational response",
+  "structuredContent": {
+    "type": "text|link|image|data",
+    "label": "Brief description",
+    "value": "The actual content/URL"
+  }
+}
 
-Respond conversationally and enthusiastically!`
+Otherwise, just respond conversationally without JSON formatting.
+
+Respond enthusiastically!`
 
       const response = await window.spark.llm(prompt, 'gpt-4o-mini', false)
+      
+      let aiMessageContent = response
+      let hasStructuredContent = false
+      
+      try {
+        const parsed = JSON.parse(response)
+        if (parsed.message && parsed.structuredContent) {
+          aiMessageContent = parsed.message
+          
+          if (onAddStructuredContent) {
+            onAddStructuredContent(parsed.structuredContent)
+            hasStructuredContent = true
+            toast.success('✨ Content added to token!', {
+              description: parsed.structuredContent.label
+            })
+            playPowerUp()
+          }
+        }
+      } catch {
+      }
 
       const aiMessage: ChatMessage = {
         id: `msg-${Date.now()}-ai`,
         type: 'ai',
-        content: response,
+        content: aiMessageContent + (hasStructuredContent ? ' ✨' : ''),
         timestamp: Date.now()
       }
 
@@ -133,8 +172,8 @@ Respond conversationally and enthusiastically!`
   const quickPrompts = [
     "How can I make this token more valuable?",
     "Suggest a better title for my token",
-    "What content should I add?",
-    "Help me write a compelling description"
+    "Find me an image related to this content",
+    "Research this topic and add info to the token"
   ]
 
   const currentMessages = messages || []

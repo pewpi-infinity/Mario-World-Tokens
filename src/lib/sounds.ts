@@ -20,93 +20,85 @@ export const MARIO_SOUNDS = {
 
 const audioCache: Map<string, HTMLAudioElement> = new Map()
 let audioContext: AudioContext | null = null
-let isAudioUnlocked = false
+let isAudioInitialized = false
 
 export function initializeAudioContext() {
-  if (!audioContext) {
-    try {
-      audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
-      console.log('🔊 AudioContext created:', audioContext.state)
-    } catch (e) {
-      console.warn('AudioContext not supported', e)
-    }
-  }
+  if (audioContext) return audioContext
   
-  if (audioContext && audioContext.state === 'suspended') {
-    audioContext.resume().then(() => {
-      console.log('🔊 AudioContext resumed!')
-      isAudioUnlocked = true
-    }).catch(err => {
-      console.error('Failed to resume AudioContext:', err)
-    })
-  } else {
-    isAudioUnlocked = true
+  try {
+    audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
+    console.log('🎮 AudioContext initialized:', audioContext.state)
+    
+    if (audioContext.state === 'suspended') {
+      audioContext.resume().then(() => {
+        console.log('🔊 AudioContext resumed')
+        isAudioInitialized = true
+      })
+    } else {
+      isAudioInitialized = true
+    }
+  } catch (e) {
+    console.warn('AudioContext not supported', e)
   }
   
   return audioContext
 }
 
-export function unlockAudio() {
-  if (!isAudioUnlocked) {
+export function forceUnlockAudio() {
+  if (!audioContext) {
     initializeAudioContext()
-    if (audioContext?.state === 'suspended') {
-      audioContext.resume()
-    }
-    
-    const tempAudio = new Audio()
-    tempAudio.volume = 0
-    tempAudio.play().then(() => {
-      tempAudio.pause()
-      tempAudio.remove()
-      isAudioUnlocked = true
-      console.log('🔊 Audio unlocked!')
-    }).catch(() => {
-      console.warn('Audio unlock failed - needs user interaction')
+  }
+  
+  if (audioContext?.state === 'suspended') {
+    audioContext.resume().then(() => {
+      console.log('🔊 Audio force-unlocked!')
+      isAudioInitialized = true
     })
   }
+  
+  const silentAudio = new Audio()
+  silentAudio.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA'
+  silentAudio.volume = 0.01
+  silentAudio.play().then(() => {
+    silentAudio.pause()
+    isAudioInitialized = true
+    console.log('🔊 Silent audio unlock successful')
+  }).catch(err => {
+    console.log('Silent unlock attempt:', err.message)
+  })
 }
 
-export function preloadSound(soundUrl: string) {
+export function preloadSound(soundUrl: string): HTMLAudioElement {
   if (!audioCache.has(soundUrl)) {
     const audio = new Audio()
     audio.src = soundUrl
     audio.preload = 'auto'
-    audio.volume = 0.7
     audio.crossOrigin = 'anonymous'
-    audioCache.set(soundUrl, audio)
-    
     audio.load()
+    audioCache.set(soundUrl, audio)
   }
   return audioCache.get(soundUrl)!
 }
 
-export function playSound(soundUrl: string, volume = 0.7) {
+export function playSound(soundUrl: string, volume = 0.7): void {
   try {
-    unlockAudio()
+    forceUnlockAudio()
     
-    let audio = audioCache.get(soundUrl)
-    if (!audio) {
-      audio = preloadSound(soundUrl)
-    }
+    const audio = new Audio(soundUrl)
+    audio.volume = volume
+    audio.crossOrigin = 'anonymous'
     
-    const clonedAudio = audio.cloneNode(true) as HTMLAudioElement
-    clonedAudio.volume = volume
-    clonedAudio.crossOrigin = 'anonymous'
+    audio.play().then(() => {
+      console.log('🔊 PLAYING:', soundUrl.split('/').pop())
+    }).catch(error => {
+      console.warn('Play attempt:', error.message)
+    })
     
-    const playPromise = clonedAudio.play()
-    if (playPromise !== undefined) {
-      playPromise.then(() => {
-        console.log('🔊 Playing:', soundUrl.split('/').pop())
-      }).catch(error => {
-        console.error('❌ Playback failed:', error.message)
-      })
-    }
-    
-    clonedAudio.addEventListener('ended', () => {
-      clonedAudio.remove()
+    audio.addEventListener('ended', () => {
+      audio.remove()
     })
   } catch (e) {
-    console.error('❌ Sound error:', e)
+    console.error('Sound error:', e)
   }
 }
 
@@ -114,25 +106,24 @@ export function preloadAllSounds() {
   console.log('🔊 Preloading all Mario sounds...')
   Object.entries(MARIO_SOUNDS).forEach(([name, url]) => {
     preloadSound(url)
-    console.log(`  ✓ Loaded: ${name}`)
   })
-  console.log('🔊 All sounds preloaded!')
+  console.log('✅ All sounds preloaded!')
 }
 
-export const playBrickBreak = () => playSound(MARIO_SOUNDS.brick, 0.6)
-export const playCoinSound = () => playSound(MARIO_SOUNDS.coin, 0.7)
-export const playJump = () => playSound(MARIO_SOUNDS.jump, 0.5)
-export const playPowerUp = () => playSound(MARIO_SOUNDS.powerUp, 0.6)
-export const playOneUp = () => playSound(MARIO_SOUNDS.oneUp, 0.6)
-export const playPipe = () => playSound(MARIO_SOUNDS.pipe, 0.6)
-export const playFireball = () => playSound(MARIO_SOUNDS.fireball, 0.5)
-export const playKick = () => playSound(MARIO_SOUNDS.kick, 0.5)
-export const playPause = () => playSound(MARIO_SOUNDS.pause, 0.5)
-export const playStomp = () => playSound(MARIO_SOUNDS.stomp, 0.5)
-export const playGameOver = () => playSound(MARIO_SOUNDS.gameOver, 0.6)
-export const playStageClear = () => playSound(MARIO_SOUNDS.stageClear, 0.6)
-export const playWarning = () => playSound(MARIO_SOUNDS.warning, 0.5)
-export const playBowserFall = () => playSound(MARIO_SOUNDS.bowserFall, 0.6)
-export const playBowserFire = () => playSound(MARIO_SOUNDS.bowserFire, 0.5)
-export const playBump = () => playSound(MARIO_SOUNDS.bump, 0.6)
-export const playMarioDie = () => playSound(MARIO_SOUNDS.mariodie, 0.6)
+export const playBrickBreak = () => { console.log('🧱 BRICK BREAK'); playSound(MARIO_SOUNDS.brick, 0.7) }
+export const playCoinSound = () => { console.log('🪙 COIN'); playSound(MARIO_SOUNDS.coin, 0.8) }
+export const playJump = () => { console.log('⬆️ JUMP'); playSound(MARIO_SOUNDS.jump, 0.6) }
+export const playPowerUp = () => { console.log('⭐ POWER UP'); playSound(MARIO_SOUNDS.powerUp, 0.7) }
+export const playOneUp = () => { console.log('🍄 1-UP'); playSound(MARIO_SOUNDS.oneUp, 0.7) }
+export const playPipe = () => { console.log('🟢 PIPE'); playSound(MARIO_SOUNDS.pipe, 0.7) }
+export const playFireball = () => { console.log('🔥 FIREBALL'); playSound(MARIO_SOUNDS.fireball, 0.6) }
+export const playKick = () => { console.log('👟 KICK'); playSound(MARIO_SOUNDS.kick, 0.6) }
+export const playPause = () => { console.log('⏸️ PAUSE'); playSound(MARIO_SOUNDS.pause, 0.6) }
+export const playStomp = () => { console.log('👞 STOMP'); playSound(MARIO_SOUNDS.stomp, 0.6) }
+export const playGameOver = () => { console.log('💀 GAME OVER'); playSound(MARIO_SOUNDS.gameOver, 0.7) }
+export const playStageClear = () => { console.log('🏁 STAGE CLEAR'); playSound(MARIO_SOUNDS.stageClear, 0.7) }
+export const playWarning = () => { console.log('⚠️ WARNING'); playSound(MARIO_SOUNDS.warning, 0.6) }
+export const playBowserFall = () => { console.log('🐉 BOWSER FALL'); playSound(MARIO_SOUNDS.bowserFall, 0.7) }
+export const playBowserFire = () => { console.log('🔥 BOWSER FIRE'); playSound(MARIO_SOUNDS.bowserFire, 0.6) }
+export const playBump = () => { console.log('💥 BUMP'); playSound(MARIO_SOUNDS.bump, 0.7) }
+export const playMarioDie = () => { console.log('☠️ MARIO DIE'); playSound(MARIO_SOUNDS.mariodie, 0.7) }

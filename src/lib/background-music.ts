@@ -18,20 +18,18 @@ const PAGE_MUSIC_MAP: Record<BackgroundMusicPage, string> = {
 
 let currentAudio: HTMLAudioElement | null = null
 let currentPage: BackgroundMusicPage = 'main'
-let volume = 0.4
-let isEnabled = false
+let volume = 0.5
+let isEnabled = true
 
 export function initBackgroundMusic(page: BackgroundMusicPage = 'main') {
   currentPage = page
   console.log('🎵 Background music initialized for:', page)
+  setTimeout(() => {
+    playBackgroundMusic(page)
+  }, 500)
 }
 
 export function playBackgroundMusic(page: BackgroundMusicPage) {
-  if (!isEnabled) {
-    console.log('🔇 Background music disabled')
-    return
-  }
-
   const musicUrl = PAGE_MUSIC_MAP[page]
   
   if (currentAudio && currentPage === page && !currentAudio.paused) {
@@ -52,14 +50,16 @@ export function playBackgroundMusic(page: BackgroundMusicPage) {
   currentAudio.preload = 'auto'
   currentAudio.crossOrigin = 'anonymous'
   
-  const playPromise = currentAudio.play()
-  if (playPromise !== undefined) {
-    playPromise.then(() => {
-      console.log('🎵 Background music playing:', page)
-    }).catch(error => {
-      console.error('❌ Background music failed:', error.message)
-    })
-  }
+  currentAudio.play().then(() => {
+    console.log('🎵 BACKGROUND MUSIC PLAYING:', page)
+  }).catch(error => {
+    console.log('Music play attempt:', error.message)
+    setTimeout(() => {
+      if (currentAudio) {
+        currentAudio.play().catch(() => {})
+      }
+    }, 1000)
+  })
 }
 
 export function stopBackgroundMusic() {
@@ -81,16 +81,19 @@ export function setBackgroundMusicVolume(newVolume: number) {
 
 export function enableAutoPlay() {
   isEnabled = true
-  if (currentAudio?.paused) {
-    const playPromise = currentAudio.play()
-    if (playPromise !== undefined) {
-      playPromise.then(() => {
-        console.log('🎵 Auto-play enabled!')
-      }).catch(error => {
-        console.error('❌ Auto-play failed:', error.message)
-      })
-    }
-  } else if (!currentAudio) {
+  console.log('🎵 AUTO-PLAY ENABLED')
+  
+  if (!currentAudio) {
     playBackgroundMusic(currentPage)
+  } else if (currentAudio.paused) {
+    currentAudio.play().then(() => {
+      console.log('🎵 Music resumed!')
+    }).catch(() => {
+      setTimeout(() => {
+        if (currentAudio) {
+          currentAudio.play().catch(() => {})
+        }
+      }, 500)
+    })
   }
 }
