@@ -43,7 +43,14 @@ export function playBackgroundMusic(page: BackgroundMusicPage) {
   currentAudio.volume = volume
   currentAudio.preload = 'auto'
   
-  currentAudio.play().catch(() => {})
+  const playPromise = currentAudio.play()
+  if (playPromise !== undefined) {
+    playPromise.then(() => {
+      console.log('🎵 Background music playing:', page)
+    }).catch(error => {
+      console.error('❌ Background music failed:', error)
+    })
+  }
 }
 
 export function stopBackgroundMusic() {
@@ -62,7 +69,14 @@ export function setBackgroundMusicVolume(newVolume: number) {
 
 export function enableAutoPlay() {
   if (currentAudio?.paused) {
-    currentAudio.play().catch(() => {})
+    const playPromise = currentAudio.play()
+    if (playPromise !== undefined) {
+      playPromise.then(() => {
+        console.log('🎵 Auto-play enabled!')
+      }).catch(error => {
+        console.error('❌ Auto-play failed:', error)
+      })
+    }
   } else {
     initBackgroundMusic('main')
   }

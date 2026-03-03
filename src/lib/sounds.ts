@@ -70,9 +70,19 @@ export function playSound(soundUrl: string, volume = 0.8) {
     audio.volume = volume
     audio.currentTime = 0
     
-    audio.play().catch(() => {})
+    const playPromise = audio.play()
+    if (playPromise !== undefined) {
+      playPromise.then(() => {
+        console.log('🔊 Sound playing:', soundUrl)
+      }).catch(error => {
+        console.error('❌ Sound playback failed:', error)
+        if (audioContext?.state === 'suspended') {
+          console.warn('⚠️ AudioContext is suspended - user interaction required')
+        }
+      })
+    }
   } catch (e) {
-    console.warn('Sound error:', e)
+    console.error('❌ Sound error:', e)
   }
 }
 
