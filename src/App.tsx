@@ -19,7 +19,7 @@ import { UnifiedMusicStudio } from '@/components/UnifiedMusicStudio'
 import { CollaborativeMusicStudio } from '@/components/CollaborativeMusicStudio'
 import { MarioArtStudio } from '@/components/MarioArtStudio'
 import { MarioRaceTrack } from '@/components/MarioRaceTrack'
-import { GameEmulatorBuilder } from '@/components/GameEmulatorBuilder'
+import { GameEmulatorBuilder, type ResearchTokenDraft } from '@/components/GameEmulatorBuilder'
 import { InfinityAIChat } from '@/components/InfinityAIChat'
 import { HomepageAIDesigner } from '@/components/HomepageAIDesigner'
 import { MarioJukebox } from '@/components/MarioJukebox'
@@ -171,6 +171,25 @@ function App() {
       const updated = (current || []).map(c => c.id === coin.id ? updatedCoin : c)
       return updated
     })
+  }
+
+  const handleResearchTokenCollected = (token: ResearchTokenDraft) => {
+    const newCoin: MarioCoin = {
+      id: typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `coin-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      value: Math.max(0.25, token.coinCount * 0.1),
+      mintedAt: Date.now(),
+      mintedBy: currentUser,
+      content: {
+        type: 'text',
+        title: token.title,
+        description: `${token.description} Sources: ${token.researchLinks.join(', ')}`,
+        data: JSON.stringify({ game: token.gameTitle, keywords: token.keywords, score: token.score })
+      },
+      transferHistory: []
+    }
+
+    setCoins((current) => [...(current || []), newCoin])
+    setGlobalCoins((current) => [...(current || []), newCoin])
   }
 
   const handleActionButtons = {
@@ -393,6 +412,7 @@ function App() {
       <GameEmulatorBuilder
         open={showGameBuilder}
         onClose={() => setShowGameBuilder(false)}
+        onCollectResearchToken={handleResearchTokenCollected}
       />
 
       <InfinityAIChat
