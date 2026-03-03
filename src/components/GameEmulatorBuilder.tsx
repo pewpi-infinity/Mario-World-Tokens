@@ -426,7 +426,7 @@ Provide helpful, specific guidance related to game building, emulators, and Mari
               <div className="mb-2 flex items-center justify-between gap-2">
                 <p className="text-xs sm:text-sm text-[oklch(0.75_0.18_85)] font-semibold">REAL NES ROM PLAYER</p>
                 <Button size="sm" variant="outline" className="border-[oklch(0.75_0.18_85)] h-8 text-xs" onClick={handleCoinCollected}>
-                  +1 Coin
+                  Collect Coin
                 </Button>
               </div>
               <div className="mb-3 aspect-[4/3] overflow-hidden rounded-lg border border-[oklch(0.35_0.05_285)] bg-black">
@@ -445,7 +445,7 @@ Provide helpful, specific guidance related to game building, emulators, and Mari
                 className="mb-3 bg-[oklch(0.15_0.02_280)] text-white border-[oklch(0.75_0.18_85)] text-xs sm:text-sm"
                 placeholder="Paste a legal NES embed URL"
               />
-              <p className="mb-2 text-[10px] sm:text-xs text-[oklch(0.85_0.02_280)]">Tap +1 Coin when you collect a coin in the ROM to mint and persist a token.</p>
+              <p className="mb-2 text-[10px] sm:text-xs text-[oklch(0.85_0.02_280)]">Tap Collect Coin when you collect a coin in the ROM to generate a research token.</p>
               <canvas
                 ref={canvasRef}
                 width={800}
@@ -489,7 +489,7 @@ Provide helpful, specific guidance related to game building, emulators, and Mari
             </div>
 
             <Card className="p-4 bg-gradient-to-br from-[oklch(0.22_0.03_285)] to-[oklch(0.15_0.02_280)] border-2 border-[oklch(0.75_0.18_85)]">
-              <h3 className="font-bold text-[oklch(0.75_0.18_85)] mb-2 text-sm pixel-font">ANDROID CONTROLS</h3>
+              <h3 className="font-bold text-[oklch(0.75_0.18_85)] mb-2 text-sm pixel-font">TOUCH CONTROLS</h3>
               <div className="mt-4">
                 <p className="text-xs text-[oklch(0.75_0.18_85)] mb-2 font-semibold">ANDROID JOYSTICK</p>
                 <div className="flex items-center justify-between gap-4">
