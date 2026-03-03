@@ -22,6 +22,7 @@ import { GameEmulatorBuilder } from '@/components/GameEmulatorBuilder'
 import { InfinityAIChat } from '@/components/InfinityAIChat'
 import { HomepageAIDesigner } from '@/components/HomepageAIDesigner'
 import { MarioJukebox } from '@/components/MarioJukebox'
+import { SoundIndicator } from '@/components/SoundIndicator'
 import { MarioCoin, TreasuryStats } from '@/lib/types'
 import { Toaster } from '@/components/ui/sonner'
 import { toast } from 'sonner'
@@ -239,6 +240,8 @@ function App() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <SoundIndicator />
+      
       <header className="border-b-4 border-[oklch(0.75_0.18_85)] bg-gradient-to-r from-[oklch(0.58_0.24_330)] via-[oklch(0.65_0.25_265)] to-[oklch(0.70_0.24_190)] relative overflow-hidden">
         <div className="absolute inset-0 bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,oklch(1_0_0_/_0.05)_10px,oklch(1_0_0_/_0.05)_20px)]"></div>
         <div className="w-full px-2 sm:px-4 py-3 sm:py-6 relative z-10 space-y-2 sm:space-y-4">
