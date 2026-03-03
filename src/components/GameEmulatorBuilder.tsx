@@ -180,8 +180,8 @@ export function GameEmulatorBuilder({ open, onClose }: GameEmulatorBuilderProps)
     })
     
     setTimeout(() => {
-      toast.success('Mario preloaded from Internet Archive!', {
-        description: 'Opening ready-to-play Mario archive source'
+      toast.success('Opening Internet Archive Mario source', {
+        description: 'Launching ready-to-play Mario archive page'
       })
       window.open(archiveMarioUrl, '_blank')
     }, 2000)
@@ -310,6 +310,7 @@ Provide helpful, specific guidance related to game building, emulators, and Mari
                     size="sm"
                     variant="outline"
                     className="col-start-2 border-white/60 text-white"
+                    aria-label="Move up"
                     onTouchStart={() => updateRemoteKey('ArrowUp', true)}
                     onTouchEnd={() => updateRemoteKey('ArrowUp', false)}
                   >
@@ -319,6 +320,7 @@ Provide helpful, specific guidance related to game building, emulators, and Mari
                     size="sm"
                     variant="outline"
                     className="border-white/60 text-white"
+                    aria-label="Move left"
                     onTouchStart={() => updateRemoteKey('ArrowLeft', true)}
                     onTouchEnd={() => updateRemoteKey('ArrowLeft', false)}
                   >
@@ -327,6 +329,7 @@ Provide helpful, specific guidance related to game building, emulators, and Mari
                   <Button
                     size="sm"
                     className="bg-[oklch(0.75_0.18_85)] hover:bg-[oklch(0.80_0.20_85)] text-[oklch(0.15_0.02_280)]"
+                    aria-label="Jump"
                     onTouchStart={() => updateRemoteKey(' ', true)}
                     onTouchEnd={() => updateRemoteKey(' ', false)}
                   >
@@ -336,6 +339,7 @@ Provide helpful, specific guidance related to game building, emulators, and Mari
                     size="sm"
                     variant="outline"
                     className="border-white/60 text-white"
+                    aria-label="Move right"
                     onTouchStart={() => updateRemoteKey('ArrowRight', true)}
                     onTouchEnd={() => updateRemoteKey('ArrowRight', false)}
                   >
@@ -347,7 +351,7 @@ Provide helpful, specific guidance related to game building, emulators, and Mari
 
             {!isAndroid && (
               <Card className="p-3 bg-[oklch(0.22_0.03_285)] border-2 border-[oklch(0.75_0.18_85)]">
-                <p className="text-xs text-white/80 text-center">Remote controls are configured for Android devices only.</p>
+                <p className="text-xs text-white/80 text-center">Remote controls are available on Android devices only.</p>
               </Card>
             )}
 
