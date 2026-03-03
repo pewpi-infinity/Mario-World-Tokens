@@ -391,7 +391,7 @@ Provide helpful, specific guidance related to game building, emulators, and Mari
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-[95vw] max-w-6xl max-h-[90vh] overflow-y-auto overflow-x-hidden">
         <DialogHeader>
           <DialogTitle className="text-2xl pixel-font flex items-center gap-2">
             <GameController size={28} weight="fill" className="text-[oklch(0.75_0.18_85)]" />

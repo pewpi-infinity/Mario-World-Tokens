@@ -17,7 +17,7 @@ interface Song {
 }
 
 const MARIO_SONGS: Song[] = [
-  { id: '1', name: 'Main Theme', level: 'Level 1-1', url: 'https://ia600304.us.archive.org/33/items/TvtokmanPart1/Super%20Mario%20Bros.mp3', tempo: 'normal' },
+  { id: '1', name: 'Main Theme', level: 'Level 1-1', url: 'https://ia600208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/06%20Super%20Mario%20Bros.%20-%20Ground%20Theme%20BGM.mp3', tempo: 'normal' },
   { id: '2', name: 'Underground', level: 'Level 1-2', url: 'https://ia600208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/01%20Super%20Mario%20Bros.%20-%20Underground%20BGM.mp3', tempo: 'normal' },
   { id: '3', name: 'Star Theme', level: 'Level 1-3', url: 'https://ia600208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/07%20Super%20Mario%20Bros.%20-%20Starman%20BGM.mp3', tempo: 'star' },
   { id: '4', name: 'Water World', level: 'Level 2-1', url: 'https://ia600208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/09%20Super%20Mario%20Bros.%20-%20Underwater%20BGM.mp3', tempo: 'normal' },

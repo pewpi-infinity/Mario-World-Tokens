@@ -1,21 +1,21 @@
 export const MARIO_SOUNDS = {
-  coin: 'https://ia600304.us.archive.org/27/items/arcade-sounds/coin.wav',
-  brick: 'https://ia600304.us.archive.org/27/items/arcade-sounds/break.wav',
-  bump: 'https://ia600304.us.archive.org/27/items/arcade-sounds/bump.wav',
-  jump: 'https://ia600304.us.archive.org/27/items/arcade-sounds/jump.wav',
-  powerUp: 'https://ia600304.us.archive.org/27/items/arcade-sounds/powerup.wav',
-  oneUp: 'https://ia600304.us.archive.org/27/items/arcade-sounds/1up.wav',
-  pipe: 'https://ia600304.us.archive.org/27/items/arcade-sounds/pipe.wav',
-  fireball: 'https://ia600304.us.archive.org/27/items/arcade-sounds/fireball.wav',
-  kick: 'https://ia600304.us.archive.org/27/items/arcade-sounds/kick.wav',
-  pause: 'https://ia600304.us.archive.org/27/items/arcade-sounds/pause.wav',
-  stomp: 'https://ia600304.us.archive.org/27/items/arcade-sounds/stomp.wav',
-  gameOver: 'https://ia600304.us.archive.org/27/items/arcade-sounds/gameover.wav',
-  stageClear: 'https://ia600304.us.archive.org/27/items/arcade-sounds/stage_clear.wav',
-  warning: 'https://ia600304.us.archive.org/27/items/arcade-sounds/warning.wav',
-  bowserFall: 'https://ia600304.us.archive.org/27/items/arcade-sounds/bowserfall.wav',
-  bowserFire: 'https://ia600304.us.archive.org/27/items/arcade-sounds/bowserfire.wav',
-  mariodie: 'https://ia600304.us.archive.org/27/items/arcade-sounds/mariodie.wav',
+  coin: 'https://ia600208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/11%20Super%20Mario%20Bros.%20-%20Coin%20SFX.mp3',
+  brick: 'https://ia600208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/23%20Super%20Mario%20Bros.%20-%20Brick%20Break%20SFX.mp3',
+  bump: 'https://ia600208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/17%20Super%20Mario%20Bros.%20-%20Bump%20SFX.mp3',
+  jump: 'https://ia600208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/12%20Super%20Mario%20Bros.%20-%20Jump%20Small%20SFX.mp3',
+  powerUp: 'https://ia600208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/14%20Super%20Mario%20Bros.%20-%20Power-Up%20SFX.mp3',
+  oneUp: 'https://ia600208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/16%20Super%20Mario%20Bros.%20-%201-UP%20SFX.mp3',
+  pipe: 'https://ia600208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/19%20Super%20Mario%20Bros.%20-%20Pipe%20Travel%20SFX.mp3',
+  fireball: 'https://ia600208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/20%20Super%20Mario%20Bros.%20-%20Fireball%20SFX.mp3',
+  kick: 'https://ia600208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/18%20Super%20Mario%20Bros.%20-%20Kick%20SFX.mp3',
+  pause: 'https://ia600208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/15%20Super%20Mario%20Bros.%20-%20Power-Down%20SFX.mp3',
+  stomp: 'https://ia600208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/24%20Super%20Mario%20Bros.%20-%20Stomp%20SFX.mp3',
+  gameOver: 'https://ia600208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/05%20Super%20Mario%20Bros.%20-%20Game%20Over.mp3',
+  stageClear: 'https://ia600208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/08%20Super%20Mario%20Bros.%20-%20World%20Clear%20Fanfare.mp3',
+  warning: 'https://ia600208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/02%20Super%20Mario%20Bros.%20-%20Hurry%21.mp3',
+  bowserFall: 'https://ia600208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/21%20Super%20Mario%20Bros.%20-%20Bowser%20Falls%20SFX.mp3',
+  bowserFire: 'https://ia600208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/22%20Super%20Mario%20Bros.%20-%20Bowser%20Fire%20SFX.mp3',
+  mariodie: 'https://ia600208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/13%20Super%20Mario%20Bros.%20-%20Mario%20Dies%20SFX.mp3',
 }
 
 const audioCache: Map<string, HTMLAudioElement[]> = new Map()
@@ -43,6 +43,9 @@ const SOUND_FREQUENCIES: Record<string, number> = {
   bowserfire: 415,
   mariodie: 147,
 }
+const NORMALIZED_SOUND_FREQUENCIES = Object.entries(SOUND_FREQUENCIES)
+  .map(([name, frequency]) => [name.replace(/[^a-z0-9]/g, ''), frequency] as const)
+  .sort((a, b) => b[0].length - a[0].length)
 
 export function getAudioContext(): AudioContext | null {
   if (!audioContext) {
@@ -203,8 +206,14 @@ export function preloadAllSounds() {
 function playFallbackTone(soundUrl: string, volume = 0.7) {
   const ctx = getAudioContext()
   if (!ctx) return
-  const key = soundUrl.split('/').pop()?.toLowerCase().replace('.wav', '') || ''
-  const frequency = SOUND_FREQUENCIES[key] || 440
+  const fileName = soundUrl.split('/').pop() || ''
+  const normalizedFileName = decodeURIComponent(fileName)
+    .toLowerCase()
+    .replace(/\.(wav|mp3)$/, '')
+    .replace(/[^a-z0-9]/g, '')
+  const frequency = NORMALIZED_SOUND_FREQUENCIES.find(([name]) =>
+    normalizedFileName.includes(name)
+  )?.[1] || 440
   const oscillator = ctx.createOscillator()
   const gainNode = ctx.createGain()
   oscillator.type = 'square'
