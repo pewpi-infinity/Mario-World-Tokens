@@ -24,6 +24,25 @@ let isAudioInitialized = false
 const AUDIO_POOL_SIZE = 5
 let unlockAttempts = 0
 const MAX_UNLOCK_ATTEMPTS = 10
+const SOUND_FREQUENCIES: Record<string, number> = {
+  coin: 880,
+  break: 220,
+  bump: 330,
+  jump: 660,
+  powerup: 740,
+  '1up': 988,
+  pipe: 262,
+  fireball: 392,
+  kick: 294,
+  pause: 247,
+  stomp: 196,
+  gameover: 165,
+  stage_clear: 523,
+  warning: 698,
+  bowserfall: 175,
+  bowserfire: 415,
+  mariodie: 147,
+}
 
 export function getAudioContext(): AudioContext | null {
   if (!audioContext) {
@@ -150,12 +169,20 @@ export function playSound(soundUrl: string, volume = 0.7): void {
                     .catch(() => {
                       if (retryCount < 2) {
                         attemptPlay(retryCount + 1)
+                      } else {
+                        playFallbackTone(soundUrl, volume)
                       }
                     })
+                } else {
+                  playFallbackTone(soundUrl, volume)
                 }
               }, 100 * (retryCount + 1))
+            } else {
+              playFallbackTone(soundUrl, volume)
             }
           })
+      } else {
+        playFallbackTone(soundUrl, volume)
       }
     }
     
@@ -171,6 +198,22 @@ export function preloadAllSounds() {
     preloadSound(url)
   })
   console.log('✅ All sounds preloaded!')
+}
+
+function playFallbackTone(soundUrl: string, volume = 0.7) {
+  const ctx = getAudioContext()
+  if (!ctx) return
+  const key = soundUrl.split('/').pop()?.toLowerCase().replace('.wav', '') || ''
+  const frequency = SOUND_FREQUENCIES[key] || 440
+  const oscillator = ctx.createOscillator()
+  const gainNode = ctx.createGain()
+  oscillator.type = 'square'
+  oscillator.frequency.value = frequency
+  gainNode.gain.value = Math.max(0.02, Math.min(0.2, volume * 0.25))
+  oscillator.connect(gainNode)
+  gainNode.connect(ctx.destination)
+  oscillator.start()
+  oscillator.stop(ctx.currentTime + 0.12)
 }
 
 export const playBrickBreak = () => { console.log('🧱 BRICK BREAK'); playSound(MARIO_SOUNDS.brick, 0.7) }

@@ -1,3 +1,5 @@
+import { getAudioContext, forceUnlockAudio } from '@/lib/sounds'
+
 export const MARIO_BACKGROUND_MUSIC = {
   mainTheme: 'https://ia600304.us.archive.org/33/items/TvtokmanPart1/Super%20Mario%20Bros.mp3',
   underground: 'https://ia600208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/01%20Super%20Mario%20Bros.%20-%20Underground%20BGM.mp3',
@@ -20,6 +22,42 @@ let currentAudio: HTMLAudioElement | null = null
 let currentPage: BackgroundMusicPage = 'main'
 let volume = 0.5
 let isEnabled = true
+let synthMusicInterval: ReturnType<typeof setInterval> | null = null
+
+const PAGE_SYNTH_NOTES: Record<BackgroundMusicPage, number[]> = {
+  main: [262, 330, 392, 523],
+  treasury: [262, 330, 392, 523],
+  marketplace: [196, 247, 294, 392],
+  charts: [220, 277, 330, 440],
+  ledger: [175, 220, 262, 349],
+}
+
+function stopSynthBackgroundMusic() {
+  if (synthMusicInterval !== null) {
+    clearInterval(synthMusicInterval)
+    synthMusicInterval = null
+  }
+}
+
+function playSynthBackgroundMusic(page: BackgroundMusicPage) {
+  stopSynthBackgroundMusic()
+  const ctx = getAudioContext()
+  if (!ctx) return
+  const notes = PAGE_SYNTH_NOTES[page] || PAGE_SYNTH_NOTES.main
+  let noteIndex = 0
+  synthMusicInterval = setInterval(() => {
+    const oscillator = ctx.createOscillator()
+    const gainNode = ctx.createGain()
+    oscillator.type = 'triangle'
+    oscillator.frequency.value = notes[noteIndex % notes.length]
+    gainNode.gain.value = Math.max(0.01, Math.min(0.12, volume * 0.2))
+    oscillator.connect(gainNode)
+    gainNode.connect(ctx.destination)
+    oscillator.start()
+    oscillator.stop(ctx.currentTime + 0.22)
+    noteIndex++
+  }, 300)
+}
 
 export function initBackgroundMusic(page: BackgroundMusicPage = 'main') {
   currentPage = page
@@ -51,12 +89,17 @@ export function playBackgroundMusic(page: BackgroundMusicPage) {
   currentAudio.crossOrigin = 'anonymous'
   
   currentAudio.play().then(() => {
+    stopSynthBackgroundMusic()
     console.log('🎵 BACKGROUND MUSIC PLAYING:', page)
   }).catch(error => {
     console.log('Music play attempt:', error.message)
+    forceUnlockAudio()
+    playSynthBackgroundMusic(page)
     setTimeout(() => {
       if (currentAudio) {
-        currentAudio.play().catch(() => {})
+        currentAudio.play().then(() => {
+          stopSynthBackgroundMusic()
+        }).catch(() => {})
       }
     }, 1000)
   })
@@ -68,6 +111,7 @@ export function stopBackgroundMusic() {
     currentAudio.remove()
     currentAudio = null
   }
+  stopSynthBackgroundMusic()
   console.log('🔇 Background music stopped')
 }
 
@@ -82,13 +126,16 @@ export function setBackgroundMusicVolume(newVolume: number) {
 export function enableAutoPlay() {
   isEnabled = true
   console.log('🎵 AUTO-PLAY ENABLED')
+  forceUnlockAudio()
   
   if (!currentAudio) {
     playBackgroundMusic(currentPage)
   } else if (currentAudio.paused) {
     currentAudio.play().then(() => {
+      stopSynthBackgroundMusic()
       console.log('🎵 Music resumed!')
     }).catch(() => {
+      playSynthBackgroundMusic(currentPage)
       setTimeout(() => {
         if (currentAudio) {
           currentAudio.play().catch(() => {})
