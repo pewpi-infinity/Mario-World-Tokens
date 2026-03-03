@@ -237,6 +237,7 @@ export function MarioActionButtons({
                 <Button
                   key={val}
                   onClick={() => {
+                    onValueJump(1, val)
                     toast.success(`Token value set to $${val}`)
                     setActiveDialog(null)
                   }}

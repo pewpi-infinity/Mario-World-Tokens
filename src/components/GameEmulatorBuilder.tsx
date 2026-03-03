@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -47,6 +47,43 @@ export function GameEmulatorBuilder({ open, onClose }: GameEmulatorBuilderProps)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const animationRef = useRef<number>()
   const chatScrollRef = useRef<HTMLDivElement>(null)
+  const drawFrame = useCallback((ctx: CanvasRenderingContext2D, marioX: number, marioY: number, coins: number, score: number) => {
+    ctx.fillStyle = '#5dade2'
+    ctx.fillRect(0, 0, 800, 400)
+
+    ctx.fillStyle = '#27ae60'
+    ctx.fillRect(0, 350, 800, 50)
+
+    ctx.fillStyle = '#c0392b'
+    ctx.fillRect(marioX, marioY, 40, 50)
+
+    ctx.fillStyle = '#f1c40f'
+    ctx.beginPath()
+    ctx.arc(marioX + 20, marioY - 10, 15, 0, Math.PI * 2)
+    ctx.fill()
+
+    ctx.fillStyle = '#e67e22'
+    ctx.fillRect(marioX + 10, marioY + 20, 20, 15)
+
+    for (let i = 0; i < 5; i++) {
+      const coinX = 150 + i * 150
+      const coinY = 200 + Math.sin(Date.now() / 500 + i) * 20
+
+      ctx.fillStyle = '#f1c40f'
+      ctx.beginPath()
+      ctx.arc(coinX, coinY, 15, 0, Math.PI * 2)
+      ctx.fill()
+
+      ctx.strokeStyle = '#e67e22'
+      ctx.lineWidth = 3
+      ctx.stroke()
+    }
+
+    ctx.fillStyle = '#fff'
+    ctx.font = 'bold 20px "Press Start 2P", monospace'
+    ctx.fillText(`COINS: ${coins}`, 10, 30)
+    ctx.fillText(`SCORE: ${score}`, 10, 60)
+  }, [])
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -71,10 +108,13 @@ export function GameEmulatorBuilder({ open, onClose }: GameEmulatorBuilderProps)
   }, [])
 
   useEffect(() => {
-    if (!isPlaying || !canvasRef.current) return
+    if (!canvasRef.current) return
 
     const canvas = canvasRef.current
-    const ctx = canvas.getContext('2d')!
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    if (!isPlaying) return
 
     const gameLoop = () => {
       setGameState(prev => {
@@ -98,46 +138,16 @@ export function GameEmulatorBuilder({ open, onClose }: GameEmulatorBuilderProps)
 
         marioX = Math.max(0, Math.min(750, marioX))
 
-        ctx.fillStyle = '#5dade2'
-        ctx.fillRect(0, 0, 800, 400)
-
-        ctx.fillStyle = '#27ae60'
-        ctx.fillRect(0, 350, 800, 50)
-
-        ctx.fillStyle = '#c0392b'
-        ctx.fillRect(marioX, marioY, 40, 50)
-
-        ctx.fillStyle = '#f1c40f'
-        ctx.beginPath()
-        ctx.arc(marioX + 20, marioY - 10, 15, 0, Math.PI * 2)
-        ctx.fill()
-
-        ctx.fillStyle = '#e67e22'
-        ctx.fillRect(marioX + 10, marioY + 20, 20, 15)
-
         for (let i = 0; i < 5; i++) {
           const coinX = 150 + i * 150
           const coinY = 200 + Math.sin(Date.now() / 500 + i) * 20
-
-          ctx.fillStyle = '#f1c40f'
-          ctx.beginPath()
-          ctx.arc(coinX, coinY, 15, 0, Math.PI * 2)
-          ctx.fill()
-
-          ctx.strokeStyle = '#e67e22'
-          ctx.lineWidth = 3
-          ctx.stroke()
-
           if (Math.abs(marioX - coinX) < 30 && Math.abs(marioY - coinY) < 30) {
             coins += 1
             score += 100
           }
         }
 
-        ctx.fillStyle = '#fff'
-        ctx.font = 'bold 20px "Press Start 2P", monospace'
-        ctx.fillText(`COINS: ${coins}`, 10, 30)
-        ctx.fillText(`SCORE: ${score}`, 10, 60)
+        drawFrame(ctx, marioX, marioY, coins, score)
 
         return { marioX, marioY, velocityY, isJumping, score, coins }
       })
@@ -152,7 +162,15 @@ export function GameEmulatorBuilder({ open, onClose }: GameEmulatorBuilderProps)
         cancelAnimationFrame(animationRef.current)
       }
     }
-  }, [isPlaying, keys])
+  }, [isPlaying, keys, drawFrame])
+
+  useEffect(() => {
+    if (!open || isPlaying || !canvasRef.current) return
+    const ctx = canvasRef.current.getContext('2d')
+    if (!ctx) return
+
+    drawFrame(ctx, gameState.marioX, gameState.marioY, gameState.coins, gameState.score)
+  }, [open, isPlaying, gameState, drawFrame])
 
   const handleTogglePlay = () => {
     setIsPlaying(!isPlaying)
