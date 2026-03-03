@@ -41,24 +41,45 @@ function App() {
   const [showGameBuilder, setShowGameBuilder] = useState(false)
   const [showAIAssistant, setShowAIAssistant] = useState(false)
   const [showJukebox, setShowJukebox] = useState(false)
+  const [soundEnabled, setSoundEnabled] = useState(false)
   const [currentUser] = useState(() => `user-${Math.random().toString(36).substr(2, 9)}`)
   
   useEffect(() => {
-    preloadAllSounds()
-    initBackgroundMusic('main')
-    
     const handleUserInteraction = () => {
+      const { initializeAudioContext } = require('@/lib/sounds')
+      initializeAudioContext()
+      preloadAllSounds()
       enableAutoPlay()
+      initBackgroundMusic('main')
+      setSoundEnabled(true)
+      
+      toast.success('🔊 Sound Enabled!', {
+        description: 'Mario sound effects and music are now active',
+        duration: 2000
+      })
+      
       document.removeEventListener('click', handleUserInteraction)
       document.removeEventListener('keydown', handleUserInteraction)
+      document.removeEventListener('touchstart', handleUserInteraction)
     }
     
-    document.addEventListener('click', handleUserInteraction)
-    document.addEventListener('keydown', handleUserInteraction)
+    setTimeout(() => {
+      if (!soundEnabled) {
+        toast.info('🎵 Click anywhere to enable sound', {
+          description: 'Hear all the classic Mario sound effects!',
+          duration: 5000
+        })
+      }
+    }, 1000)
+    
+    document.addEventListener('click', handleUserInteraction, { once: true })
+    document.addEventListener('keydown', handleUserInteraction, { once: true })
+    document.addEventListener('touchstart', handleUserInteraction, { once: true })
     
     return () => {
       document.removeEventListener('click', handleUserInteraction)
       document.removeEventListener('keydown', handleUserInteraction)
+      document.removeEventListener('touchstart', handleUserInteraction)
     }
   }, [])
   
