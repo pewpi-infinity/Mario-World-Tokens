@@ -45,42 +45,51 @@ function App() {
   const [currentUser] = useState(() => `user-${Math.random().toString(36).substr(2, 9)}`)
   
   useEffect(() => {
+    let interactionHappened = false
+    
     const handleUserInteraction = () => {
+      if (interactionHappened) return
+      interactionHappened = true
+      
+      console.log('👆 User interaction detected - enabling sounds...')
       initializeAudioContext()
       preloadAllSounds()
       enableAutoPlay()
       initBackgroundMusic('main')
       setSoundEnabled(true)
       
-      toast.success('🔊 Sound Enabled!', {
-        description: 'Mario sound effects and music are now active',
-        duration: 2000
-      })
+      playCoinSound()
       
-      document.removeEventListener('click', handleUserInteraction)
-      document.removeEventListener('keydown', handleUserInteraction)
-      document.removeEventListener('touchstart', handleUserInteraction)
+      toast.success('🔊 Sound Enabled!', {
+        description: 'Mario sound effects and music are now active!',
+        duration: 3000
+      })
     }
     
-    setTimeout(() => {
-      if (!soundEnabled) {
+    const showPrompt = setTimeout(() => {
+      if (!soundEnabled && !interactionHappened) {
         toast.info('🎵 Click anywhere to enable sound', {
           description: 'Hear all the classic Mario sound effects!',
-          duration: 5000
+          duration: 8000,
+          action: {
+            label: 'Enable',
+            onClick: handleUserInteraction
+          }
         })
       }
-    }, 1000)
+    }, 1500)
     
-    document.addEventListener('click', handleUserInteraction, { once: true })
-    document.addEventListener('keydown', handleUserInteraction, { once: true })
-    document.addEventListener('touchstart', handleUserInteraction, { once: true })
+    document.addEventListener('click', handleUserInteraction)
+    document.addEventListener('keydown', handleUserInteraction)
+    document.addEventListener('touchstart', handleUserInteraction)
     
     return () => {
+      clearTimeout(showPrompt)
       document.removeEventListener('click', handleUserInteraction)
       document.removeEventListener('keydown', handleUserInteraction)
       document.removeEventListener('touchstart', handleUserInteraction)
     }
-  }, [])
+  }, [soundEnabled])
   
   useEffect(() => {
     const pageMap: Record<string, BackgroundMusicPage> = {

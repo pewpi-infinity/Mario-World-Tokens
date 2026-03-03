@@ -1,11 +1,11 @@
 export const MARIO_BACKGROUND_MUSIC = {
-  mainTheme: 'https://archive.org/download/SMB-Soundtrack/01%20-%20Super%20Mario%20Bros.%20-%20Main%20Theme.mp3',
-  underground: 'https://archive.org/download/SMB-Soundtrack/02%20-%20Super%20Mario%20Bros.%20-%20Underground%20Theme.mp3',
-  underwater: 'https://archive.org/download/SMB-Soundtrack/03%20-%20Super%20Mario%20Bros.%20-%20Underwater%20Theme.mp3',
-  castle: 'https://archive.org/download/SMB-Soundtrack/04%20-%20Super%20Mario%20Bros.%20-%20Castle%20Theme.mp3',
-  starPower: 'https://archive.org/download/SMB-Soundtrack/05%20-%20Super%20Mario%20Bros.%20-%20Star%20Theme.mp3',
-  ghostHouse: 'https://archive.org/download/marioSoundEffects/ghost-house.mp3',
-  fortress: 'https://archive.org/download/marioSoundEffects/fortress.mp3',
+  mainTheme: 'https://ia601509.us.archive.org/7/items/SMB-Soundtrack/01%20-%20Super%20Mario%20Bros.%20-%20Main%20Theme.mp3',
+  underground: 'https://ia601509.us.archive.org/7/items/SMB-Soundtrack/02%20-%20Super%20Mario%20Bros.%20-%20Underground%20Theme.mp3',
+  underwater: 'https://ia601509.us.archive.org/7/items/SMB-Soundtrack/03%20-%20Super%20Mario%20Bros.%20-%20Underwater%20Theme.mp3',
+  castle: 'https://ia601509.us.archive.org/7/items/SMB-Soundtrack/04%20-%20Super%20Mario%20Bros.%20-%20Castle%20Theme.mp3',
+  starPower: 'https://ia601509.us.archive.org/7/items/SMB-Soundtrack/05%20-%20Super%20Mario%20Bros.%20-%20Star%20Theme.mp3',
+  ghostHouse: 'https://ia601509.us.archive.org/7/items/SMB-Soundtrack/06%20-%20Super%20Mario%20Bros.%20-%20Ending.mp3',
+  fortress: 'https://ia601509.us.archive.org/7/items/SMB-Soundtrack/04%20-%20Super%20Mario%20Bros.%20-%20Castle%20Theme.mp3',
 }
 
 export type BackgroundMusicPage = 'treasury' | 'marketplace' | 'charts' | 'ledger' | 'main' | 'ghost' | 'star' | 'fortress'
@@ -34,7 +34,7 @@ export function initBackgroundMusic(page: BackgroundMusicPage = 'main') {
 export function playBackgroundMusic(page: BackgroundMusicPage) {
   const musicUrl = PAGE_MUSIC_MAP[page]
   
-  if (currentAudio && currentPage === page) {
+  if (currentAudio && currentPage === page && !currentAudio.paused) {
     return
   }
   
@@ -47,10 +47,16 @@ export function playBackgroundMusic(page: BackgroundMusicPage) {
   currentAudio = new Audio(musicUrl)
   currentAudio.loop = true
   currentAudio.volume = isMuted ? 0 : volume
+  currentAudio.preload = 'auto'
   
-  currentAudio.play().catch((error) => {
-    console.log('Auto-play blocked, user interaction needed:', error)
-  })
+  const playPromise = currentAudio.play()
+  if (playPromise !== undefined) {
+    playPromise.then(() => {
+      console.log(`🎵 Playing background music: ${page}`)
+    }).catch((error) => {
+      console.log('Music autoplay blocked:', error.message)
+    })
+  }
 }
 
 export function stopBackgroundMusic() {
