@@ -48,27 +48,6 @@ export function MarioJukebox({ open, onClose, initialLevel }: MarioJukeboxProps)
   }, [initialLevel])
 
   useEffect(() => {
-    if (!audioRef.current) return
-
-    if (open) {
-      const playPromise = audioRef.current.play()
-      if (playPromise !== undefined) {
-        playPromise
-          .then(() => {
-            setIsPlaying(true)
-          })
-          .catch((error) => {
-            console.log('Autoplay prevented, waiting for user interaction:', error)
-            setIsPlaying(false)
-          })
-      }
-    } else {
-      audioRef.current.pause()
-      setIsPlaying(false)
-    }
-  }, [open])
-
-  useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = isMuted ? 0 : volume
     }
@@ -78,20 +57,18 @@ export function MarioJukebox({ open, onClose, initialLevel }: MarioJukeboxProps)
     const audio = audioRef.current
     if (!audio) return
 
-    const handleCanPlay = () => {
-      if (isPlaying && open) {
-        audio.play().catch((error) => {
+    audio.load()
+
+    if (isPlaying && open) {
+      const playPromise = audio.play()
+      if (playPromise !== undefined) {
+        playPromise.catch((error) => {
           console.error('Play failed:', error)
           setIsPlaying(false)
         })
       }
     }
-
-    audio.addEventListener('canplay', handleCanPlay)
-    return () => {
-      audio.removeEventListener('canplay', handleCanPlay)
-    }
-  }, [isPlaying, open])
+  }, [currentSong, isPlaying, open])
 
   const handlePlayPause = () => {
     if (!audioRef.current) return
