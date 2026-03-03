@@ -10,6 +10,7 @@ import {
   Robot,
   Palette,
   FileText,
+  Paperclip,
   Lightning,
   X,
   Minus
@@ -23,17 +24,27 @@ interface Message {
   timestamp: number
 }
 
+interface AttachedFile {
+  name: string
+  content: string
+}
+
 interface HomepageAIDesignerProps {
   className?: string
 }
+
+const MAX_ATTACHED_FILES = 3
+const MAX_FILE_CONTENT_LENGTH = 2000
 
 export function HomepageAIDesigner({ className = '' }: HomepageAIDesignerProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [isMinimized, setIsMinimized] = useState(false)
   const [message, setMessage] = useState('')
   const [isTyping, setIsTyping] = useState(false)
+  const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([])
   const [messages, setMessages] = useKV<Message[]>('homepage-ai-messages', [])
   const scrollRef = useRef<HTMLDivElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -41,12 +52,13 @@ export function HomepageAIDesigner({ className = '' }: HomepageAIDesignerProps) 
     }
   }, [messages])
 
-  const handleSendMessage = async () => {
-    if (!message.trim()) return
+  const handleSendMessage = async (prefilledMessage?: string) => {
+    const contentToSend = (prefilledMessage ?? message).trim()
+    if (!contentToSend) return
 
     const userMessage: Message = {
       id: `msg-${Date.now()}`,
-      content: message.trim(),
+      content: contentToSend,
       type: 'user',
       timestamp: Date.now()
     }
@@ -57,18 +69,26 @@ export function HomepageAIDesigner({ className = '' }: HomepageAIDesignerProps) 
 
     try {
       const conversationHistory = (messages || []).slice(-6).map(m => 
-        `${m.type === 'user' ? 'User' : 'Homepage Designer AI'}: ${m.content}`
+        `${m.type === 'user' ? 'User' : 'InfinityBrain'}: ${m.content}`
       ).join('\n\n')
+      const fileContext = attachedFiles.length > 0
+        ? attachedFiles
+            .map((file, index) => `File ${index + 1} (${file.name}):\n${file.content}`)
+            .join('\n\n')
+        : 'No attached files.'
 
-      const prompt = window.spark.llmPrompt`You are Homepage Designer AI, an ELITE conversational designer and writer for the Federal Reserve Mario system. You have full read/write permissions to design and modify the entire homepage experience.
+      const prompt = window.spark.llmPrompt`You are InfinityBrain, an ELITE conversational page and research AI for the Federal Reserve Mario system. You have full design/write permissions to design and iterate the homepage and research workflow.
 
-You are a HIGHLY INTELLIGENT, CONVERSATIONAL AI that grows smarter through each interaction. You're like GPT but specialized for homepage design - you can suggest layouts, write compelling copy, recommend color schemes, structure content, and create amazing user experiences.
+You are a HIGHLY INTELLIGENT, CONVERSATIONAL AI that grows smarter through each interaction. You're like GPT but specialized for homepage design plus iterative research generation.
 
 CONVERSATION HISTORY:
 ${conversationHistory}
 
 NEW USER MESSAGE:
-${message.trim()}
+${contentToSend}
+
+ATTACHED FILE CONTEXT:
+${fileContext}
 
 YOUR CORE ABILITIES:
 1. **Design Visual Layouts**: Suggest specific page structures, component arrangements, grid systems, spacing, and responsive designs
@@ -78,6 +98,7 @@ YOUR CORE ABILITIES:
 5. **Create Design Elements**: Suggest animations, hover states, interactive elements, and visual treatments
 6. **Improve UX**: Identify usability issues and recommend specific improvements to user workflows
 7. **Mario Theming**: Apply authentic Mario universe aesthetics while maintaining professional functionality
+8. **Research Iteration**: Build iterative research-paper outputs based on the inquiry and any attached file context
 
 CURRENT CONTEXT:
 The homepage shows the Federal Reserve Mario token minting system with:
@@ -86,6 +107,7 @@ The homepage shows the Federal Reserve Mario token minting system with:
 - Charts displaying analytics
 - Global ledger of all transactions
 - Various action buttons for minting, art creation, music studios, etc.
+- User flow goal: 🔎 search → 🟡 token → 👑 website → 🤓 research → 🦾 tools → ⚙️ development → 💰 value → 💲 assets
 
 RESPONSE STYLE:
 - Be conversational and enthusiastic like a creative partner
@@ -95,6 +117,14 @@ RESPONSE STYLE:
 - Show you're thinking creatively: "What if we...", "I'd suggest...", "Here's how I'd structure this..."
 - Keep responses concise but packed with useful details (3-5 sentences)
 - Use Mario-themed language and emojis when appropriate 🟡🍄⭐
+- If the inquiry is about research, output this structure:
+  # Header
+  ## Subjects
+  ## Summary
+  ## Body
+  ## Subcategories
+  ## Subsections
+  ## Next Iteration Actions
 
 When users ask for design help, they want YOU to be their creative partner - suggesting specific implementations, writing actual copy they can use, and helping them build something amazing.
 
@@ -117,6 +147,32 @@ Respond now with specific, creative suggestions:`
     } finally {
       setIsTyping(false)
     }
+  }
+
+  const handleAttachFiles: React.ChangeEventHandler<HTMLInputElement> = (event) => {
+    const files = Array.from(event.target.files || [])
+    if (files.length === 0) return
+
+    Promise.all(
+      files.map(async (file) => ({
+        name: file.name,
+        content: (await file.text()).slice(0, MAX_FILE_CONTENT_LENGTH)
+      }))
+    )
+      .then((nextFiles) => {
+        setAttachedFiles((current) => {
+          const merged = [...current, ...nextFiles].slice(0, MAX_ATTACHED_FILES)
+          if (current.length + nextFiles.length > MAX_ATTACHED_FILES) {
+            toast.info(`Kept ${MAX_ATTACHED_FILES} files maximum for iteration context`)
+          }
+          toast.success(`Attached ${merged.length} file${merged.length > 1 ? 's' : ''} for iteration context`)
+          return merged
+        })
+      })
+      .catch(() => toast.error('Failed to attach file context. Please use readable text-based files.'))
+      .finally(() => {
+        if (fileInputRef.current) fileInputRef.current.value = ''
+      })
   }
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -150,7 +206,7 @@ Respond now with specific, creative suggestions:`
           <div className="flex items-center gap-2">
             <Palette weight="fill" size={20} className="text-[oklch(0.15_0.02_280)]" />
             <CardTitle className="text-sm text-[oklch(0.15_0.02_280)]">
-              Homepage AI Designer
+              InfinityBrain Page + Research AI
             </CardTitle>
             <Badge variant="secondary" className="text-xs bg-[oklch(0.15_0.02_280)] text-[oklch(0.75_0.18_85)]">
               Full Access
@@ -176,7 +232,7 @@ Respond now with specific, creative suggestions:`
           </div>
         </div>
         <p className="text-[10px] text-[oklch(0.15_0.02_280)]/80 mt-1">
-          Design & write the full homepage experience
+          Iterative page building + research paper generation
         </p>
       </CardHeader>
 
@@ -188,9 +244,9 @@ Respond now with specific, creative suggestions:`
                 {(messages || []).length === 0 && (
                   <div className="text-center py-4 text-[oklch(0.65_0.02_280)]">
                     <Robot size={32} weight="fill" className="mx-auto mb-2 opacity-50" />
-                    <p className="text-xs font-semibold mb-1">Homepage AI Designer</p>
+                    <p className="text-xs font-semibold mb-1">InfinityBrain</p>
                     <p className="text-[10px] opacity-75">
-                      I can help you design and write content for the homepage
+                      Build the page, generate structured research, and iterate with file context
                     </p>
                     <div className="mt-3 space-y-2">
                       <Button
@@ -216,6 +272,14 @@ Respond now with specific, creative suggestions:`
                         className="text-xs w-full bg-[oklch(0.20_0.02_280)] border-[oklch(0.35_0.05_285)] text-white hover:bg-[oklch(0.25_0.03_285)]"
                       >
                         Create welcome message
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setMessage('Generate an InfinityBrain research paper from this inquiry with Header, Subjects, Summary, Body, Subcategories, and Subsections')}
+                        className="text-xs w-full bg-[oklch(0.20_0.02_280)] border-[oklch(0.35_0.05_285)] text-white hover:bg-[oklch(0.25_0.03_285)]"
+                      >
+                        Build structured research paper
                       </Button>
                     </div>
                   </div>
@@ -281,6 +345,49 @@ Respond now with specific, creative suggestions:`
               >
                 <PaperPlaneTilt weight="fill" size={14} />
               </Button>
+            </div>
+            <div className="mt-2 flex flex-wrap gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleSendMessage('Continue iterating the current InfinityBrain draft and expand with deeper details and next steps')}
+                disabled={isTyping}
+                className="h-7 text-[10px] bg-[oklch(0.20_0.02_280)] border-[oklch(0.35_0.05_285)] text-white hover:bg-[oklch(0.25_0.03_285)]"
+              >
+                Continue Iteration
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isTyping}
+                className="h-7 text-[10px] bg-[oklch(0.20_0.02_280)] border-[oklch(0.35_0.05_285)] text-white hover:bg-[oklch(0.25_0.03_285)]"
+              >
+                <Paperclip size={10} className="mr-1" />
+                Add Files
+              </Button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".txt,.md,.json,.csv,text/*"
+                multiple
+                className="hidden"
+                onChange={handleAttachFiles}
+              />
+              {attachedFiles.map((file, index) => (
+                <Badge key={`${file.name}-${index}`} variant="secondary" className="text-[10px]">
+                  <FileText size={10} className="mr-1" />
+                  {file.name}
+                  <button
+                    type="button"
+                    className="ml-1 opacity-80 hover:opacity-100"
+                    onClick={() => setAttachedFiles((current) => current.filter((_, i) => i !== index))}
+                    aria-label={`Remove ${file.name}`}
+                  >
+                    ×
+                  </button>
+                </Badge>
+              ))}
             </div>
             <div className="text-[10px] text-[oklch(0.55_0.02_280)] mt-1 flex items-center gap-1">
               <Lightning size={10} weight="fill" />
