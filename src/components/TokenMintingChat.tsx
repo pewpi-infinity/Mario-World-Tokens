@@ -5,9 +5,10 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Badge } from '@/components/ui/badge'
-import { Sparkle, PaperPlaneTilt, Robot } from '@phosphor-icons/react'
+import { Sparkle, PaperPlaneTilt, Robot, Microphone, MicrophoneSlash } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { playCoinSound } from '@/lib/sounds'
+import { useVoiceInput } from '@/hooks/use-voice-input'
 
 interface ChatMessage {
   id: string
@@ -35,6 +36,18 @@ export function TokenMintingChat({
   const [input, setInput] = useState('')
   const [isTyping, setIsTyping] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
+
+  const { isListening, isSupported, toggleListening } = useVoiceInput({
+    onResult: (transcript) => {
+      setInput(transcript)
+      toast.success('Voice input captured!', { duration: 2000 })
+    },
+    onError: (error) => {
+      toast.error(error, { duration: 3000 })
+    },
+    continuous: false,
+    interimResults: false
+  })
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -222,6 +235,25 @@ Respond conversationally and enthusiastically!`
             className="flex-1 h-9 text-sm"
             disabled={isTyping}
           />
+          {isSupported && (
+            <Button
+              onClick={toggleListening}
+              size="sm"
+              variant="outline"
+              className={`h-9 px-3 ${
+                isListening
+                  ? 'bg-mario-red text-white border-mario-red animate-pulse'
+                  : 'border-[oklch(0.75_0.18_85)]/30 hover:bg-[oklch(0.75_0.18_85)]/10'
+              }`}
+              disabled={isTyping}
+            >
+              {isListening ? (
+                <MicrophoneSlash size={16} weight="fill" />
+              ) : (
+                <Microphone size={16} weight="fill" />
+              )}
+            </Button>
+          )}
           <Button
             onClick={handleSend}
             disabled={!input.trim() || isTyping}

@@ -18,11 +18,14 @@ import {
   MusicNotes,
   GameController,
   Flask,
-  Infinity
+  Infinity,
+  Microphone,
+  MicrophoneSlash
 } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { AIBot, AIBotRole, AIMessage, AIConversation } from '@/lib/types'
 import { AI_BOT_CONFIGS, getBotById, getBotsByParent, formatBotSystemPrompt } from '@/lib/infinity-ai'
+import { useVoiceInput } from '@/hooks/use-voice-input'
 
 interface InfinityAIChatProps {
   open: boolean
@@ -97,6 +100,18 @@ export function InfinityAIChat({ open, onClose, initialBot = 'builder' }: Infini
   const [conversations, setConversations] = useKV<Record<string, AIConversation>>('ai-conversations', {})
   const scrollRef = useRef<HTMLDivElement>(null)
   const [currentUser] = useState(() => `user-${Math.random().toString(36).substr(2, 9)}`)
+
+  const { isListening, isSupported, toggleListening } = useVoiceInput({
+    onResult: (transcript) => {
+      setMessage(transcript)
+      toast.success('🎤 Voice captured!', { duration: 2000 })
+    },
+    onError: (error) => {
+      toast.error(error, { duration: 3000 })
+    },
+    continuous: false,
+    interimResults: false
+  })
 
   const currentBot = AI_BOT_CONFIGS[selectedBot].bot
   const conversationId = `${currentUser}-${currentBot.id}`
@@ -420,6 +435,24 @@ Respond now with specific suggestions and structured content:`
                         className="flex-1 bg-[oklch(0.15_0.02_280)] border-[oklch(0.35_0.05_285)] text-white placeholder:text-[oklch(0.45_0.02_280)] text-sm"
                         disabled={isTyping}
                       />
+                      {isSupported && (
+                        <Button
+                          onClick={toggleListening}
+                          variant="ghost"
+                          className={`px-4 ${
+                            isListening
+                              ? 'bg-mario-red text-white border-mario-red animate-pulse'
+                              : 'text-[oklch(0.75_0.18_85)] hover:bg-[oklch(0.25_0.03_285)]'
+                          }`}
+                          disabled={isTyping}
+                        >
+                          {isListening ? (
+                            <MicrophoneSlash weight="fill" size={20} />
+                          ) : (
+                            <Microphone weight="fill" size={20} />
+                          )}
+                        </Button>
+                      )}
                       <Button
                         onClick={handleSendMessage}
                         disabled={!message.trim() || isTyping}
@@ -430,7 +463,7 @@ Respond now with specific suggestions and structured content:`
                     </div>
                     <div className="text-xs text-[oklch(0.55_0.02_280)] mt-2 flex items-center gap-1">
                       <Lightning size={12} weight="fill" />
-                      Press Enter to send • This AI has {currentBot.permissions.length} permissions
+                      Press Enter to send{isSupported && ' • Click microphone for voice input'} • This AI has {currentBot.permissions.length} permissions
                     </div>
                   </div>
                 </Card>
