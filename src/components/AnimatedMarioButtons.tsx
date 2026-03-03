@@ -1,8 +1,7 @@
-import { useState, useEffect } from 'react'
-import { Button } from '@/components/ui/button'
+import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
+import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 
 interface AnimatedMarioButtonsProps {
@@ -26,109 +25,92 @@ interface AnimatedMarioButtonsProps {
 
 interface ButtonData {
   emoji: string
-  brick: string
   label: string
   action: () => void
 }
 
 export function AnimatedMarioButtons(props: AnimatedMarioButtonsProps) {
   const [activeDialog, setActiveDialog] = useState<string | null>(null)
-  const [timeCapsuleSecret, setTimeCapsuleSecret] = useState('')
-  const [timeCapsuleDate, setTimeCapsuleDate] = useState('')
-  const [marioPosition, setMarioPosition] = useState(-1)
-  const [animatingButton, setAnimatingButton] = useState<number | null>(null)
-  const [revealedBricks, setRevealedBricks] = useState<number[]>([])
-  const [showBricks, setShowBricks] = useState(false)
+  const [hitButton, setHitButton] = useState<number | null>(null)
+  const [poppedEmoji, setPoppedEmoji] = useState<{ emoji: string; index: number } | null>(null)
 
   const buttons: ButtonData[] = [
-    { emoji: '🟡', brick: '🧱', label: 'Mint Token', action: () => props.onMintToken() },
-    { emoji: '🎵', brick: '🧱', label: 'Music Studio', action: () => setActiveDialog('musicChoice') },
-    { emoji: '👽', brick: '🧱', label: 'Creation Zone', action: () => props.onCreationZone() },
-    { emoji: '♾️', brick: '🧱', label: 'AI Network', action: () => props.onAIAssistant() },
-    { emoji: '🧲', brick: '🧱', label: 'Memory Pull', action: () => setActiveDialog('memoryPull') },
-    { emoji: '⚪', brick: '🧱', label: 'Upgrade Token', action: () => setActiveDialog('upgrade') },
-    { emoji: '🕹️', brick: '🧱', label: 'Value Jump', action: () => setActiveDialog('valueJump') },
-    { emoji: '🎬', brick: '🧱', label: 'Mario Clip', action: () => props.onVideoClip() },
-    { emoji: '📽️', brick: '🧱', label: 'Film Rolling', action: () => props.onFilmRolling() },
-    { emoji: '👻', brick: '🧱', label: 'Super Powers', action: () => props.onSuperPower() },
-    { emoji: '🤑', brick: '🧱', label: 'Social Share', action: () => setActiveDialog('share') },
-    { emoji: '🌻', brick: '🧱', label: 'Fire Power', action: () => setActiveDialog('firePower') },
-    { emoji: '⭐', brick: '🧱', label: 'Living Token', action: () => props.onLivingToken() },
-    { emoji: '🍄', brick: '🧱', label: 'Double Up', action: () => props.onDoubleUp() },
+    { emoji: '🟡', label: 'Mint', action: () => props.onMintToken() },
+    { emoji: '🎵', label: 'Music', action: () => setActiveDialog('musicChoice') },
+    { emoji: '👽', label: 'Create', action: () => props.onCreationZone() },
+    { emoji: '♾️', label: 'AI', action: () => props.onAIAssistant() },
+    { emoji: '🧲', label: 'Memory', action: () => setActiveDialog('memoryPull') },
+    { emoji: '⚪', label: 'Upgrade', action: () => setActiveDialog('upgrade') },
+    { emoji: '🕹️', label: 'Jump', action: () => setActiveDialog('valueJump') },
+    { emoji: '🎬', label: 'Clip', action: () => props.onVideoClip() },
+    { emoji: '📽️', label: 'Film', action: () => props.onFilmRolling() },
+    { emoji: '👻', label: 'Power', action: () => props.onSuperPower() },
+    { emoji: '🤑', label: 'Share', action: () => setActiveDialog('share') },
+    { emoji: '🌻', label: 'Fire', action: () => setActiveDialog('firePower') },
+    { emoji: '⭐', label: 'Living', action: () => props.onLivingToken() },
+    { emoji: '🍄', label: 'Double', action: () => props.onDoubleUp() },
   ]
 
-  const handleButtonActivate = (index: number) => {
-    if (revealedBricks.includes(index)) {
-      buttons[index].action()
-      return
-    }
-
-    setMarioPosition(index)
-    setAnimatingButton(index)
-
+  const handleButtonClick = (index: number) => {
+    setHitButton(index)
+    setPoppedEmoji({ emoji: buttons[index].emoji, index })
+    
     setTimeout(() => {
-      setRevealedBricks((current) => [...current, index])
-      setAnimatingButton(null)
-      setMarioPosition(-1)
+      setHitButton(null)
       buttons[index].action()
-    }, 800)
-  }
-
-  const handleTimeCapsuleSubmit = () => {
-    if (!timeCapsuleSecret || !timeCapsuleDate) {
-      toast.error('Please fill in all fields')
-      return
-    }
-    props.onTimeCapsule(timeCapsuleSecret, new Date(timeCapsuleDate))
-    setActiveDialog(null)
-    setTimeCapsuleSecret('')
-    setTimeCapsuleDate('')
+      
+      setTimeout(() => {
+        setPoppedEmoji(null)
+      }, 500)
+    }, 300)
   }
 
   return (
     <>
-      <div className="w-full overflow-x-auto overflow-y-visible py-4 px-2">
-        <div className="grid grid-cols-7 sm:grid-cols-14 gap-1 sm:gap-2 min-w-max sm:min-w-0">
+      <div className="w-full overflow-x-auto px-2 sm:px-4">
+        <div className="flex gap-2 sm:gap-3 justify-center py-4 min-w-max">
           {buttons.map((btn, idx) => (
-            <div key={idx} className="relative flex flex-col items-center">
-              {marioPosition === idx && (
-                <div
-                  className="absolute -top-12 text-3xl z-20 animate-bounce"
-                  style={{ animation: 'bounce 0.6s ease-in-out' }}
-                >
-                  🏃
-                </div>
-              )}
-
-              <div className="relative">
-                {!revealedBricks.includes(idx) ? (
-                  <Button
-                    onClick={() => handleButtonActivate(idx)}
-                    className={`text-2xl sm:text-3xl md:text-4xl p-2 sm:p-3 bg-[oklch(0.45_0.08_30)] hover:bg-[oklch(0.50_0.10_30)] border-2 border-[oklch(0.35_0.06_30)] shadow-lg transition-all aspect-square flex items-center justify-center min-h-[2.5rem] sm:min-h-[3.5rem] w-full ${
-                      animatingButton === idx ? 'animate-pulse scale-110' : ''
-                    }`}
-                    title={btn.label}
-                    aria-label={btn.label}
+            <div key={idx} className="relative flex flex-col items-center gap-1">
+              <AnimatePresence>
+                {poppedEmoji?.index === idx && (
+                  <motion.div
+                    initial={{ y: 0, opacity: 0, scale: 0 }}
+                    animate={{ y: -40, opacity: 1, scale: 1.3 }}
+                    exit={{ y: -70, opacity: 0, scale: 0.5 }}
+                    className="absolute -top-12 text-3xl sm:text-4xl z-30"
                   >
-                    <span className="leading-none block">{btn.brick}</span>
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={() => handleButtonActivate(idx)}
-                    className="text-2xl sm:text-3xl md:text-4xl p-2 sm:p-3 bg-[oklch(0.75_0.18_85)] hover:bg-[oklch(0.80_0.20_85)] border-2 border-[oklch(0.85_0.20_85)] shadow-lg hover:shadow-xl transition-all hover:scale-110 pixel-pop aspect-square flex items-center justify-center min-h-[2.5rem] sm:min-h-[3.5rem] w-full"
-                    title={btn.label}
-                    aria-label={btn.label}
-                  >
-                    <span className="leading-none block">{btn.emoji}</span>
-                  </Button>
+                    {poppedEmoji.emoji}
+                  </motion.div>
                 )}
-              </div>
+              </AnimatePresence>
 
-              {revealedBricks.includes(idx) && (
-                <span className="text-[8px] sm:text-[10px] mt-1 text-[oklch(0.75_0.18_85)] font-bold text-center leading-tight max-w-[4rem] truncate">
-                  {btn.label}
-                </span>
-              )}
+              <motion.button
+                onClick={() => handleButtonClick(idx)}
+                className="relative w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center text-xl sm:text-2xl transition-all cursor-pointer"
+                style={{
+                  background: 'linear-gradient(135deg, oklch(0.75 0.18 85) 0%, oklch(0.65 0.15 85) 100%)',
+                  borderRadius: '4px',
+                  boxShadow: hitButton === idx 
+                    ? '0 0 0 0, inset 0 -2px 0 oklch(0 0 0 / 0.3)' 
+                    : '0 4px 0 oklch(0.55 0.12 85), 0 6px 15px oklch(0 0 0 / 0.3), inset 0 2px 0 oklch(1 0 0 / 0.2)',
+                  border: '3px solid oklch(0.85 0.20 85)',
+                }}
+                animate={{
+                  y: hitButton === idx ? 4 : 0,
+                }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <div className="absolute inset-0.5 rounded border-2 border-white/10"></div>
+                <div className="absolute inset-0 rounded" style={{
+                  background: 'repeating-linear-gradient(90deg, transparent 0px, transparent 8px, oklch(1 0 0 / 0.1) 8px, oklch(1 0 0 / 0.1) 9px)'
+                }}></div>
+                <span className="relative z-10 text-white drop-shadow-lg font-bold text-2xl sm:text-3xl">?</span>
+              </motion.button>
+
+              <span className="text-[9px] sm:text-[11px] font-bold text-[oklch(0.75_0.18_85)] pixel-font whitespace-nowrap">
+                {btn.label}
+              </span>
             </div>
           ))}
         </div>
