@@ -13,6 +13,22 @@ interface GameEmulatorBuilderProps {
   onClose: () => void
 }
 
+interface GitHubRepoResponse {
+  full_name: string
+  stargazers_count: number
+}
+
+const githubRepoOwner = 'fhd'
+const githubRepoName = 'mongoose.os'
+const githubRepoFullName = `${githubRepoOwner}/${githubRepoName}`
+
+function isGitHubRepoResponse(value: unknown): value is GitHubRepoResponse {
+  return !!value
+    && typeof value === 'object'
+    && typeof (value as GitHubRepoResponse).full_name === 'string'
+    && typeof (value as GitHubRepoResponse).stargazers_count === 'number'
+}
+
 export function GameEmulatorBuilder({ open, onClose }: GameEmulatorBuilderProps) {
   const [gameState, setGameState] = useState({
     marioX: 100,
@@ -160,14 +176,34 @@ export function GameEmulatorBuilder({ open, onClose }: GameEmulatorBuilderProps)
 
   const handleLoadFromGitHub = () => {
     toast.info('Loading from GitHub...', {
-      description: 'Connecting to pewpi-infinity/Mario-3 repository'
+      description: `Connecting to ${githubRepoFullName} repository`
     })
-    
-    setTimeout(() => {
-      toast.success('GitHub Integration Ready!', {
-        description: 'Mario-3 game engine loaded'
+
+    fetch(`https://api.github.com/repos/${githubRepoFullName}`)
+      .then((response) => {
+        if (!response.ok) {
+          const remainingHeader = response.headers.get('X-RateLimit-Remaining')
+          const remainingRateLimit = remainingHeader === null ? null : Number(remainingHeader)
+          if (response.status === 403 && remainingRateLimit !== null && remainingRateLimit <= 0) {
+            throw new Error('GitHub API rate limit exceeded. Please try again later.')
+          }
+          throw new Error(`GitHub API returned ${response.status}`)
+        }
+        return response.json() as Promise<unknown>
       })
-    }, 2000)
+      .then((repo) => {
+        if (!isGitHubRepoResponse(repo)) {
+          throw new Error('GitHub API returned unexpected repository data')
+        }
+
+        toast.success('GitHub Integration Ready!', {
+          description: `${repo.full_name} loaded • ⭐ ${repo.stargazers_count}`
+        })
+      })
+      .catch((error: unknown) => {
+        const message = error instanceof Error ? error.message : 'Unable to load repository data'
+        toast.error('GitHub integration failed', { description: message })
+      })
   }
 
   useEffect(() => {
@@ -195,7 +231,7 @@ You help users with:
 - Building custom Mario games and emulators
 - Understanding game mechanics and physics
 - Creating new levels and sprites
-- Integrating with the pewpi-infinity/Mario-3 GitHub repository
+- Integrating with the ${githubRepoFullName} GitHub repository
 - Designing game features and power-ups
 - Optimizing game performance
 
@@ -236,7 +272,7 @@ Provide helpful, specific guidance related to game building, emulators, and Mari
             MARIO GAME EMULATOR BUILDER
           </DialogTitle>
           <DialogDescription>
-            Build and play Mario games • Powered by pewpi-infinity/Mario-3 repo
+            Build and play Mario games • Powered by {githubRepoFullName} repo
           </DialogDescription>
         </DialogHeader>
 
@@ -325,7 +361,7 @@ Provide helpful, specific guidance related to game building, emulators, and Mari
                 <div>
                   <Label className="text-xs text-white">Repository</Label>
                   <Input
-                    value="pewpi-infinity/Mario-3"
+                    value={githubRepoFullName}
                     readOnly
                     className="mt-1 bg-[oklch(0.15_0.02_280)] text-white border-[oklch(0.75_0.18_85)]"
                   />
@@ -333,7 +369,7 @@ Provide helpful, specific guidance related to game building, emulators, and Mari
                 <Button
                   size="sm"
                   className="w-full bg-[oklch(0.65_0.15_155)] hover:bg-[oklch(0.75_0.15_155)]"
-                  onClick={() => window.open('https://github.com/pewpi-infinity/Mario-3', '_blank')}
+                  onClick={() => window.open(`https://github.com/${githubRepoFullName}`, '_blank')}
                 >
                   <GithubLogo size={16} className="mr-2" />
                   View on GitHub
