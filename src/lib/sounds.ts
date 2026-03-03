@@ -18,9 +18,10 @@ export const MARIO_SOUNDS = {
   mariodie: 'https://ia600304.us.archive.org/27/items/arcade-sounds/mariodie.wav',
 }
 
-const audioCache: Map<string, HTMLAudioElement> = new Map()
+const audioCache: Map<string, HTMLAudioElement[]> = new Map()
 let audioContext: AudioContext | null = null
 let isAudioInitialized = false
+const AUDIO_POOL_SIZE = 3
 
 export function initializeAudioContext() {
   if (audioContext) return audioContext
@@ -53,7 +54,7 @@ export function forceUnlockAudio() {
     audioContext.resume().then(() => {
       console.log('🔊 Audio force-unlocked!')
       isAudioInitialized = true
-    })
+    }).catch(() => {})
   }
   
   const silentAudio = new Audio()
@@ -63,40 +64,59 @@ export function forceUnlockAudio() {
     silentAudio.pause()
     isAudioInitialized = true
     console.log('🔊 Silent audio unlock successful')
-  }).catch(err => {
-    console.log('Silent unlock attempt:', err.message)
-  })
+  }).catch(() => {})
 }
 
 export function preloadSound(soundUrl: string): HTMLAudioElement {
   if (!audioCache.has(soundUrl)) {
-    const audio = new Audio()
-    audio.src = soundUrl
-    audio.preload = 'auto'
-    audio.crossOrigin = 'anonymous'
-    audio.load()
-    audioCache.set(soundUrl, audio)
+    const pool: HTMLAudioElement[] = []
+    for (let i = 0; i < AUDIO_POOL_SIZE; i++) {
+      const audio = new Audio()
+      audio.src = soundUrl
+      audio.preload = 'auto'
+      audio.crossOrigin = 'anonymous'
+      audio.load()
+      pool.push(audio)
+    }
+    audioCache.set(soundUrl, pool)
   }
-  return audioCache.get(soundUrl)!
+  return audioCache.get(soundUrl)![0]
 }
 
 export function playSound(soundUrl: string, volume = 0.7): void {
   try {
     forceUnlockAudio()
     
-    const audio = new Audio(soundUrl)
+    let audio: HTMLAudioElement | null = null
+    
+    if (audioCache.has(soundUrl)) {
+      const pool = audioCache.get(soundUrl)!
+      audio = pool.find(a => a.paused || a.ended || a.currentTime === 0) || pool[0]
+      audio.currentTime = 0
+    } else {
+      audio = new Audio(soundUrl)
+      audio.crossOrigin = 'anonymous'
+    }
+    
     audio.volume = volume
-    audio.crossOrigin = 'anonymous'
     
-    audio.play().then(() => {
-      console.log('🔊 PLAYING:', soundUrl.split('/').pop())
-    }).catch(error => {
-      console.warn('Play attempt:', error.message)
-    })
-    
-    audio.addEventListener('ended', () => {
-      audio.remove()
-    })
+    const playPromise = audio.play()
+    if (playPromise !== undefined) {
+      playPromise
+        .then(() => {
+          console.log('🔊 PLAYING:', soundUrl.split('/').pop())
+        })
+        .catch((error) => {
+          console.warn('Play attempt failed:', error.message)
+          
+          setTimeout(() => {
+            const retryAudio = new Audio(soundUrl)
+            retryAudio.volume = volume
+            retryAudio.crossOrigin = 'anonymous'
+            retryAudio.play().catch(() => {})
+          }, 50)
+        })
+    }
   } catch (e) {
     console.error('Sound error:', e)
   }

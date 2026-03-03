@@ -104,7 +104,7 @@ export function AnimatedMarioButtons(props: AnimatedMarioButtonsProps) {
 
               <motion.button
                 onClick={() => handleButtonClick(idx)}
-                className="relative w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center transition-all cursor-pointer overflow-hidden"
+                className="relative w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center transition-all cursor-pointer overflow-visible"
                 style={{
                   background: hitButton === idx 
                     ? 'oklch(0.48 0.12 40)'
@@ -127,16 +127,8 @@ export function AnimatedMarioButtons(props: AnimatedMarioButtonsProps) {
                   background: 'repeating-linear-gradient(0deg, transparent 0px, transparent 3px, oklch(0 0 0 / 0.08) 3px, oklch(0 0 0 / 0.08) 4px), repeating-linear-gradient(90deg, transparent 0px, transparent 3px, oklch(0 0 0 / 0.08) 3px, oklch(0 0 0 / 0.08) 4px)',
                   pointerEvents: 'none'
                 }}></div>
-                <span 
-                  className="relative z-10 text-xl sm:text-2xl transition-opacity duration-200"
-                  style={{
-                    opacity: hitButton === idx ? 0 : 0
-                  }}
-                >
-                  {btn.emoji}
-                </span>
                 {hitButton !== idx && (
-                  <span className="absolute inset-0 flex items-center justify-center text-2xl sm:text-3xl">
+                  <span className="relative z-10 text-2xl sm:text-3xl">
                     🧱
                   </span>
                 )}

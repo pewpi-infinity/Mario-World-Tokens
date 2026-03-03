@@ -363,51 +363,51 @@ Keep your response friendly and concise (2-3 sentences max).`
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden bg-card border-4 border-[oklch(0.75_0.18_85)] flex flex-col">
-        <DialogHeader>
-          <DialogTitle className="text-2xl pixel-font text-[oklch(0.75_0.18_85)] text-center">
+      <DialogContent className="max-w-[98vw] sm:max-w-4xl h-[95vh] sm:max-h-[90vh] overflow-hidden bg-card border-4 border-[oklch(0.75_0.18_85)] flex flex-col p-3 sm:p-6">
+        <DialogHeader className="flex-shrink-0">
+          <DialogTitle className="text-lg sm:text-2xl pixel-font text-[oklch(0.75_0.18_85)] text-center">
             🎵 MARIO JUKEBOX 🎵
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex flex-col gap-4 overflow-hidden flex-1">
+        <div className="flex flex-col gap-3 sm:gap-4 overflow-hidden flex-1">
           {showChat && (
-            <Card className="p-4 bg-gradient-to-br from-[oklch(0.70_0.24_190)] to-[oklch(0.65_0.15_155)] border-2 border-[oklch(0.75_0.18_85)] flex-shrink-0">
-              <div className="flex items-center gap-2 mb-3">
-                <Robot size={24} weight="fill" className="text-white" />
-                <h3 className="font-bold text-lg text-white">AI Jukebox Assistant</h3>
+            <Card className="p-3 sm:p-4 bg-gradient-to-br from-[oklch(0.70_0.24_190)] to-[oklch(0.65_0.15_155)] border-2 border-[oklch(0.75_0.18_85)] flex-shrink-0">
+              <div className="flex items-center gap-2 mb-2 sm:mb-3">
+                <Robot size={20} className="sm:w-6 sm:h-6 text-white" weight="fill" />
+                <h3 className="font-bold text-sm sm:text-lg text-white">AI Assistant</h3>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => setShowChat(false)}
-                  className="ml-auto text-white hover:text-[oklch(0.75_0.18_85)]"
+                  className="ml-auto text-white hover:text-[oklch(0.75_0.18_85)] h-8 px-2"
                 >
                   Hide
                 </Button>
               </div>
 
-              <div className="bg-background/10 backdrop-blur rounded-lg p-3 mb-3 max-h-32 overflow-y-auto">
-                <div className="space-y-2">
+              <div className="bg-background/10 backdrop-blur rounded-lg p-2 sm:p-3 mb-2 sm:mb-3 max-h-24 sm:max-h-32 overflow-y-auto">
+                <div className="space-y-1 sm:space-y-2">
                   {chatMessages.slice(-5).map((msg, idx) => (
                     <div
                       key={idx}
-                      className={`p-2 rounded text-sm ${
+                      className={`p-1.5 sm:p-2 rounded text-xs sm:text-sm ${
                         msg.role === 'user'
-                          ? 'bg-white/20 text-white ml-6'
+                          ? 'bg-white/20 text-white ml-4 sm:ml-6'
                           : msg.role === 'system'
-                          ? 'bg-white/10 text-white/80 italic text-xs'
-                          : 'bg-white/30 text-white mr-6'
+                          ? 'bg-white/10 text-white/80 italic text-[10px] sm:text-xs'
+                          : 'bg-white/30 text-white mr-4 sm:mr-6'
                       }`}
                     >
                       {msg.content}
                     </div>
                   ))}
                   {isAIThinking && (
-                    <div className="bg-white/30 p-2 rounded mr-6">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-                        <div className="w-2 h-2 bg-white rounded-full animate-pulse" style={{ animationDelay: '150ms' }}></div>
-                        <div className="w-2 h-2 bg-white rounded-full animate-pulse" style={{ animationDelay: '300ms' }}></div>
+                    <div className="bg-white/30 p-1.5 sm:p-2 rounded mr-4 sm:mr-6">
+                      <div className="flex items-center gap-1 sm:gap-2">
+                        <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-white rounded-full animate-pulse"></div>
+                        <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-white rounded-full animate-pulse" style={{ animationDelay: '150ms' }}></div>
+                        <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-white rounded-full animate-pulse" style={{ animationDelay: '300ms' }}></div>
                       </div>
                     </div>
                   )}
@@ -421,15 +421,15 @@ Keep your response friendly and concise (2-3 sentences max).`
                   onChange={(e) => setInputMessage(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
                   placeholder="Ask AI to control music..."
-                  className="flex-1 bg-white/20 border-white/30 text-white placeholder:text-white/60"
+                  className="flex-1 bg-white/20 border-white/30 text-white placeholder:text-white/60 h-9 sm:h-10 text-sm"
                   disabled={isAIThinking}
                 />
                 <Button
                   onClick={handleSendMessage}
                   disabled={isAIThinking || !inputMessage.trim()}
-                  className="bg-white/20 hover:bg-white/30 text-white border border-white/40"
+                  className="bg-white/20 hover:bg-white/30 text-white border border-white/40 h-9 w-9 sm:h-10 sm:w-10 p-0"
                 >
-                  <PaperPlaneTilt size={20} weight="fill" />
+                  <PaperPlaneTilt size={16} className="sm:w-5 sm:h-5" weight="fill" />
                 </Button>
               </div>
             </Card>
@@ -439,127 +439,126 @@ Keep your response friendly and concise (2-3 sentences max).`
             <div className="flex justify-center flex-shrink-0">
               <Button
                 variant="outline"
+                size="sm"
                 onClick={() => setShowChat(true)}
-                className="flex items-center gap-2"
+                className="flex items-center gap-1 sm:gap-2 h-8 sm:h-10 text-xs sm:text-sm"
               >
-                <Robot size={20} weight="fill" />
+                <Robot size={16} className="sm:w-5 sm:h-5" weight="fill" />
                 Show AI Assistant
               </Button>
             </div>
           )}
 
-          <div className="flex flex-col gap-4 overflow-y-auto pr-2 flex-1">
-            <Card className="p-6 bg-gradient-to-br from-[oklch(0.58_0.24_330)] to-[oklch(0.70_0.24_190)] border-2 border-[oklch(0.75_0.18_85)] flex-shrink-0">
-              <div className="text-center space-y-4">
-                <div className="text-5xl">🎮</div>
-                <div>
-                  <h3 className="text-xl font-bold text-white pixel-font mb-2">
-                    {currentSong.name}
-                  </h3>
-                  <div className={`inline-block px-4 py-1 rounded-lg ${getLevelColor(currentSong.level)} text-background font-bold text-sm`}>
-                    {currentSong.level}
-                  </div>
-                </div>
-
-                {clickSpeed === 'fast' && (
-                  <Badge className="bg-[oklch(0.58_0.24_330)] text-white text-sm px-3 py-1">
-                    ⚡ Fast Mode Active
-                  </Badge>
-                )}
-
-                <div className="flex items-center justify-center gap-4 mt-6">
-                  <Button
-                    size="lg"
-                    onClick={handlePrevious}
-                    className="bg-white/20 hover:bg-white/30 text-white border-2 border-white/40 w-14 h-14"
-                  >
-                    <SkipBack size={24} weight="fill" />
-                  </Button>
-                  
-                  <Button
-                    size="lg"
-                    onClick={handlePlayPause}
-                    className="bg-[oklch(0.75_0.18_85)] hover:bg-[oklch(0.80_0.20_85)] text-background border-4 border-[oklch(0.85_0.20_85)] w-16 h-16 shadow-lg"
-                  >
-                    {isPlaying ? (
-                      <Pause size={32} weight="fill" />
-                    ) : (
-                      <Play size={32} weight="fill" />
-                    )}
-                  </Button>
-
-                  <Button
-                    size="lg"
-                    onClick={handleNext}
-                    className="bg-white/20 hover:bg-white/30 text-white border-2 border-white/40 w-14 h-14"
-                  >
-                    <SkipForward size={24} weight="fill" />
-                  </Button>
-                </div>
-
-                <div className="flex items-center justify-center gap-3 mt-4 bg-white/10 backdrop-blur rounded-lg py-3 px-4">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setIsMuted(!isMuted)}
-                    className="text-white hover:bg-white/20"
-                  >
-                    {isMuted ? (
-                      <SpeakerSlash size={24} weight="fill" />
-                    ) : (
-                      <SpeakerHigh size={24} weight="fill" />
-                    )}
-                  </Button>
-                  <input
-                    type="range"
-                    min="0"
-                    max="1"
-                    step="0.1"
-                    value={volume}
-                    onChange={(e) => setVolume(parseFloat(e.target.value))}
-                    className="w-32 h-2 bg-white/30 rounded-lg appearance-none cursor-pointer accent-[oklch(0.75_0.18_85)]"
-                  />
-                  <span className="text-white font-bold min-w-[3rem] text-right text-sm">
-                    {Math.round(volume * 100)}%
-                  </span>
+          <Card className="p-4 sm:p-6 bg-gradient-to-br from-[oklch(0.58_0.24_330)] to-[oklch(0.70_0.24_190)] border-2 border-[oklch(0.75_0.18_85)] flex-shrink-0">
+            <div className="text-center space-y-2 sm:space-y-4">
+              <div className="text-3xl sm:text-5xl">🎮</div>
+              <div>
+                <h3 className="text-base sm:text-xl font-bold text-white pixel-font mb-1 sm:mb-2 leading-tight">
+                  {currentSong.name}
+                </h3>
+                <div className={`inline-block px-2 sm:px-4 py-0.5 sm:py-1 rounded-lg ${getLevelColor(currentSong.level)} text-background font-bold text-xs sm:text-sm`}>
+                  {currentSong.level}
                 </div>
               </div>
-            </Card>
 
-            <div className="space-y-3 pb-2">
-              <h4 className="font-bold text-lg pixel-font text-[oklch(0.75_0.18_85)]">🎼 PLAYLIST</h4>
-              
-              {MARIO_SONGS.map((song) => (
-                <Card
-                  key={song.id}
-                  className={`p-3 cursor-pointer transition-all hover:scale-[1.01] ${
-                    currentSong.id === song.id
-                      ? 'bg-[oklch(0.75_0.18_85)] text-background border-2 border-[oklch(0.80_0.20_85)] shadow-lg'
-                      : 'bg-card hover:bg-muted border border-border'
-                  }`}
-                  onClick={() => handleSongSelect(song)}
+              {clickSpeed === 'fast' && (
+                <Badge className="bg-[oklch(0.58_0.24_330)] text-white text-xs sm:text-sm px-2 sm:px-3 py-0.5 sm:py-1">
+                  ⚡ Fast Mode Active
+                </Badge>
+              )}
+
+              <div className="flex items-center justify-center gap-2 sm:gap-4 mt-3 sm:mt-6">
+                <Button
+                  size="lg"
+                  onClick={handlePrevious}
+                  className="bg-white/20 hover:bg-white/30 text-white border-2 border-white/40 w-12 h-12 sm:w-14 sm:h-14 p-0"
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-1 flex-1">
-                      <div className="font-bold text-base">{song.name}</div>
-                      <div className={`text-xs ${currentSong.id === song.id ? 'text-background/80' : 'text-muted-foreground'}`}>
-                        {song.level}
-                        {song.tempo === 'fast' && ' ⚡'}
-                        {song.tempo === 'star' && ' ⭐'}
-                      </div>
-                    </div>
-                    {currentSong.id === song.id && isPlaying && (
-                      <div className="flex gap-1 items-end h-5">
-                        <div className="w-1 bg-background animate-pulse" style={{ animationDelay: '0ms', height: '60%' }}></div>
-                        <div className="w-1 bg-background animate-pulse" style={{ animationDelay: '150ms', height: '100%' }}></div>
-                        <div className="w-1 bg-background animate-pulse" style={{ animationDelay: '300ms', height: '80%' }}></div>
-                        <div className="w-1 bg-background animate-pulse" style={{ animationDelay: '450ms', height: '40%' }}></div>
-                      </div>
-                    )}
-                  </div>
-                </Card>
-              ))}
+                  <SkipBack size={20} className="sm:w-6 sm:h-6" weight="fill" />
+                </Button>
+                
+                <Button
+                  size="lg"
+                  onClick={handlePlayPause}
+                  className="bg-[oklch(0.75_0.18_85)] hover:bg-[oklch(0.80_0.20_85)] text-background border-4 border-[oklch(0.85_0.20_85)] w-14 h-14 sm:w-16 sm:h-16 shadow-lg p-0"
+                >
+                  {isPlaying ? (
+                    <Pause size={24} className="sm:w-8 sm:h-8" weight="fill" />
+                  ) : (
+                    <Play size={24} className="sm:w-8 sm:h-8" weight="fill" />
+                  )}
+                </Button>
+
+                <Button
+                  size="lg"
+                  onClick={handleNext}
+                  className="bg-white/20 hover:bg-white/30 text-white border-2 border-white/40 w-12 h-12 sm:w-14 sm:h-14 p-0"
+                >
+                  <SkipForward size={20} className="sm:w-6 sm:h-6" weight="fill" />
+                </Button>
+              </div>
+
+              <div className="flex items-center justify-center gap-2 sm:gap-3 mt-3 sm:mt-4 bg-white/10 backdrop-blur rounded-lg py-2 sm:py-3 px-3 sm:px-4">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsMuted(!isMuted)}
+                  className="text-white hover:bg-white/20 h-8 w-8 sm:h-10 sm:w-10 p-0"
+                >
+                  {isMuted ? (
+                    <SpeakerSlash size={20} className="sm:w-6 sm:h-6" weight="fill" />
+                  ) : (
+                    <SpeakerHigh size={20} className="sm:w-6 sm:h-6" weight="fill" />
+                  )}
+                </Button>
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.1"
+                  value={volume}
+                  onChange={(e) => setVolume(parseFloat(e.target.value))}
+                  className="w-20 sm:w-32 h-2 bg-white/30 rounded-lg appearance-none cursor-pointer accent-[oklch(0.75_0.18_85)]"
+                />
+                <span className="text-white font-bold min-w-[2.5rem] sm:min-w-[3rem] text-right text-xs sm:text-sm">
+                  {Math.round(volume * 100)}%
+                </span>
+              </div>
             </div>
+          </Card>
+
+          <div className="space-y-2 sm:space-y-3 pb-2 overflow-y-auto flex-1 pr-1 sm:pr-2">
+            <h4 className="font-bold text-sm sm:text-lg pixel-font text-[oklch(0.75_0.18_85)] sticky top-0 bg-card z-10 py-1">🎼 PLAYLIST</h4>
+            
+            {MARIO_SONGS.map((song) => (
+              <Card
+                key={song.id}
+                className={`p-2 sm:p-3 cursor-pointer transition-all hover:scale-[1.01] ${
+                  currentSong.id === song.id
+                    ? 'bg-[oklch(0.75_0.18_85)] text-background border-2 border-[oklch(0.80_0.20_85)] shadow-lg'
+                    : 'bg-card hover:bg-muted border border-border'
+                }`}
+                onClick={() => handleSongSelect(song)}
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <div className="space-y-0.5 sm:space-y-1 flex-1 min-w-0">
+                    <div className="font-bold text-sm sm:text-base truncate">{song.name}</div>
+                    <div className={`text-[10px] sm:text-xs ${currentSong.id === song.id ? 'text-background/80' : 'text-muted-foreground'}`}>
+                      {song.level}
+                      {song.tempo === 'fast' && ' ⚡'}
+                      {song.tempo === 'star' && ' ⭐'}
+                    </div>
+                  </div>
+                  {currentSong.id === song.id && isPlaying && (
+                    <div className="flex gap-0.5 sm:gap-1 items-end h-4 sm:h-5 flex-shrink-0">
+                      <div className="w-0.5 sm:w-1 bg-background animate-pulse" style={{ animationDelay: '0ms', height: '60%' }}></div>
+                      <div className="w-0.5 sm:w-1 bg-background animate-pulse" style={{ animationDelay: '150ms', height: '100%' }}></div>
+                      <div className="w-0.5 sm:w-1 bg-background animate-pulse" style={{ animationDelay: '300ms', height: '80%' }}></div>
+                      <div className="w-0.5 sm:w-1 bg-background animate-pulse" style={{ animationDelay: '450ms', height: '40%' }}></div>
+                    </div>
+                  )}
+                </div>
+              </Card>
+            ))}
           </div>
         </div>
 
