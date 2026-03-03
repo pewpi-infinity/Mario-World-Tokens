@@ -258,7 +258,7 @@ export function MarioJukebox({ open, onClose, initialLevel }: MarioJukeboxProps)
       }
 
       const newSong: Song = {
-        id: `custom-${Date.now()}`,
+        id: crypto.randomUUID(),
         name: songName,
         level: 'Custom',
         url: songUrl,
@@ -313,7 +313,7 @@ export function MarioJukebox({ open, onClose, initialLevel }: MarioJukeboxProps)
     }
 
     if (lower.includes('search') || lower.includes('info') || lower.includes('about')) {
-      const prompt = window.spark.llmPrompt`Find the best available version of the requested Mario-related music from Internet Archive for: ${message}. Prioritize archive.org links with high quality or complete tracks. Return a concise response with one best link and a short reason it's the best option.`
+      const prompt = window.spark.llmPrompt`Find the best available version of the requested Mario-related music from Internet Archive for: ${message}. Prioritize archive.org links with high quality or complete tracks. Return a concise response with one best link and a short reason it's the best option. If no suitable archive.org result exists, clearly say that and provide the next best reliable source.`
       
       try {
         const response = await window.spark.llm(prompt, 'gpt-4o-mini')

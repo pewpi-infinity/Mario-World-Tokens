@@ -408,6 +408,7 @@ function App() {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button
+            aria-label="Jukebox menu"
             className="fixed bottom-6 right-6 w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center transition-all cursor-pointer overflow-hidden z-50 animate-bounce"
             style={{
               background: 'linear-gradient(135deg, oklch(0.75 0.18 85) 0%, oklch(0.70 0.16 80) 100%)',
@@ -426,7 +427,7 @@ function App() {
             🎧 Open Mario Jukebox
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => window.open('https://pewpi-infinity.github.io/smug_look/mario-jukebox.html', '_blank', 'noopener,noreferrer')}>
-            🍔 Open Classic Jukebox Page
+            🔗 Open Classic Jukebox Page
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
