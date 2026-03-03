@@ -60,6 +60,20 @@ const NES_GAME_PRESETS: NESGamePreset[] = [
     repoFullName: 'nesdoug/26_Metroidvania',
     researchLinks: ['https://en.wikipedia.org/wiki/Metroid_(video_game)', 'https://www.mobygames.com/game/1308/metroid/'],
     romEmbedUrl: 'https://www.retrogames.cc/embed/9386-metroid.html'
+  },
+  {
+    id: 'smw',
+    title: 'Super Mario World (SNES)',
+    repoFullName: 'snes9xgit/snes9x',
+    researchLinks: ['https://en.wikipedia.org/wiki/Super_Mario_World', 'https://www.mobygames.com/game/663/super-mario-world/'],
+    romEmbedUrl: 'https://www.retrogames.cc/embed/44986-super-mario-world.html'
+  },
+  {
+    id: 'sf2',
+    title: 'Street Fighter II (Arcade)',
+    repoFullName: 'mamedev/mame',
+    researchLinks: ['https://en.wikipedia.org/wiki/Street_Fighter_II', 'https://www.mobygames.com/game/142/street-fighter-ii-the-world-warrior/'],
+    romEmbedUrl: 'https://www.retrogames.cc/embed/9988-street-fighter-ii-the-world-warrior-910306-usa.html'
   }
 ]
 const JUMP_KEY = ' '
@@ -409,7 +423,7 @@ Provide helpful, specific guidance related to game building, emulators, and Mari
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="w-[99vw] max-w-6xl h-[96vh] max-h-[96vh] overflow-y-auto overflow-x-hidden p-3 sm:p-6">
+      <DialogContent className="w-[95vw] max-w-6xl h-[96vh] max-h-[96vh] overflow-y-auto overflow-x-hidden p-3 sm:p-6">
         <DialogHeader>
           <DialogTitle className="text-2xl pixel-font flex items-center gap-2">
             <GameController size={28} weight="fill" className="text-[oklch(0.75_0.18_85)]" />

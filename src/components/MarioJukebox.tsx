@@ -105,9 +105,13 @@ export function MarioJukebox({ open, onClose, initialLevel }: MarioJukeboxProps)
 
   useEffect(() => {
     if (open) {
+      const defaultSong = initialLevel
+        ? songs.find(song => song.level === initialLevel) ?? MARIO_SONGS[0]
+        : MARIO_SONGS[0]
+      setCurrentSong(defaultSong)
       setIsPlaying(true)
     }
-  }, [open])
+  }, [open, initialLevel, songs])
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
