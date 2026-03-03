@@ -33,8 +33,8 @@ import marioImage from '@/assets/images/Screenshot_20260225-192747.png'
 function App() {
   const [coins, setCoins] = useKV<MarioCoin[]>('mario-coins', [])
   const [globalCoins, setGlobalCoins] = useKV<MarioCoin[]>('global-mario-coins', [])
-  const [, setUserResearchDictionary] = useKV<Record<string, string[]>>('user-research-dictionary', {})
-  const [, setTreasuryResearchNotes] = useKV<Record<string, string>>('treasury-research-notes', {})
+  const [userResearchDictionary, setUserResearchDictionary] = useKV<Record<string, string[]>>('user-research-dictionary', {})
+  const [treasuryResearchNotes, setTreasuryResearchNotes] = useKV<Record<string, string>>('treasury-research-notes', {})
   const [activeTab, setActiveTab] = useState('treasury')
   const [showMinting, setShowMinting] = useState(false)
   const [showMusicStudio, setShowMusicStudio] = useState(false)
@@ -56,6 +56,23 @@ function App() {
     playJump()
     setShowGameBuilder(true)
     toast.success('🕹️ Game Builder & Mario-3 Emulator activated!')
+  }
+
+  const exportTreasuryNotes = () => {
+    const payload = {
+      exportedAt: new Date().toISOString(),
+      tokenCount: (coins || []).length,
+      dictionary: userResearchDictionary || {},
+      notes: treasuryResearchNotes || {}
+    }
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const anchor = document.createElement('a')
+    anchor.href = url
+    anchor.download = 'treasury-notes.json'
+    anchor.click()
+    URL.revokeObjectURL(url)
+    toast.success('📁 Treasury notes exported for repository commit')
   }
 
   const activateAudioSystem = () => {
@@ -342,6 +359,9 @@ function App() {
           </Button>
           <Button onClick={activateAudioSystem} variant="secondary">
             🔊 Enable Sound & Music
+          </Button>
+          <Button onClick={exportTreasuryNotes} variant="outline">
+            💾 Export Treasury Notes
           </Button>
         </div>
 
