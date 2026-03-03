@@ -3,6 +3,7 @@ import { useKV } from '@github/spark/hooks'
 import { TabsContent } from '@/components/ui/tabs'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Coins } from '@phosphor-icons/react'
 import { MintingInterface } from '@/components/MintingInterface'
 import { WalletBalance } from '@/components/WalletBalance'
@@ -404,18 +405,32 @@ function App() {
         onClose={() => setShowJukebox(false)}
       />
 
-      <button
-        onClick={() => setShowJukebox(true)}
-        className="fixed bottom-6 right-6 w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center transition-all cursor-pointer overflow-hidden z-50 animate-bounce"
-        style={{
-          background: 'linear-gradient(135deg, oklch(0.75 0.18 85) 0%, oklch(0.70 0.16 80) 100%)',
-          borderRadius: '8px',
-          boxShadow: '0 6px 0 oklch(0.55 0.14 75), 0 8px 20px oklch(0 0 0 / 0.3)',
-          border: '3px solid oklch(0.85 0.20 85)',
-        }}
-      >
-        <span className="text-4xl sm:text-5xl">❓</span>
-      </button>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button
+            aria-label="Jukebox menu"
+            className="fixed bottom-6 right-6 w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center transition-all cursor-pointer overflow-hidden z-50 animate-bounce"
+            style={{
+              background: 'linear-gradient(135deg, oklch(0.75 0.18 85) 0%, oklch(0.70 0.16 80) 100%)',
+              borderRadius: '8px',
+              boxShadow: '0 6px 0 oklch(0.55 0.14 75), 0 8px 20px oklch(0 0 0 / 0.3)',
+              border: '3px solid oklch(0.85 0.20 85)',
+            }}
+          >
+            <span className="text-3xl sm:text-4xl">☰</span>
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-60">
+          <DropdownMenuLabel>Jukebox</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={() => setShowJukebox(true)}>
+            🎧 Open Mario Jukebox
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => window.open('https://pewpi-infinity.github.io/smug_look/mario-jukebox.html', '_blank', 'noopener,noreferrer')}>
+            🔗 Open Classic Jukebox Page
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
 
       <Toaster />
       

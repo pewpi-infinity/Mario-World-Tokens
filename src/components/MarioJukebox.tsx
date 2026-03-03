@@ -48,6 +48,7 @@ interface MarioJukeboxProps {
 }
 
 export function MarioJukebox({ open, onClose, initialLevel }: MarioJukeboxProps) {
+  const [songs, setSongs] = useState<Song[]>(MARIO_SONGS)
   const [currentSong, setCurrentSong] = useState<Song>(MARIO_SONGS[0])
   const [isPlaying, setIsPlaying] = useState(false)
   const [isMuted, setIsMuted] = useState(false)
@@ -95,12 +96,18 @@ export function MarioJukebox({ open, onClose, initialLevel }: MarioJukeboxProps)
 
   useEffect(() => {
     if (initialLevel) {
-      const levelSong = MARIO_SONGS.find(s => s.level === initialLevel)
+      const levelSong = songs.find(s => s.level === initialLevel)
       if (levelSong) {
         setCurrentSong(levelSong)
       }
     }
-  }, [initialLevel])
+  }, [initialLevel, songs])
+
+  useEffect(() => {
+    if (open) {
+      setIsPlaying(true)
+    }
+  }, [open])
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -234,6 +241,35 @@ export function MarioJukebox({ open, onClose, initialLevel }: MarioJukeboxProps)
       }
     }
 
+    const urlMatch = message.match(/https?:\/\/\S+/i)
+    if (urlMatch && (lower.includes('add song') || lower.includes('add track') || lower.includes('add music'))) {
+      const songUrl = urlMatch[0]
+      const cleanedName = message
+        .replace(/https?:\/\/\S+/i, '')
+        .replace(/add\s+(song|track|music)\s*/i, '')
+        .trim()
+      const songName = cleanedName || `Custom Track ${songs.length + 1}`
+      const existingSong = songs.find(s => s.url === songUrl)
+
+      if (existingSong) {
+        setCurrentSong(existingSong)
+        setIsPlaying(true)
+        return `🎵 "${existingSong.name}" is already in your playlist. Playing it now!`
+      }
+
+      const newSong: Song = {
+        id: crypto.randomUUID(),
+        name: songName,
+        level: 'Custom',
+        url: songUrl,
+        tempo: 'normal'
+      }
+      setSongs((prev) => [...prev, newSong])
+      setCurrentSong(newSong)
+      setIsPlaying(true)
+      return `✅ Added "${songName}" to the playlist and started playback.`
+    }
+
     if (lower.includes('pause') || lower.includes('stop')) {
       setIsPlaying(false)
       return `⏸️ Music paused.`
@@ -272,12 +308,12 @@ export function MarioJukebox({ open, onClose, initialLevel }: MarioJukeboxProps)
     }
 
     if (lower.includes('list') || lower.includes('playlist') || lower.includes('songs')) {
-      const songList = MARIO_SONGS.map((s, i) => `${i + 1}. ${s.name} (${s.level})`).join('\n')
+      const songList = songs.map((s, i) => `${i + 1}. ${s.name} (${s.level})`).join('\n')
       return `🎼 Available songs:\n${songList}\n\nJust tell me which one to play!`
     }
 
     if (lower.includes('search') || lower.includes('info') || lower.includes('about')) {
-      const prompt = window.spark.llmPrompt`Search the internet for information about: ${message}. Provide a concise, interesting response with any relevant links or facts.`
+      const prompt = window.spark.llmPrompt`Find the best available version of the requested Mario-related music from Internet Archive for: ${message}. Prioritize archive.org links with high quality or complete tracks. Return a concise response with one best link and a short reason it's the best option. If no suitable archive.org result exists, clearly say that and provide the next best reliable source.`
       
       try {
         const response = await window.spark.llm(prompt, 'gpt-4o-mini')
@@ -293,7 +329,7 @@ Current context:
 - Currently playing: ${currentSong.name} (${currentSong.level})
 - Is playing: ${isPlaying}
 - Volume: ${Math.round(volume * 100)}%
-- Available songs: ${MARIO_SONGS.map(s => s.name).join(', ')}
+- Available songs: ${songs.map(s => s.name).join(', ')}
 - User click speed: ${clickSpeed}
 
 Respond naturally and helpfully. You can:
@@ -365,20 +401,20 @@ Keep your response friendly and concise (2-3 sentences max).`
   }
 
   const handleNext = () => {
-    const currentIndex = MARIO_SONGS.findIndex(s => s.id === currentSong.id)
-    const nextIndex = (currentIndex + 1) % MARIO_SONGS.length
-    setCurrentSong(MARIO_SONGS[nextIndex])
-    trackUserAction('next', MARIO_SONGS[nextIndex].name)
+    const currentIndex = songs.findIndex(s => s.id === currentSong.id)
+    const nextIndex = (currentIndex + 1) % songs.length
+    setCurrentSong(songs[nextIndex])
+    trackUserAction('next', songs[nextIndex].name)
     if (open) {
       setIsPlaying(true)
     }
   }
 
   const handlePrevious = () => {
-    const currentIndex = MARIO_SONGS.findIndex(s => s.id === currentSong.id)
-    const prevIndex = currentIndex === 0 ? MARIO_SONGS.length - 1 : currentIndex - 1
-    setCurrentSong(MARIO_SONGS[prevIndex])
-    trackUserAction('previous', MARIO_SONGS[prevIndex].name)
+    const currentIndex = songs.findIndex(s => s.id === currentSong.id)
+    const prevIndex = currentIndex === 0 ? songs.length - 1 : currentIndex - 1
+    setCurrentSong(songs[prevIndex])
+    trackUserAction('previous', songs[prevIndex].name)
     if (open) {
       setIsPlaying(true)
     }
@@ -404,7 +440,7 @@ Keep your response friendly and concise (2-3 sentences max).`
   }
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
+    <Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && onClose()}>
       <DialogContent className="max-w-[98vw] sm:max-w-4xl h-[95vh] sm:max-h-[90vh] overflow-hidden bg-card border-4 border-[oklch(0.75_0.18_85)] flex flex-col p-3 sm:p-6">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle className="text-lg sm:text-2xl pixel-font text-[oklch(0.75_0.18_85)] text-center">
@@ -571,7 +607,7 @@ Keep your response friendly and concise (2-3 sentences max).`
           <div className="space-y-2 sm:space-y-3 pb-2 overflow-y-auto flex-1 pr-1 sm:pr-2">
             <h4 className="font-bold text-sm sm:text-lg pixel-font text-[oklch(0.75_0.18_85)] sticky top-0 bg-card z-10 py-1">🎼 PLAYLIST</h4>
             
-            {MARIO_SONGS.map((song) => (
+            {songs.map((song) => (
               <Card
                 key={song.id}
                 className={`p-2 sm:p-3 cursor-pointer transition-all hover:scale-[1.01] ${
