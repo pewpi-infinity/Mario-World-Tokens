@@ -19,11 +19,17 @@ const SOUND_EFFECTS: SoundEffect[] = [
   { id: 'coin', name: 'Mario Coin', emoji: '🪙', category: 'mario', frequency: 1000, type: 'square', duration: 0.1 },
   { id: 'jump', name: 'Jump', emoji: '⬆️', category: 'mario', frequency: 600, type: 'square', duration: 0.15 },
   { id: 'powerup', name: 'Power Up', emoji: '🍄', category: 'mario', frequency: 523, type: 'square', duration: 0.5 },
-  { id: 'pipe', name: 'Pipe', emoji: '🟢', category: 'mario', frequency: 392, type: 'sine', duration: 0.3 },
-  { id: '1up', name: '1-UP', emoji: '⭐', category: 'mario', frequency: 880, type: 'square', duration: 0.4 },
+  { id: 'pipe', name: 'Pipe Warp', emoji: '🟢', category: 'mario', frequency: 392, type: 'sine', duration: 0.6 },
+  { id: '1up', name: '1-UP', emoji: '⭐', category: 'mario', frequency: 880, type: 'square', duration: 0.8 },
   { id: 'stomp', name: 'Enemy Stomp', emoji: '👞', category: 'mario', frequency: 200, type: 'sawtooth', duration: 0.1 },
   { id: 'fireball', name: 'Fireball', emoji: '🔥', category: 'mario', frequency: 800, type: 'triangle', duration: 0.2 },
   { id: 'star', name: 'Star Power', emoji: '🌟', category: 'mario', frequency: 1200, type: 'square', duration: 0.3 },
+  { id: 'gameover', name: 'Game Over', emoji: '💀', category: 'mario', frequency: 196, type: 'square', duration: 1.2 },
+  { id: 'flagpole', name: 'Flagpole', emoji: '🚩', category: 'mario', frequency: 659, type: 'square', duration: 0.7 },
+  { id: 'brick', name: 'Brick Break', emoji: '🧱', category: 'mario', frequency: 330, type: 'square', duration: 0.15 },
+  { id: 'block', name: 'Block Hit', emoji: '❓', category: 'mario', frequency: 880, type: 'square', duration: 0.12 },
+  { id: 'peach', name: 'Princess Saved', emoji: '👸', category: 'mario', frequency: 1046, type: 'square', duration: 0.9 },
+  { id: 'bowser', name: 'Bowser Fall', emoji: '🐉', category: 'mario', frequency: 165, type: 'sawtooth', duration: 0.8 },
   
   { id: 'beep', name: 'Beep', emoji: '📟', category: 'retro', frequency: 440, type: 'sine', duration: 0.1 },
   { id: 'bloop', name: 'Bloop', emoji: '💧', category: 'retro', frequency: 220, type: 'sine', duration: 0.15 },
@@ -33,6 +39,10 @@ const SOUND_EFFECTS: SoundEffect[] = [
   { id: 'select', name: 'Menu Select', emoji: '📋', category: 'retro', frequency: 660, type: 'square', duration: 0.08 },
   { id: 'error', name: 'Error', emoji: '❌', category: 'retro', frequency: 150, type: 'sawtooth', duration: 0.25 },
   { id: 'success', name: 'Success', emoji: '✅', category: 'retro', frequency: 1000, type: 'sine', duration: 0.3 },
+  { id: 'warp', name: 'Warp Zone', emoji: '🌀', category: 'retro', frequency: 440, type: 'sine', duration: 0.5 },
+  { id: 'levelup', name: 'Level Up', emoji: '📈', category: 'retro', frequency: 1318, type: 'square', duration: 0.6 },
+  { id: 'pause', name: 'Pause', emoji: '⏸️', category: 'retro', frequency: 587, type: 'square', duration: 0.08 },
+  { id: 'boss', name: 'Boss Warning', emoji: '👾', category: 'retro', frequency: 110, type: 'sawtooth', duration: 0.4 },
   
   { id: 'blip', name: 'Blip', emoji: '🎯', category: 'ui', frequency: 523, type: 'sine', duration: 0.05 },
   { id: 'click', name: 'Click', emoji: '🖱️', category: 'ui', frequency: 880, type: 'square', duration: 0.03 },
@@ -53,20 +63,102 @@ export function SoundEffectsLibrary({ onSelectSound }: SoundEffectsLibraryProps)
   const playSound = (sound: SoundEffect) => {
     try {
       const audioContext = new AudioContext()
-      const oscillator = audioContext.createOscillator()
       const gainNode = audioContext.createGain()
-
-      oscillator.connect(gainNode)
       gainNode.connect(audioContext.destination)
 
-      oscillator.type = sound.type || 'sine'
-      oscillator.frequency.setValueAtTime(sound.frequency || 440, audioContext.currentTime)
-
-      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime)
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + (sound.duration || 0.2))
-
-      oscillator.start(audioContext.currentTime)
-      oscillator.stop(audioContext.currentTime + (sound.duration || 0.2))
+      if (sound.id === '1up') {
+        const notes = [
+          { freq: 659.25, time: 0, duration: 0.1 },
+          { freq: 1046.50, time: 0.125, duration: 0.1 },
+          { freq: 1318.51, time: 0.25, duration: 0.1 },
+          { freq: 1567.98, time: 0.375, duration: 0.1 },
+          { freq: 2093.00, time: 0.5, duration: 0.1 },
+          { freq: 1567.98, time: 0.625, duration: 0.1 },
+          { freq: 2093.00, time: 0.75, duration: 0.15 }
+        ]
+        notes.forEach(note => {
+          const osc = audioContext.createOscillator()
+          const noteGain = audioContext.createGain()
+          osc.connect(noteGain)
+          noteGain.connect(gainNode)
+          osc.type = 'square'
+          osc.frequency.setValueAtTime(note.freq, audioContext.currentTime + note.time)
+          noteGain.gain.setValueAtTime(0.15, audioContext.currentTime + note.time)
+          noteGain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + note.time + note.duration)
+          osc.start(audioContext.currentTime + note.time)
+          osc.stop(audioContext.currentTime + note.time + note.duration)
+        })
+      } else if (sound.id === 'pipe') {
+        const notes = [
+          { freq: 164.81, time: 0, duration: 0.15 },
+          { freq: 220.00, time: 0.15, duration: 0.15 },
+          { freq: 261.63, time: 0.3, duration: 0.15 },
+          { freq: 293.66, time: 0.45, duration: 0.15 }
+        ]
+        notes.forEach(note => {
+          const osc = audioContext.createOscillator()
+          const noteGain = audioContext.createGain()
+          osc.connect(noteGain)
+          noteGain.connect(gainNode)
+          osc.type = 'sine'
+          osc.frequency.setValueAtTime(note.freq, audioContext.currentTime + note.time)
+          noteGain.gain.setValueAtTime(0.2, audioContext.currentTime + note.time)
+          noteGain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + note.time + note.duration)
+          osc.start(audioContext.currentTime + note.time)
+          osc.stop(audioContext.currentTime + note.time + note.duration)
+        })
+      } else if (sound.id === 'gameover') {
+        const notes = [
+          { freq: 523.25, time: 0, duration: 0.15 },
+          { freq: 493.88, time: 0.15, duration: 0.15 },
+          { freq: 466.16, time: 0.3, duration: 0.15 },
+          { freq: 440.00, time: 0.45, duration: 0.15 },
+          { freq: 392.00, time: 0.6, duration: 0.15 },
+          { freq: 349.23, time: 0.75, duration: 0.15 },
+          { freq: 329.63, time: 0.9, duration: 0.3 }
+        ]
+        notes.forEach(note => {
+          const osc = audioContext.createOscillator()
+          const noteGain = audioContext.createGain()
+          osc.connect(noteGain)
+          noteGain.connect(gainNode)
+          osc.type = 'square'
+          osc.frequency.setValueAtTime(note.freq, audioContext.currentTime + note.time)
+          noteGain.gain.setValueAtTime(0.15, audioContext.currentTime + note.time)
+          noteGain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + note.time + note.duration)
+          osc.start(audioContext.currentTime + note.time)
+          osc.stop(audioContext.currentTime + note.time + note.duration)
+        })
+      } else if (sound.id === 'flagpole') {
+        const notes = [
+          { freq: 392.00, time: 0, duration: 0.08 },
+          { freq: 523.25, time: 0.1, duration: 0.08 },
+          { freq: 659.25, time: 0.2, duration: 0.08 },
+          { freq: 783.99, time: 0.3, duration: 0.08 },
+          { freq: 1046.50, time: 0.4, duration: 0.3 }
+        ]
+        notes.forEach(note => {
+          const osc = audioContext.createOscillator()
+          const noteGain = audioContext.createGain()
+          osc.connect(noteGain)
+          noteGain.connect(gainNode)
+          osc.type = 'square'
+          osc.frequency.setValueAtTime(note.freq, audioContext.currentTime + note.time)
+          noteGain.gain.setValueAtTime(0.15, audioContext.currentTime + note.time)
+          noteGain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + note.time + note.duration)
+          osc.start(audioContext.currentTime + note.time)
+          osc.stop(audioContext.currentTime + note.time + note.duration)
+        })
+      } else {
+        const oscillator = audioContext.createOscillator()
+        oscillator.connect(gainNode)
+        oscillator.type = sound.type || 'sine'
+        oscillator.frequency.setValueAtTime(sound.frequency || 440, audioContext.currentTime)
+        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime)
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + (sound.duration || 0.2))
+        oscillator.start(audioContext.currentTime)
+        oscillator.stop(audioContext.currentTime + (sound.duration || 0.2))
+      }
 
       setPlaying(sound.id)
       setTimeout(() => setPlaying(null), (sound.duration || 0.2) * 1000)
