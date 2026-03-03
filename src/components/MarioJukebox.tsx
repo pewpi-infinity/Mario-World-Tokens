@@ -101,10 +101,12 @@ export function MarioJukebox({ open, onClose, initialLevel }: MarioJukeboxProps)
         playPromise
           .then(() => {
             console.log('🎵 Jukebox playing:', currentSong.name)
+            toast.success('🎵 Now Playing', { description: currentSong.name })
           })
           .catch((error) => {
             console.error('❌ Jukebox play failed:', error.message)
             setIsPlaying(false)
+            toast.error('Audio playback failed', { description: 'Click play to try again' })
           })
       }
     } else if (!open && audio) {
@@ -303,6 +305,7 @@ Keep your response friendly and concise (2-3 sentences max).`
     if (isPlaying) {
       audioRef.current.pause()
       setIsPlaying(false)
+      toast.info('⏸️ Paused', { description: currentSong.name })
     } else {
       const playPromise = audioRef.current.play()
       if (playPromise !== undefined) {
@@ -313,6 +316,7 @@ Keep your response friendly and concise (2-3 sentences max).`
           .catch((error) => {
             console.error('Play failed:', error)
             setIsPlaying(false)
+            toast.error('Playback failed', { description: 'Please try again or select another song' })
           })
       }
     }
