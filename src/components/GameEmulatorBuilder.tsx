@@ -13,10 +13,23 @@ interface GameEmulatorBuilderProps {
   onClose: () => void
 }
 
+interface GitHubRepoResponse {
+  full_name: string
+  stargazers_count: number
+}
+
+const githubRepoOwner = 'fhd'
+const githubRepoName = 'mongoose.os'
+const githubRepoFullName = `${githubRepoOwner}/${githubRepoName}`
+
+function isGitHubRepoResponse(value: unknown): value is GitHubRepoResponse {
+  return !!value
+    && typeof value === 'object'
+    && typeof (value as GitHubRepoResponse).full_name === 'string'
+    && typeof (value as GitHubRepoResponse).stargazers_count === 'number'
+}
+
 export function GameEmulatorBuilder({ open, onClose }: GameEmulatorBuilderProps) {
-  const githubRepoOwner = 'fhd'
-  const githubRepoName = 'mongoose.os'
-  const githubRepoFullName = `${githubRepoOwner}/${githubRepoName}`
   const [gameState, setGameState] = useState({
     marioX: 100,
     marioY: 300,
@@ -167,13 +180,22 @@ export function GameEmulatorBuilder({ open, onClose }: GameEmulatorBuilderProps)
     })
 
     fetch(`https://api.github.com/repos/${githubRepoFullName}`)
-      .then(async (response) => {
+      .then((response) => {
         if (!response.ok) {
+          const remainingHeader = response.headers.get('X-RateLimit-Remaining')
+          const remainingRateLimit = remainingHeader === null ? null : Number(remainingHeader)
+          if (response.status === 403 && remainingRateLimit !== null && remainingRateLimit <= 0) {
+            throw new Error('GitHub API rate limit exceeded. Please try again later.')
+          }
           throw new Error(`GitHub API returned ${response.status}`)
         }
-        return response.json() as Promise<{ full_name: string, stargazers_count: number }>
+        return response.json() as Promise<unknown>
       })
       .then((repo) => {
+        if (!isGitHubRepoResponse(repo)) {
+          throw new Error('GitHub API returned unexpected repository data')
+        }
+
         toast.success('GitHub Integration Ready!', {
           description: `${repo.full_name} loaded • ⭐ ${repo.stargazers_count}`
         })
