@@ -49,7 +49,7 @@ function App() {
       case 'ledger':
         return 'Global Ledger - viewing all transactions across the system'
       default:
-        return 'Federal Reserve Mario - main dashboard'
+        return 'Mario World Tokens - main dashboard'
     }
   }
 
@@ -181,7 +181,7 @@ function App() {
             </div>
             <div className="min-w-0">
               <h1 className="text-sm sm:text-xl md:text-3xl font-bold text-white drop-shadow-lg pixel-font leading-tight">
-                FEDERAL RESERVE MARIO
+                MARIO WORLD TOKENS
               </h1>
               <p className="text-xs sm:text-sm md:text-base text-[oklch(0.75_0.18_85)] font-semibold drop-shadow truncate">
                 People's Treasury 🪙
