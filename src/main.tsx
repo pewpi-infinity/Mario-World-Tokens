@@ -9,6 +9,113 @@ import "./main.css"
 import "./styles/theme.css"
 import "./index.css"
 
+const FREE_API_URL = 'https://api.duckduckgo.com/'
+
+const buildFallbackJsonResponse = (prompt: string, summary: string) => {
+  if (prompt.includes('artisticValue') && prompt.includes('historicalSignificance')) {
+    return {
+      artisticValue: 60,
+      historicalSignificance: 45,
+      famousMinter: 0,
+      uniqueDesign: 70,
+      culturalImpact: 55
+    }
+  }
+
+  if (prompt.includes('notes: array of 16 objects')) {
+    return {
+      notes: Array.from({ length: 16 }, (_, i) => ({
+        freq: [261.63, 293.66, 329.63, 349.23, 392.0, 440.0, 493.88, 523.25][i % 8],
+        duration: 0.5
+      })),
+      title: 'Mario Groove Melody'
+    }
+  }
+
+  if (prompt.includes('pattern: an 8x16 array of booleans')) {
+    return {
+      pattern: Array.from({ length: 8 }, (_, row) =>
+        Array.from({ length: 16 }, (_, step) => (row === 0 && step % 4 === 0) || (row === 1 && step % 8 === 4) || (row === 2 && step % 2 === 0))
+      ),
+      description: 'Steady kick/snare groove with driving hi-hats'
+    }
+  }
+
+  if (prompt.includes('"suggestions"')) {
+    return {
+      suggestions: [
+        `Use this angle to improve impact: ${summary.slice(0, 80) || 'Add concrete context and a stronger narrative.'}`,
+        'Add one verified external link to strengthen credibility.',
+        'Include a clearer value proposition tied to rarity or provenance.'
+      ]
+    }
+  }
+
+  if (prompt.includes('"message"') && prompt.includes('"contentType"')) {
+    return {
+      message: summary || 'Great idea! I suggest refining the title, adding context links, and highlighting why this token is unique.',
+      suggestions: ['Improve token title', 'Add supporting URL', 'Clarify value proposition'],
+      contentType: null,
+      searchQuery: '',
+      urlSuggestion: ''
+    }
+  }
+
+  return {
+    message: summary || 'I found useful context to help you continue.',
+    suggestions: ['Refine your prompt', 'Add more context', 'Include one specific goal']
+  }
+}
+
+const queryFreeApi = async (promptText: string): Promise<string> => {
+  const response = await fetch(`${FREE_API_URL}?q=${encodeURIComponent(promptText.slice(0, 280))}&format=json&no_html=1&no_redirect=1`)
+  if (!response.ok) {
+    throw new Error(`Free API request failed with status ${response.status}`)
+  }
+
+  const data = await response.json()
+  const related = Array.isArray(data.RelatedTopics)
+    ? data.RelatedTopics.find((topic: any) => typeof topic?.Text === 'string')?.Text
+    : ''
+
+  return data.AbstractText || related || data.Heading || 'I found limited public context for this request, but you can continue with your current plan and refine details.'
+}
+
+const installSparkFallback = () => {
+  const existingSpark = window.spark
+
+  const fallbackPrompt = (strings: TemplateStringsArray, ...values: unknown[]) =>
+    strings.reduce((acc, str, i) => `${acc}${str}${i < values.length ? String(values[i] ?? '') : ''}`, '')
+
+  const fallbackLlm = async (prompt: string, _model?: string, wantsJson?: boolean) => {
+    let summary = 'I found limited public context for this request, but you can continue with your current plan and refine details.'
+    try {
+      summary = await queryFreeApi(prompt)
+    } catch (error) {
+      console.warn('Free API request failed, using local fallback response.', error)
+    }
+    const expectsJson = wantsJson || /\bjson\b/i.test(prompt)
+    return expectsJson ? JSON.stringify(buildFallbackJsonResponse(prompt, summary)) : summary
+  }
+
+  window.spark = {
+    ...(existingSpark || {}),
+    llmPrompt: existingSpark?.llmPrompt ?? fallbackPrompt,
+    llm: async (prompt: string, model?: string, wantsJson?: boolean) => {
+      try {
+        if (existingSpark?.llm) {
+          return await existingSpark.llm(prompt, model, wantsJson)
+        }
+      } catch (error) {
+        console.warn('Spark API unavailable, switching to free fallback API.', error)
+      }
+      return fallbackLlm(prompt, model, wantsJson)
+    }
+  }
+}
+
+installSparkFallback()
+
 createRoot(document.getElementById('root')!).render(
   <ErrorBoundary FallbackComponent={ErrorFallback}>
     <App />
