@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { GameController, Play, Pause, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, GithubLogo, Robot, PaperPlaneTilt, X } from '@phosphor-icons/react'
 import { toast } from 'sonner'
+import { playCoinSound } from '@/lib/sounds'
 
 interface GameEmulatorBuilderProps {
   open: boolean
@@ -24,6 +25,7 @@ interface NESGamePreset {
   title: string
   repoFullName: string
   researchLinks: string[]
+  romEmbedUrl: string
 }
 
 export interface ResearchTokenDraft {
@@ -42,19 +44,22 @@ const NES_GAME_PRESETS: NESGamePreset[] = [
     id: 'smb1',
     title: 'Super Mario Bros. (NES)',
     repoFullName: 'github/game-off-2023',
-    researchLinks: ['https://en.wikipedia.org/wiki/Super_Mario_Bros.', 'https://www.nintendo.com/us/store/products/nintendo-entertainment-system-nintendo-switch-online-switch/']
+    researchLinks: ['https://en.wikipedia.org/wiki/Super_Mario_Bros.', 'https://www.nintendo.com/us/store/products/nintendo-entertainment-system-nintendo-switch-online-switch/'],
+    romEmbedUrl: 'https://www.retrogames.cc/embed/10036-super-mario-bros.html'
   },
   {
     id: 'zelda1',
     title: 'The Legend of Zelda (NES)',
     repoFullName: 'openzelda/openzelda',
-    researchLinks: ['https://en.wikipedia.org/wiki/The_Legend_of_Zelda_(video_game)', 'https://www.nintendo.com/us/store/products/nintendo-entertainment-system-nintendo-switch-online-switch/']
+    researchLinks: ['https://en.wikipedia.org/wiki/The_Legend_of_Zelda_(video_game)', 'https://www.nintendo.com/us/store/products/nintendo-entertainment-system-nintendo-switch-online-switch/'],
+    romEmbedUrl: 'https://www.retrogames.cc/embed/9468-the-legend-of-zelda.html'
   },
   {
     id: 'metroid',
     title: 'Metroid (NES)',
     repoFullName: 'nesdoug/26_Metroidvania',
-    researchLinks: ['https://en.wikipedia.org/wiki/Metroid_(video_game)', 'https://www.mobygames.com/game/1308/metroid/']
+    researchLinks: ['https://en.wikipedia.org/wiki/Metroid_(video_game)', 'https://www.mobygames.com/game/1308/metroid/'],
+    romEmbedUrl: 'https://www.retrogames.cc/embed/9386-metroid.html'
   }
 ]
 const JUMP_KEY = ' '
@@ -73,6 +78,7 @@ function isGitHubRepoResponse(value: unknown): value is GitHubRepoResponse {
 
 export function GameEmulatorBuilder({ open, onClose, onCollectResearchToken }: GameEmulatorBuilderProps) {
   const [selectedGameId, setSelectedGameId] = useState(NES_GAME_PRESETS[0].id)
+  const [romEmbedUrl, setRomEmbedUrl] = useState(NES_GAME_PRESETS[0].romEmbedUrl)
   const [gameState, setGameState] = useState({
     marioX: 100,
     marioY: 300,
@@ -96,6 +102,9 @@ export function GameEmulatorBuilder({ open, onClose, onCollectResearchToken }: G
   const chatScrollRef = useRef<HTMLDivElement>(null)
   const previousCoinCountRef = useRef(0)
   const selectedGame = NES_GAME_PRESETS.find(game => game.id === selectedGameId) ?? NES_GAME_PRESETS[0]
+  useEffect(() => {
+    setRomEmbedUrl(selectedGame.romEmbedUrl)
+  }, [selectedGame.romEmbedUrl])
   const setVirtualKey = useCallback((key: string, isPressed: boolean) => {
     setKeys(prev => {
       const alreadyPressed = prev.has(key)
@@ -270,6 +279,7 @@ export function GameEmulatorBuilder({ open, onClose, onCollectResearchToken }: G
 
     setResearchFeed((prev) => [token, ...prev].slice(0, MAX_RESEARCH_FEED_SIZE))
     onCollectResearchToken?.(token)
+    playCoinSound()
     previousCoinCountRef.current = gameState.coins
     toast.success('🪙 Research token generated', {
       description: `${selectedGame.title} • Coin ${gameState.coins}`
@@ -298,6 +308,14 @@ export function GameEmulatorBuilder({ open, onClose, onCollectResearchToken }: G
     previousCoinCountRef.current = 0
     setIsPlaying(false)
     toast.info('Game Reset!')
+  }
+
+  const handleCoinCollected = () => {
+    setGameState((prev) => ({
+      ...prev,
+      coins: prev.coins + 1,
+      score: prev.score + 100
+    }))
   }
 
   const handleLoadFromGitHub = () => {
@@ -391,7 +409,7 @@ Provide helpful, specific guidance related to game building, emulators, and Mari
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="w-[95vw] max-w-6xl max-h-[90vh] overflow-y-auto overflow-x-hidden">
+      <DialogContent className="w-[99vw] max-w-6xl h-[96vh] max-h-[96vh] overflow-y-auto overflow-x-hidden p-3 sm:p-6">
         <DialogHeader>
           <DialogTitle className="text-2xl pixel-font flex items-center gap-2">
             <GameController size={28} weight="fill" className="text-[oklch(0.75_0.18_85)]" />
@@ -404,7 +422,30 @@ Provide helpful, specific guidance related to game building, emulators, and Mari
 
         <div className="grid md:grid-cols-3 gap-4 mt-4">
           <div className="md:col-span-2 space-y-4">
-            <Card className="p-4 bg-[oklch(0.15_0.02_280)] border-2 border-[oklch(0.75_0.18_85)]">
+            <Card className="p-2 sm:p-4 bg-[oklch(0.15_0.02_280)] border-2 border-[oklch(0.75_0.18_85)]">
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <p className="text-xs sm:text-sm text-[oklch(0.75_0.18_85)] font-semibold">REAL NES ROM PLAYER</p>
+                <Button size="sm" variant="outline" className="border-[oklch(0.75_0.18_85)] h-8 text-xs" onClick={handleCoinCollected}>
+                  Collect Coin
+                </Button>
+              </div>
+              <div className="mb-3 aspect-[4/3] overflow-hidden rounded-lg border border-[oklch(0.35_0.05_285)] bg-black">
+                <iframe
+                  title={`${selectedGame.title} NES Emulator`}
+                  src={romEmbedUrl}
+                  className="h-full w-full"
+                  allowFullScreen
+                  loading="lazy"
+                  sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+                />
+              </div>
+              <Input
+                value={romEmbedUrl}
+                onChange={(event) => setRomEmbedUrl(event.target.value)}
+                className="mb-3 bg-[oklch(0.15_0.02_280)] text-white border-[oklch(0.75_0.18_85)] text-xs sm:text-sm"
+                placeholder="Paste a legal NES embed URL"
+              />
+              <p className="mb-2 text-[10px] sm:text-xs text-[oklch(0.85_0.02_280)]">Tap Collect Coin when you collect a coin in the ROM to generate a research token.</p>
               <canvas
                 ref={canvasRef}
                 width={800}
@@ -448,21 +489,7 @@ Provide helpful, specific guidance related to game building, emulators, and Mari
             </div>
 
             <Card className="p-4 bg-gradient-to-br from-[oklch(0.22_0.03_285)] to-[oklch(0.15_0.02_280)] border-2 border-[oklch(0.75_0.18_85)]">
-              <h3 className="font-bold text-[oklch(0.75_0.18_85)] mb-2 text-sm pixel-font">CONTROLS</h3>
-              <div className="grid grid-cols-2 gap-2 text-xs text-white">
-                <div className="flex items-center gap-2">
-                  <div className="bg-[oklch(0.75_0.18_85)] text-[oklch(0.15_0.02_280)] px-2 py-1 rounded font-mono">←→</div>
-                  <span>or A/D - Move Left/Right</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="bg-[oklch(0.75_0.18_85)] text-[oklch(0.15_0.02_280)] px-2 py-1 rounded font-mono">↑</div>
-                  <span>or W/SPACE - Jump</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="bg-[oklch(0.75_0.18_85)] text-[oklch(0.15_0.02_280)] px-2 py-1 rounded font-mono">↓</div>
-                  <span>Fast Fall</span>
-                </div>
-              </div>
+              <h3 className="font-bold text-[oklch(0.75_0.18_85)] mb-2 text-sm pixel-font">TOUCH CONTROLS</h3>
               <div className="mt-4">
                 <p className="text-xs text-[oklch(0.75_0.18_85)] mb-2 font-semibold">ANDROID JOYSTICK</p>
                 <div className="flex items-center justify-between gap-4">
