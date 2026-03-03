@@ -28,11 +28,27 @@ export function GameEmulatorBuilder({ open, onClose }: GameEmulatorBuilderProps)
   const [aiMessages, setAIMessages] = useState<Array<{ type: 'user' | 'bot', content: string, timestamp: number }>>([])
   const [currentMessage, setCurrentMessage] = useState('')
   const [isAITyping, setIsAITyping] = useState(false)
+  const [isAndroid, setIsAndroid] = useState(false)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const animationRef = useRef<number>()
   const chatScrollRef = useRef<HTMLDivElement>(null)
+  const archiveMarioUrl = 'https://archive.org/details/super-mario-bros_202007'
+
+  const updateRemoteKey = (key: string, pressed: boolean) => {
+    setKeys(prev => {
+      const next = new Set(prev)
+      if (pressed) {
+        next.add(key)
+      } else {
+        next.delete(key)
+      }
+      return next
+    })
+  }
 
   useEffect(() => {
+    setIsAndroid(/Android/i.test(window.navigator.userAgent))
+
     const handleKeyDown = (e: KeyboardEvent) => {
       setKeys(prev => new Set(prev).add(e.key))
     }
@@ -164,9 +180,10 @@ export function GameEmulatorBuilder({ open, onClose }: GameEmulatorBuilderProps)
     })
     
     setTimeout(() => {
-      toast.success('GitHub Integration Ready!', {
-        description: 'Mario-3 game engine loaded'
+      toast.success('Mario preloaded from Internet Archive!', {
+        description: 'Opening ready-to-play Mario archive source'
       })
+      window.open(archiveMarioUrl, '_blank')
     }, 2000)
   }
 
@@ -229,7 +246,7 @@ Provide helpful, specific guidance related to game building, emulators, and Mari
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto bg-card border-4 border-[oklch(0.75_0.18_85)]">
         <DialogHeader>
           <DialogTitle className="text-2xl pixel-font flex items-center gap-2">
             <GameController size={28} weight="fill" className="text-[oklch(0.75_0.18_85)]" />
@@ -242,7 +259,7 @@ Provide helpful, specific guidance related to game building, emulators, and Mari
 
         <div className="grid md:grid-cols-3 gap-4 mt-4">
           <div className="md:col-span-2 space-y-4">
-            <Card className="p-4 bg-[oklch(0.15_0.02_280)] border-2 border-[oklch(0.75_0.18_85)]">
+            <Card className="p-4 bg-gradient-to-br from-[oklch(0.58_0.24_330)] to-[oklch(0.70_0.24_190)] border-2 border-[oklch(0.75_0.18_85)]">
               <canvas
                 ref={canvasRef}
                 width={800}
@@ -284,6 +301,55 @@ Provide helpful, specific guidance related to game building, emulators, and Mari
                 Load from Mario-3 Repo
               </Button>
             </div>
+
+            {isAndroid && (
+              <Card className="p-4 bg-gradient-to-br from-[oklch(0.58_0.24_330)] to-[oklch(0.70_0.24_190)] border-2 border-[oklch(0.75_0.18_85)]">
+                <h3 className="font-bold text-white mb-2 text-sm pixel-font text-center">ANDROID REMOTE</h3>
+                <div className="grid grid-cols-3 gap-2 max-w-56 mx-auto">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="col-start-2 border-white/60 text-white"
+                    onTouchStart={() => updateRemoteKey('ArrowUp', true)}
+                    onTouchEnd={() => updateRemoteKey('ArrowUp', false)}
+                  >
+                    <ArrowUp size={16} />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-white/60 text-white"
+                    onTouchStart={() => updateRemoteKey('ArrowLeft', true)}
+                    onTouchEnd={() => updateRemoteKey('ArrowLeft', false)}
+                  >
+                    <ArrowLeft size={16} />
+                  </Button>
+                  <Button
+                    size="sm"
+                    className="bg-[oklch(0.75_0.18_85)] hover:bg-[oklch(0.80_0.20_85)] text-[oklch(0.15_0.02_280)]"
+                    onTouchStart={() => updateRemoteKey(' ', true)}
+                    onTouchEnd={() => updateRemoteKey(' ', false)}
+                  >
+                    JUMP
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-white/60 text-white"
+                    onTouchStart={() => updateRemoteKey('ArrowRight', true)}
+                    onTouchEnd={() => updateRemoteKey('ArrowRight', false)}
+                  >
+                    <ArrowRight size={16} />
+                  </Button>
+                </div>
+              </Card>
+            )}
+
+            {!isAndroid && (
+              <Card className="p-3 bg-[oklch(0.22_0.03_285)] border-2 border-[oklch(0.75_0.18_85)]">
+                <p className="text-xs text-white/80 text-center">Remote controls are configured for Android devices only.</p>
+              </Card>
+            )}
 
             <Card className="p-4 bg-gradient-to-br from-[oklch(0.22_0.03_285)] to-[oklch(0.15_0.02_280)] border-2 border-[oklch(0.75_0.18_85)]">
               <h3 className="font-bold text-[oklch(0.75_0.18_85)] mb-2 text-sm pixel-font">CONTROLS</h3>
