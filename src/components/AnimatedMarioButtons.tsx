@@ -70,12 +70,12 @@ export function AnimatedMarioButtons(props: AnimatedMarioButtonsProps) {
       <div className="w-full overflow-x-auto px-2 sm:px-4">
         <div className="flex gap-2 sm:gap-3 justify-center py-4 min-w-max">
           {buttons.map((btn, idx) => (
-            <div key={idx} className="relative flex flex-col items-center gap-1">
+            <div key={idx} className="relative flex items-center justify-center">
               <AnimatePresence>
                 {poppedEmoji?.index === idx && (
                   <motion.div
                     initial={{ y: 0, opacity: 0, scale: 0 }}
-                    animate={{ y: -40, opacity: 1, scale: 1.3 }}
+                    animate={{ y: -40, opacity: 1, scale: 1.5 }}
                     exit={{ y: -70, opacity: 0, scale: 0.5 }}
                     className="absolute -top-12 text-3xl sm:text-4xl z-30"
                   >
@@ -86,31 +86,44 @@ export function AnimatedMarioButtons(props: AnimatedMarioButtonsProps) {
 
               <motion.button
                 onClick={() => handleButtonClick(idx)}
-                className="relative w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center text-xl sm:text-2xl transition-all cursor-pointer"
+                className="relative w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center transition-all cursor-pointer overflow-hidden"
                 style={{
-                  background: 'linear-gradient(135deg, oklch(0.75 0.18 85) 0%, oklch(0.65 0.15 85) 100%)',
-                  borderRadius: '4px',
+                  background: hitButton === idx 
+                    ? 'oklch(0.48 0.12 40)'
+                    : 'linear-gradient(135deg, oklch(0.60 0.15 47) 0%, oklch(0.55 0.13 45) 100%)',
+                  borderRadius: '3px',
                   boxShadow: hitButton === idx 
-                    ? '0 0 0 0, inset 0 -2px 0 oklch(0 0 0 / 0.3)' 
-                    : '0 4px 0 oklch(0.55 0.12 85), 0 6px 15px oklch(0 0 0 / 0.3), inset 0 2px 0 oklch(1 0 0 / 0.2)',
-                  border: '3px solid oklch(0.85 0.20 85)',
+                    ? 'inset 0 2px 4px oklch(0 0 0 / 0.5)' 
+                    : '0 4px 0 oklch(0.45 0.12 40), inset 0 -2px 0 oklch(0.40 0.10 38), inset 0 2px 0 oklch(0.70 0.17 50)',
+                  border: '2px solid oklch(0.40 0.10 38)',
                 }}
                 animate={{
                   y: hitButton === idx ? 4 : 0,
                 }}
-                whileHover={{ scale: 1.05 }}
+                whileHover={{ 
+                  scale: 1.05,
+                  background: 'oklch(0.65 0.17 48)'
+                }}
                 whileTap={{ scale: 0.95 }}
               >
-                <div className="absolute inset-0.5 rounded border-2 border-white/10"></div>
-                <div className="absolute inset-0 rounded" style={{
-                  background: 'repeating-linear-gradient(90deg, transparent 0px, transparent 8px, oklch(1 0 0 / 0.1) 8px, oklch(1 0 0 / 0.1) 9px)'
+                <div className="absolute inset-0" style={{
+                  background: 'repeating-linear-gradient(0deg, transparent 0px, transparent 3px, oklch(0 0 0 / 0.08) 3px, oklch(0 0 0 / 0.08) 4px), repeating-linear-gradient(90deg, transparent 0px, transparent 3px, oklch(0 0 0 / 0.08) 3px, oklch(0 0 0 / 0.08) 4px)',
+                  pointerEvents: 'none'
                 }}></div>
-                <span className="relative z-10 drop-shadow-lg font-bold text-xl sm:text-2xl">{btn.emoji}</span>
+                <span 
+                  className="relative z-10 text-xl sm:text-2xl transition-opacity duration-200"
+                  style={{
+                    opacity: hitButton === idx ? 0 : 0
+                  }}
+                >
+                  {btn.emoji}
+                </span>
+                {hitButton !== idx && (
+                  <span className="absolute inset-0 flex items-center justify-center text-2xl sm:text-3xl">
+                    🧱
+                  </span>
+                )}
               </motion.button>
-
-              <span className="text-[9px] sm:text-[11px] font-bold text-[oklch(0.75_0.18_85)] pixel-font whitespace-nowrap">
-                {btn.label}
-              </span>
             </div>
           ))}
         </div>
