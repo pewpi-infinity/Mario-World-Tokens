@@ -22,6 +22,7 @@ interface AnimatedMarioButtonsProps {
   onLivingToken: () => void
   onDoubleUp: () => void
   onAIAssistant: () => void
+  onJukebox: () => void
 }
 
 interface ButtonData {
@@ -42,6 +43,7 @@ export function AnimatedMarioButtons(props: AnimatedMarioButtonsProps) {
   const buttons: ButtonData[] = [
     { emoji: '🟡', label: 'Mint', action: () => props.onMintToken() },
     { emoji: '🎵', label: 'Music', action: () => setActiveDialog('musicChoice') },
+    { emoji: '🎧', label: 'Jukebox', action: () => props.onJukebox() },
     { emoji: '👽', label: 'Create', action: () => props.onCreationZone() },
     { emoji: '♾️', label: 'AI', action: () => props.onAIAssistant() },
     { emoji: '🧲', label: 'Memory', action: () => setActiveDialog('memoryPull') },

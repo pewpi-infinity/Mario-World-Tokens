@@ -174,6 +174,10 @@ function App() {
     onAIAssistant: () => {
       setShowAIAssistant(true)
       toast.success('♾️ Infinity AI Network activated!')
+    },
+    onJukebox: () => {
+      setShowJukebox(true)
+      toast.success('🎧 Mario Jukebox activated! Enjoy classic tunes!')
     }
   }
 
@@ -213,6 +217,7 @@ function App() {
             onLivingToken={handleActionButtons.onLivingToken}
             onDoubleUp={handleActionButtons.onDoubleUp}
             onAIAssistant={handleActionButtons.onAIAssistant}
+            onJukebox={handleActionButtons.onJukebox}
           />
         </div>
       </header>
