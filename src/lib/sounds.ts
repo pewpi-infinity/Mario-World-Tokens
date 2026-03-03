@@ -25,23 +25,35 @@ const AUDIO_POOL_SIZE = 5
 let unlockAttempts = 0
 const MAX_UNLOCK_ATTEMPTS = 10
 
-export function initializeAudioContext() {
+export function getAudioContext(): AudioContext | null {
+  return audioContext
+}
+
+export function initializeAudioContext(): AudioContext | null {
   if (audioContext) return audioContext
   
   try {
-    audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
+    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext
+    if (!AudioContextClass) {
+      console.warn('AudioContext not supported in this browser')
+      return null
+    }
+    
+    audioContext = new AudioContextClass()
     console.log('🎮 AudioContext initialized:', audioContext.state)
     
     if (audioContext.state === 'suspended') {
       audioContext.resume().then(() => {
         console.log('🔊 AudioContext resumed')
         isAudioInitialized = true
+      }).catch((err) => {
+        console.warn('Failed to resume AudioContext:', err)
       })
     } else {
       isAudioInitialized = true
     }
   } catch (e) {
-    console.warn('AudioContext not supported', e)
+    console.warn('AudioContext initialization failed:', e)
   }
   
   return audioContext
@@ -175,5 +187,3 @@ export const playBowserFall = () => { console.log('🐉 BOWSER FALL'); playSound
 export const playBowserFire = () => { console.log('🔥 BOWSER FIRE'); playSound(MARIO_SOUNDS.bowserFire, 0.6) }
 export const playBump = () => { console.log('💥 BUMP'); playSound(MARIO_SOUNDS.bump, 0.7) }
 export const playMarioDie = () => { console.log('☠️ MARIO DIE'); playSound(MARIO_SOUNDS.mariodie, 0.7) }
-
-export const getAudioContext = () => audioContext
