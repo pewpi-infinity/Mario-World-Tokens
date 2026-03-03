@@ -10,6 +10,18 @@ import "./styles/theme.css"
 import "./index.css"
 
 const FREE_API_URL = 'https://api.duckduckgo.com/'
+const MUSICAL_SCALE_FREQUENCIES = [261.63, 293.66, 329.63, 349.23, 392.0, 440.0, 493.88, 523.25]
+
+interface DuckDuckGoRelatedTopic {
+  Text?: string
+  Topics?: DuckDuckGoRelatedTopic[]
+}
+
+interface DuckDuckGoResponse {
+  AbstractText?: string
+  Heading?: string
+  RelatedTopics?: DuckDuckGoRelatedTopic[]
+}
 
 const buildFallbackJsonResponse = (prompt: string, summary: string) => {
   if (prompt.includes('artisticValue') && prompt.includes('historicalSignificance')) {
@@ -25,7 +37,7 @@ const buildFallbackJsonResponse = (prompt: string, summary: string) => {
   if (prompt.includes('notes: array of 16 objects')) {
     return {
       notes: Array.from({ length: 16 }, (_, i) => ({
-        freq: [261.63, 293.66, 329.63, 349.23, 392.0, 440.0, 493.88, 523.25][i % 8],
+        freq: MUSICAL_SCALE_FREQUENCIES[i % MUSICAL_SCALE_FREQUENCIES.length],
         duration: 0.5
       })),
       title: 'Mario Groove Melody'
@@ -33,9 +45,14 @@ const buildFallbackJsonResponse = (prompt: string, summary: string) => {
   }
 
   if (prompt.includes('pattern: an 8x16 array of booleans')) {
+    const shouldActivateStep = (row: number, step: number) =>
+      (row === 0 && step % 4 === 0) ||
+      (row === 1 && step % 8 === 4) ||
+      (row === 2 && step % 2 === 0)
+
     return {
       pattern: Array.from({ length: 8 }, (_, row) =>
-        Array.from({ length: 16 }, (_, step) => (row === 0 && step % 4 === 0) || (row === 1 && step % 8 === 4) || (row === 2 && step % 2 === 0))
+        Array.from({ length: 16 }, (_, step) => shouldActivateStep(row, step))
       ),
       description: 'Steady kick/snare groove with driving hi-hats'
     }
@@ -68,15 +85,16 @@ const buildFallbackJsonResponse = (prompt: string, summary: string) => {
 }
 
 const queryFreeApi = async (promptText: string): Promise<string> => {
-  const response = await fetch(`${FREE_API_URL}?q=${encodeURIComponent(promptText.slice(0, 280))}&format=json&no_html=1&no_redirect=1`)
+  const query = promptText.slice(0, 280)
+  const requestUrl = `${FREE_API_URL}?q=${encodeURIComponent(query)}&format=json&no_html=1&no_redirect=1`
+  const response = await fetch(requestUrl)
   if (!response.ok) {
-    throw new Error(`Free API request failed with status ${response.status}`)
+    throw new Error(`Free API request failed with status ${response.status} for query "${query.slice(0, 60)}"`)
   }
 
-  const data = await response.json()
-  const related = Array.isArray(data.RelatedTopics)
-    ? data.RelatedTopics.find((topic: any) => typeof topic?.Text === 'string')?.Text
-    : ''
+  const data = await response.json() as DuckDuckGoResponse
+  const relatedTopic = data.RelatedTopics?.flatMap((topic) => [topic, ...(topic.Topics || [])]).find((topic) => typeof topic.Text === 'string')
+  const related = relatedTopic?.Text || ''
 
   return data.AbstractText || related || data.Heading || 'I found limited public context for this request, but you can continue with your current plan and refine details.'
 }
