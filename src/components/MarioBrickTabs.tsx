@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { playBump } from '@/lib/sounds'
 
 interface MarioBrickTabsProps {
   activeTab: string
@@ -18,6 +19,7 @@ export function MarioBrickTabs({ activeTab, onTabChange }: MarioBrickTabsProps) 
   const [poppedEmoji, setPoppedEmoji] = useState<{ emoji: string; index: number } | null>(null)
 
   const handleBrickClick = (index: number) => {
+    playBump()
     setHitBrick(index)
     setPoppedEmoji({ emoji: tabs[index].emoji, index })
     onTabChange(tabs[index].value)
