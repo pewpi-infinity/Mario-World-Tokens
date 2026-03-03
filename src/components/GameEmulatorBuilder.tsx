@@ -21,6 +21,9 @@ interface GitHubRepoResponse {
 const githubRepoOwner = 'fhd'
 const githubRepoName = 'mongoose.os'
 const githubRepoFullName = `${githubRepoOwner}/${githubRepoName}`
+const JUMP_KEY = ' '
+const GRAVITY = 0.8
+const DOWN_ACCELERATION = 1.2
 
 function isGitHubRepoResponse(value: unknown): value is GitHubRepoResponse {
   return !!value
@@ -49,6 +52,8 @@ export function GameEmulatorBuilder({ open, onClose }: GameEmulatorBuilderProps)
   const chatScrollRef = useRef<HTMLDivElement>(null)
   const setVirtualKey = useCallback((key: string, isPressed: boolean) => {
     setKeys(prev => {
+      const alreadyPressed = prev.has(key)
+      if (isPressed === alreadyPressed) return prev
       const newKeys = new Set(prev)
       if (isPressed) {
         newKeys.add(key)
@@ -133,12 +138,13 @@ export function GameEmulatorBuilder({ open, onClose }: GameEmulatorBuilderProps)
 
         if (keys.has('ArrowLeft') || keys.has('a')) marioX -= 5
         if (keys.has('ArrowRight') || keys.has('d')) marioX += 5
-        if ((keys.has('ArrowUp') || keys.has(' ') || keys.has('w')) && !isJumping) {
+        if ((keys.has('ArrowUp') || keys.has(JUMP_KEY) || keys.has('w')) && !isJumping) {
           velocityY = -15
           isJumping = true
         }
 
-        velocityY += 0.8
+        velocityY += GRAVITY
+        if (keys.has('ArrowDown')) velocityY += DOWN_ACCELERATION
         marioY += velocityY
 
         if (marioY >= 300) {
@@ -361,6 +367,10 @@ Provide helpful, specific guidance related to game building, emulators, and Mari
                   <div className="bg-[oklch(0.75_0.18_85)] text-[oklch(0.15_0.02_280)] px-2 py-1 rounded font-mono">↑</div>
                   <span>or W/SPACE - Jump</span>
                 </div>
+                <div className="flex items-center gap-2">
+                  <div className="bg-[oklch(0.75_0.18_85)] text-[oklch(0.15_0.02_280)] px-2 py-1 rounded font-mono">↓</div>
+                  <span>Fast Fall</span>
+                </div>
               </div>
               <div className="mt-4">
                 <p className="text-xs text-[oklch(0.75_0.18_85)] mb-2 font-semibold">ANDROID JOYSTICK</p>
@@ -420,11 +430,11 @@ Provide helpful, specific guidance related to game building, emulators, and Mari
                   <Button
                     variant="outline"
                     className="h-14 px-5 border-[oklch(0.75_0.18_85)] bg-[oklch(0.18_0.02_280)] text-white touch-none"
-                    onTouchStart={(e) => { e.preventDefault(); setVirtualKey(' ', true) }}
-                    onTouchEnd={() => setVirtualKey(' ', false)}
-                    onMouseDown={() => setVirtualKey(' ', true)}
-                    onMouseUp={() => setVirtualKey(' ', false)}
-                    onMouseLeave={() => setVirtualKey(' ', false)}
+                    onTouchStart={(e) => { e.preventDefault(); setVirtualKey(JUMP_KEY, true) }}
+                    onTouchEnd={() => setVirtualKey(JUMP_KEY, false)}
+                    onMouseDown={() => setVirtualKey(JUMP_KEY, true)}
+                    onMouseUp={() => setVirtualKey(JUMP_KEY, false)}
+                    onMouseLeave={() => setVirtualKey(JUMP_KEY, false)}
                   >
                     JUMP
                   </Button>
