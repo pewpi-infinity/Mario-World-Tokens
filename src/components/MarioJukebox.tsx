@@ -13,16 +13,16 @@ interface Song {
 }
 
 const MARIO_SONGS: Song[] = [
-  { id: '1', name: 'Main Theme', level: 'Level 1-1', url: 'https://archive.org/download/marioSoundEffects/main-theme.mp3' },
-  { id: '2', name: 'Underground', level: 'Level 1-2', url: 'https://archive.org/download/marioSoundEffects/underground.mp3' },
-  { id: '3', name: 'Castle', level: 'Level 1-3', url: 'https://archive.org/download/marioSoundEffects/castle.mp3' },
-  { id: '4', name: 'Water World', level: 'Level 2-1', url: 'https://archive.org/download/marioSoundEffects/underwater.mp3' },
-  { id: '5', name: 'Athletic', level: 'Level 2-2', url: 'https://archive.org/download/marioSoundEffects/athletic.mp3' },
-  { id: '6', name: 'Ghost House', level: 'Level 2-3', url: 'https://archive.org/download/marioSoundEffects/ghost-house.mp3' },
-  { id: '7', name: 'Sky Theme', level: 'Level 3-1', url: 'https://archive.org/download/marioSoundEffects/sky.mp3' },
-  { id: '8', name: 'Fortress', level: 'Level 3-2', url: 'https://archive.org/download/marioSoundEffects/fortress.mp3' },
-  { id: '9', name: 'Bowser Battle', level: 'Level 3-3', url: 'https://archive.org/download/marioSoundEffects/bowser.mp3' },
-  { id: '10', name: 'Victory', level: 'Victory', url: 'https://archive.org/download/marioSoundEffects/victory.mp3' }
+  { id: '1', name: 'Main Theme', level: 'Level 1-1', url: 'https://ia800504.us.archive.org/33/items/TvtokmanPart1/Super%20Mario%20Bros.mp3' },
+  { id: '2', name: 'Underground', level: 'Level 1-2', url: 'https://ia800208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/01%20Super%20Mario%20Bros.%20-%20Underground%20BGM.mp3' },
+  { id: '3', name: 'Star Theme', level: 'Level 1-3', url: 'https://ia800208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/07%20Super%20Mario%20Bros.%20-%20Starman%20BGM.mp3' },
+  { id: '4', name: 'Water World', level: 'Level 2-1', url: 'https://ia800208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/09%20Super%20Mario%20Bros.%20-%20Underwater%20BGM.mp3' },
+  { id: '5', name: 'Castle', level: 'Level 2-2', url: 'https://ia800208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/03%20Super%20Mario%20Bros.%20-%20Castle%20BGM.mp3' },
+  { id: '6', name: 'Hurry Up', level: 'Level 2-3', url: 'https://ia800208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/02%20Super%20Mario%20Bros.%20-%20Hurry%21.mp3' },
+  { id: '7', name: 'Game Over', level: 'Level 3-1', url: 'https://ia800208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/05%20Super%20Mario%20Bros.%20-%20Game%20Over.mp3' },
+  { id: '8', name: 'World Clear', level: 'Level 3-2', url: 'https://ia800208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/08%20Super%20Mario%20Bros.%20-%20World%20Clear%20Fanfare.mp3' },
+  { id: '9', name: 'Ending', level: 'Level 3-3', url: 'https://ia800208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/04%20Super%20Mario%20Bros.%20-%20Ending.mp3' },
+  { id: '10', name: 'Bonus Stage', level: 'Bonus', url: 'https://ia800208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/10%20Super%20Mario%20Bros.%202%20-%20Invincibility%20BGM.mp3' }
 ]
 
 interface MarioJukeboxProps {
@@ -48,12 +48,21 @@ export function MarioJukebox({ open, onClose, initialLevel }: MarioJukeboxProps)
   }, [initialLevel])
 
   useEffect(() => {
-    if (open && audioRef.current) {
-      audioRef.current.play().catch(() => {
-        setIsPlaying(false)
-      })
-      setIsPlaying(true)
-    } else if (!open && audioRef.current) {
+    if (!audioRef.current) return
+
+    if (open) {
+      const playPromise = audioRef.current.play()
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            setIsPlaying(true)
+          })
+          .catch((error) => {
+            console.log('Autoplay prevented, waiting for user interaction:', error)
+            setIsPlaying(false)
+          })
+      }
+    } else {
       audioRef.current.pause()
       setIsPlaying(false)
     }
@@ -64,6 +73,25 @@ export function MarioJukebox({ open, onClose, initialLevel }: MarioJukeboxProps)
       audioRef.current.volume = isMuted ? 0 : volume
     }
   }, [volume, isMuted])
+
+  useEffect(() => {
+    const audio = audioRef.current
+    if (!audio) return
+
+    const handleCanPlay = () => {
+      if (isPlaying && open) {
+        audio.play().catch((error) => {
+          console.error('Play failed:', error)
+          setIsPlaying(false)
+        })
+      }
+    }
+
+    audio.addEventListener('canplay', handleCanPlay)
+    return () => {
+      audio.removeEventListener('canplay', handleCanPlay)
+    }
+  }, [isPlaying, open])
 
   const handlePlayPause = () => {
     if (!audioRef.current) return
@@ -90,40 +118,30 @@ export function MarioJukebox({ open, onClose, initialLevel }: MarioJukeboxProps)
     const currentIndex = MARIO_SONGS.findIndex(s => s.id === currentSong.id)
     const nextIndex = (currentIndex + 1) % MARIO_SONGS.length
     setCurrentSong(MARIO_SONGS[nextIndex])
-    setIsPlaying(true)
+    if (open) {
+      setIsPlaying(true)
+    }
   }
 
   const handlePrevious = () => {
     const currentIndex = MARIO_SONGS.findIndex(s => s.id === currentSong.id)
     const prevIndex = currentIndex === 0 ? MARIO_SONGS.length - 1 : currentIndex - 1
     setCurrentSong(MARIO_SONGS[prevIndex])
-    setIsPlaying(true)
+    if (open) {
+      setIsPlaying(true)
+    }
   }
 
   const handleSongSelect = (song: Song) => {
     setCurrentSong(song)
-    setIsPlaying(true)
+    if (open) {
+      setIsPlaying(true)
+    }
   }
 
   const handleSongEnd = () => {
     handleNext()
   }
-
-  useEffect(() => {
-    if (!audioRef.current) return
-    
-    audioRef.current.load()
-    
-    if (isPlaying) {
-      const playPromise = audioRef.current.play()
-      if (playPromise !== undefined) {
-        playPromise.catch((error) => {
-          console.error('Auto-play failed:', error)
-          setIsPlaying(false)
-        })
-      }
-    }
-  }, [currentSong, isPlaying])
 
   const getLevelColor = (level: string) => {
     if (level.includes('1-')) return 'bg-[oklch(0.75_0.18_85)]'
@@ -247,7 +265,8 @@ export function MarioJukebox({ open, onClose, initialLevel }: MarioJukeboxProps)
           ref={audioRef}
           src={currentSong.url}
           onEnded={handleSongEnd}
-          autoPlay={open}
+          loop={false}
+          preload="auto"
         />
       </DialogContent>
     </Dialog>
