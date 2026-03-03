@@ -61,7 +61,7 @@ function App() {
   const exportTreasuryNotes = () => {
     const payload = {
       exportedAt: new Date().toISOString(),
-      tokenCount: userCoins.length,
+      tokenCount: (coins || []).length,
       dictionary: userResearchDictionary || {},
       notes: treasuryResearchNotes || {}
     }
