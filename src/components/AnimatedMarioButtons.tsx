@@ -105,7 +105,7 @@ export function AnimatedMarioButtons(props: AnimatedMarioButtonsProps) {
                 <div className="absolute inset-0 rounded" style={{
                   background: 'repeating-linear-gradient(90deg, transparent 0px, transparent 8px, oklch(1 0 0 / 0.1) 8px, oklch(1 0 0 / 0.1) 9px)'
                 }}></div>
-                <span className="relative z-10 text-white drop-shadow-lg font-bold text-2xl sm:text-3xl">?</span>
+                <span className="relative z-10 drop-shadow-lg font-bold text-xl sm:text-2xl">{btn.emoji}</span>
               </motion.button>
 
               <span className="text-[9px] sm:text-[11px] font-bold text-[oklch(0.75_0.18_85)] pixel-font whitespace-nowrap">
