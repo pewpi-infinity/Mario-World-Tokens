@@ -20,6 +20,7 @@ export const MARIO_SOUNDS = {
 const audioCache: { [key: string]: HTMLAudioElement } = {}
 let audioContext: AudioContext | null = null
 let userInteracted = false
+let soundsEnabled = false
 
 export function initializeAudioContext() {
   if (!audioContext) {
@@ -27,10 +28,16 @@ export function initializeAudioContext() {
   }
   
   if (audioContext.state === 'suspended') {
-    audioContext.resume()
+    audioContext.resume().then(() => {
+      soundsEnabled = true
+      userInteracted = true
+    }).catch(() => {
+      console.log('Could not resume audio context')
+    })
+  } else {
+    soundsEnabled = true
+    userInteracted = true
   }
-  
-  userInteracted = true
 }
 
 export function preloadSound(soundUrl: string) {
@@ -44,8 +51,8 @@ export function preloadSound(soundUrl: string) {
 }
 
 export function playSound(soundUrl: string, volume = 0.5) {
-  if (!userInteracted) {
-    initializeAudioContext()
+  if (!soundsEnabled || !userInteracted) {
+    return
   }
   
   try {
@@ -62,7 +69,7 @@ export function playSound(soundUrl: string, volume = 0.5) {
     
     if (playPromise !== undefined) {
       playPromise.catch((error) => {
-        console.log('Sound playback prevented by browser:', error.message)
+        console.log('Sound playback prevented:', error.message)
       })
     }
   } catch (error) {

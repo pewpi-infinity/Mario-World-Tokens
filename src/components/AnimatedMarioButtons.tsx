@@ -3,7 +3,19 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
-import { playBump, playCoinSound, playPowerUp, playOneUp, playPipe, playJump } from '@/lib/sounds'
+import { 
+  playBump, 
+  playCoinSound, 
+  playPowerUp, 
+  playOneUp, 
+  playPipe, 
+  playJump, 
+  playFireball, 
+  playKick, 
+  playStomp,
+  playBrickBreak,
+  playStageClear
+} from '@/lib/sounds'
 
 interface AnimatedMarioButtonsProps {
   onTimeCapsule: (secret: string, releaseDate: Date) => void
@@ -29,6 +41,7 @@ interface ButtonData {
   emoji: string
   label: string
   action: () => void
+  sound: () => void
 }
 
 export function AnimatedMarioButtons(props: AnimatedMarioButtonsProps) {
@@ -36,35 +49,32 @@ export function AnimatedMarioButtons(props: AnimatedMarioButtonsProps) {
   const [hitButton, setHitButton] = useState<number | null>(null)
   const [poppedEmoji, setPoppedEmoji] = useState<{ emoji: string; index: number } | null>(null)
 
-  const playBrickSound = useCallback(() => {
-    playBump()
-  }, [])
-
   const buttons: ButtonData[] = [
-    { emoji: '🟡', label: 'Mint', action: () => props.onMintToken() },
-    { emoji: '🎵', label: 'Music', action: () => setActiveDialog('musicChoice') },
-    { emoji: '🎧', label: 'Jukebox', action: () => props.onJukebox() },
-    { emoji: '👽', label: 'Create', action: () => props.onCreationZone() },
-    { emoji: '♾️', label: 'AI', action: () => props.onAIAssistant() },
-    { emoji: '🧲', label: 'Memory', action: () => setActiveDialog('memoryPull') },
-    { emoji: '⚪', label: 'Upgrade', action: () => setActiveDialog('upgrade') },
-    { emoji: '🕹️', label: 'Jump', action: () => setActiveDialog('valueJump') },
-    { emoji: '🎬', label: 'Clip', action: () => props.onVideoClip() },
-    { emoji: '📽️', label: 'Film', action: () => props.onFilmRolling() },
-    { emoji: '👻', label: 'Power', action: () => props.onSuperPower() },
-    { emoji: '🤑', label: 'Share', action: () => setActiveDialog('share') },
-    { emoji: '🌻', label: 'Fire', action: () => setActiveDialog('firePower') },
-    { emoji: '⭐', label: 'Living', action: () => props.onLivingToken() },
-    { emoji: '🍄', label: 'Double', action: () => props.onDoubleUp() },
+    { emoji: '🟡', label: 'Mint', action: () => props.onMintToken(), sound: playCoinSound },
+    { emoji: '🎵', label: 'Music', action: () => setActiveDialog('musicChoice'), sound: playJump },
+    { emoji: '🎧', label: 'Jukebox', action: () => props.onJukebox(), sound: playJump },
+    { emoji: '👽', label: 'Create', action: () => props.onCreationZone(), sound: playPowerUp },
+    { emoji: '♾️', label: 'AI', action: () => props.onAIAssistant(), sound: playPipe },
+    { emoji: '🧲', label: 'Memory', action: () => setActiveDialog('memoryPull'), sound: playKick },
+    { emoji: '⚪', label: 'Upgrade', action: () => setActiveDialog('upgrade'), sound: playPowerUp },
+    { emoji: '🕹️', label: 'Jump', action: () => setActiveDialog('valueJump'), sound: playJump },
+    { emoji: '🎬', label: 'Clip', action: () => props.onVideoClip(), sound: playStomp },
+    { emoji: '📽️', label: 'Film', action: () => props.onFilmRolling(), sound: playStomp },
+    { emoji: '👻', label: 'Power', action: () => props.onSuperPower(), sound: playOneUp },
+    { emoji: '🤑', label: 'Share', action: () => setActiveDialog('share'), sound: playCoinSound },
+    { emoji: '🌻', label: 'Fire', action: () => setActiveDialog('firePower'), sound: playFireball },
+    { emoji: '⭐', label: 'Living', action: () => props.onLivingToken(), sound: playStageClear },
+    { emoji: '🍄', label: 'Double', action: () => props.onDoubleUp(), sound: playOneUp },
   ]
 
   const handleButtonClick = (index: number) => {
-    playBrickSound()
+    playBrickBreak()
     setHitButton(index)
     setPoppedEmoji({ emoji: buttons[index].emoji, index })
     
     setTimeout(() => {
       setHitButton(null)
+      buttons[index].sound()
       buttons[index].action()
       
       setTimeout(() => {

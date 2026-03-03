@@ -25,7 +25,7 @@ import { MarioJukebox } from '@/components/MarioJukebox'
 import { MarioCoin, TreasuryStats } from '@/lib/types'
 import { Toaster } from '@/components/ui/sonner'
 import { toast } from 'sonner'
-import { preloadAllSounds, playCoinSound, playOneUp, playPowerUp, initializeAudioContext } from '@/lib/sounds'
+import { preloadAllSounds, playCoinSound, playOneUp, playPowerUp, initializeAudioContext, playPipe, playFireball, playKick, playStageClear, playJump, playStomp } from '@/lib/sounds'
 import { initBackgroundMusic, playBackgroundMusic, enableAutoPlay, BackgroundMusicPage } from '@/lib/background-music'
 import marioImage from '@/assets/images/Screenshot_20260225-192747.png'
 
@@ -131,6 +131,7 @@ function App() {
     setCoins((current) => [...(current || []), newCoin])
     setGlobalCoins((current) => [...(current || []), newCoin])
     setShowMinting(false)
+    playCoinSound()
     toast.success('Mario Coin Minted!', {
       description: `$${newCoin.value.toFixed(2)} backed by ${newCoin.content.type}`
     })
@@ -176,55 +177,74 @@ function App() {
 
   const handleActionButtons = {
     onTimeCapsule: (secret: string, releaseDate: Date) => {
+      playPipe()
       toast.success(`🧱 Time Capsule Created! Opens ${releaseDate.toLocaleDateString()}`)
     },
-    onMintToken: () => setShowMinting(true),
+    onMintToken: () => {
+      playCoinSound()
+      setShowMinting(true)
+    },
     onUpgradeToken: (tokenId: string) => {
+      playPowerUp()
       toast.info('⚪ Platinum upgrade initiated - AI analyzing token...')
     },
     onVideoClip: () => {
+      playStomp()
       toast.success('🎬 AI just clipped a video of you in Mario World for a CentCom movie!')
     },
     onFilmRolling: () => {
+      playStomp()
       toast.info('📽️ The film is rolling! This is going to be a cool process.')
     },
     onSuperPower: () => {
+      playOneUp()
       toast.success('👻 Super powers activated! Become a faster runner or ship in other realms!')
     },
     onSocialShare: (tokenId: string) => {
+      playCoinSound()
       toast.success('🤑 Token shared to all logged and synced social media!')
     },
     onMemoryPull: (tokenId: string) => {
+      playKick()
       toast.info('🧲 Pulling token memory... Building new 🟡 and leaving platinum ⚪ behind')
     },
     onCreationZone: () => {
+      playPowerUp()
       setShowArtStudio(true)
       toast.success('👽 Creation Zone activated! Build anything you imagine!')
     },
     onFirePower: (offerId: string) => {
+      playFireball()
       toast.success('🌻 Fire power denied the bad offer! 🔥')
     },
     onMusicCreation: () => {
+      playJump()
       setShowMusicStudio(true)
     },
     onCollabMusic: () => {
+      playJump()
       setShowCollabMusic(true)
     },
     onValueJump: (fromValue: number, toValue: number) => {
+      playJump()
       setShowGameBuilder(true)
       toast.success(`🕹️ Game Builder & Mario-3 Emulator activated!`)
     },
     onLivingToken: () => {
+      playStageClear()
       toast.success('⭐ Living Token created! Community + AI updates enabled')
     },
     onDoubleUp: () => {
+      playOneUp()
       toast.success('🍄 Luigi partner added! Currency doubled with partner system!')
     },
     onAIAssistant: () => {
+      playPipe()
       setShowAIAssistant(true)
       toast.success('♾️ Infinity AI Network activated!')
     },
     onJukebox: () => {
+      playJump()
       setShowJukebox(true)
       toast.success('🎧 Mario Jukebox activated! Enjoy classic tunes!')
     }
