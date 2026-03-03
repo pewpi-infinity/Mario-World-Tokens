@@ -13,6 +13,7 @@ import { Marketplace } from '@/components/Marketplace'
 import { AnimatedMarioButtons } from '@/components/AnimatedMarioButtons'
 import { MarioLogo } from '@/components/MarioLogo'
 import { MarioBrickTabs } from '@/components/MarioBrickTabs'
+import { QuickTuneChanger } from '@/components/QuickTuneChanger'
 import { UnifiedMusicStudio } from '@/components/UnifiedMusicStudio'
 import { CollaborativeMusicStudio } from '@/components/CollaborativeMusicStudio'
 import { MarioArtStudio } from '@/components/MarioArtStudio'
@@ -254,6 +255,8 @@ function App() {
         <WalletBalance stats={treasuryStats} />
 
         <MarioBrickTabs activeTab={activeTab} onTabChange={setActiveTab} />
+        
+        <QuickTuneChanger activeTab={activeTab} />
 
         <div className="mt-4 sm:mt-8">
           {activeTab === 'treasury' && (
@@ -357,6 +360,19 @@ function App() {
         open={showJukebox}
         onClose={() => setShowJukebox(false)}
       />
+
+      <button
+        onClick={() => setShowJukebox(true)}
+        className="fixed bottom-6 right-6 w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center transition-all cursor-pointer overflow-hidden z-50 animate-bounce"
+        style={{
+          background: 'linear-gradient(135deg, oklch(0.75 0.18 85) 0%, oklch(0.70 0.16 80) 100%)',
+          borderRadius: '8px',
+          boxShadow: '0 6px 0 oklch(0.55 0.14 75), 0 8px 20px oklch(0 0 0 / 0.3)',
+          border: '3px solid oklch(0.85 0.20 85)',
+        }}
+      >
+        <span className="text-4xl sm:text-5xl">❓</span>
+      </button>
 
       <Toaster />
       

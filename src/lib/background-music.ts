@@ -4,9 +4,11 @@ export const MARIO_BACKGROUND_MUSIC = {
   underwater: 'https://archive.org/download/SMB-Soundtrack/03%20-%20Super%20Mario%20Bros.%20-%20Underwater%20Theme.mp3',
   castle: 'https://archive.org/download/SMB-Soundtrack/04%20-%20Super%20Mario%20Bros.%20-%20Castle%20Theme.mp3',
   starPower: 'https://archive.org/download/SMB-Soundtrack/05%20-%20Super%20Mario%20Bros.%20-%20Star%20Theme.mp3',
+  ghostHouse: 'https://archive.org/download/marioSoundEffects/ghost-house.mp3',
+  fortress: 'https://archive.org/download/marioSoundEffects/fortress.mp3',
 }
 
-export type BackgroundMusicPage = 'treasury' | 'marketplace' | 'charts' | 'ledger' | 'main'
+export type BackgroundMusicPage = 'treasury' | 'marketplace' | 'charts' | 'ledger' | 'main' | 'ghost' | 'star' | 'fortress'
 
 const PAGE_MUSIC_MAP: Record<BackgroundMusicPage, string> = {
   main: MARIO_BACKGROUND_MUSIC.mainTheme,
@@ -14,6 +16,9 @@ const PAGE_MUSIC_MAP: Record<BackgroundMusicPage, string> = {
   marketplace: MARIO_BACKGROUND_MUSIC.underground,
   charts: MARIO_BACKGROUND_MUSIC.castle,
   ledger: MARIO_BACKGROUND_MUSIC.underwater,
+  ghost: MARIO_BACKGROUND_MUSIC.ghostHouse,
+  star: MARIO_BACKGROUND_MUSIC.starPower,
+  fortress: MARIO_BACKGROUND_MUSIC.fortress,
 }
 
 let currentAudio: HTMLAudioElement | null = null

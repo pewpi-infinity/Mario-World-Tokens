@@ -62,7 +62,6 @@ export function MarioBrickTabs({ activeTab, onTabChange }: MarioBrickTabsProps) 
                 boxShadow: hitBrick === index 
                   ? 'inset 0 2px 4px oklch(0 0 0 / 0.5)' 
                   : '0 5px 0 oklch(0.45 0.12 40), inset 0 -2px 0 oklch(0.40 0.10 38), inset 0 2px 0 oklch(0.70 0.17 50)',
-                border: '3px solid oklch(0.40 0.10 38)',
               }}
               animate={{
                 y: hitBrick === index ? 5 : 0,

@@ -103,7 +103,6 @@ export function AnimatedMarioButtons(props: AnimatedMarioButtonsProps) {
                   boxShadow: hitButton === idx 
                     ? 'inset 0 2px 4px oklch(0 0 0 / 0.5)' 
                     : '0 4px 0 oklch(0.45 0.12 40), inset 0 -2px 0 oklch(0.40 0.10 38), inset 0 2px 0 oklch(0.70 0.17 50)',
-                  border: '2px solid oklch(0.40 0.10 38)',
                 }}
                 animate={{
                   y: hitButton === idx ? 4 : 0,
