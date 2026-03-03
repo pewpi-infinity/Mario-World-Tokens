@@ -11,6 +11,7 @@ import { toast } from 'sonner'
 interface GameEmulatorBuilderProps {
   open: boolean
   onClose: () => void
+  onCollectResearchToken?: (token: ResearchTokenDraft) => void
 }
 
 interface GitHubRepoResponse {
@@ -18,12 +19,50 @@ interface GitHubRepoResponse {
   stargazers_count: number
 }
 
-const githubRepoOwner = 'fhd'
-const githubRepoName = 'mongoose.os'
-const githubRepoFullName = `${githubRepoOwner}/${githubRepoName}`
+interface NESGamePreset {
+  id: string
+  title: string
+  repoFullName: string
+  researchLinks: string[]
+}
+
+export interface ResearchTokenDraft {
+  id: string
+  title: string
+  description: string
+  gameTitle: string
+  coinCount: number
+  score: number
+  researchLinks: string[]
+  keywords: string[]
+}
+
+const NES_GAME_PRESETS: NESGamePreset[] = [
+  {
+    id: 'smb1',
+    title: 'Super Mario Bros. (NES)',
+    repoFullName: 'github/game-off-2023',
+    researchLinks: ['https://en.wikipedia.org/wiki/Super_Mario_Bros.', 'https://www.nintendo.com/us/store/products/nintendo-entertainment-system-nintendo-switch-online-switch/']
+  },
+  {
+    id: 'zelda1',
+    title: 'The Legend of Zelda (NES)',
+    repoFullName: 'openzelda/openzelda',
+    researchLinks: ['https://en.wikipedia.org/wiki/The_Legend_of_Zelda_(video_game)', 'https://www.nintendo.com/us/store/products/nintendo-entertainment-system-nintendo-switch-online-switch/']
+  },
+  {
+    id: 'metroid',
+    title: 'Metroid (NES)',
+    repoFullName: 'nesdoug/26_Metroidvania',
+    researchLinks: ['https://en.wikipedia.org/wiki/Metroid_(video_game)', 'https://www.mobygames.com/game/1308/metroid/']
+  }
+]
 const JUMP_KEY = ' '
 const GRAVITY = 0.8
 const DOWN_ACCELERATION = 1.2
+const MAX_TOKEN_KEYWORDS = 6
+const MAX_RESEARCH_FEED_SIZE = 8
+const COIN_RESPAWN_DELAY_MS = 1200
 
 function isGitHubRepoResponse(value: unknown): value is GitHubRepoResponse {
   return !!value
@@ -32,15 +71,20 @@ function isGitHubRepoResponse(value: unknown): value is GitHubRepoResponse {
     && typeof (value as GitHubRepoResponse).stargazers_count === 'number'
 }
 
-export function GameEmulatorBuilder({ open, onClose }: GameEmulatorBuilderProps) {
+export function GameEmulatorBuilder({ open, onClose, onCollectResearchToken }: GameEmulatorBuilderProps) {
+  const [selectedGameId, setSelectedGameId] = useState(NES_GAME_PRESETS[0].id)
   const [gameState, setGameState] = useState({
     marioX: 100,
     marioY: 300,
     velocityY: 0,
     isJumping: false,
     score: 0,
-    coins: 0
+    coins: 0,
+    collectedCoinIndexes: [] as number[],
+    coinWaveClearedAt: null as number | null
   })
+  const [tokenWords, setTokenWords] = useState('hero, coin, retro')
+  const [researchFeed, setResearchFeed] = useState<ResearchTokenDraft[]>([])
   const [isPlaying, setIsPlaying] = useState(false)
   const [keys, setKeys] = useState<Set<string>>(new Set())
   const [showAIChat, setShowAIChat] = useState(false)
@@ -50,6 +94,8 @@ export function GameEmulatorBuilder({ open, onClose }: GameEmulatorBuilderProps)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const animationRef = useRef<number>()
   const chatScrollRef = useRef<HTMLDivElement>(null)
+  const previousCoinCountRef = useRef(0)
+  const selectedGame = NES_GAME_PRESETS.find(game => game.id === selectedGameId) ?? NES_GAME_PRESETS[0]
   const setVirtualKey = useCallback((key: string, isPressed: boolean) => {
     setKeys(prev => {
       const alreadyPressed = prev.has(key)
@@ -63,7 +109,7 @@ export function GameEmulatorBuilder({ open, onClose }: GameEmulatorBuilderProps)
       return newKeys
     })
   }, [])
-  const drawFrame = useCallback((ctx: CanvasRenderingContext2D, marioX: number, marioY: number, coins: number, score: number) => {
+  const drawFrame = useCallback((ctx: CanvasRenderingContext2D, marioX: number, marioY: number, coins: number, score: number, collectedCoinIndexes: number[]) => {
     ctx.fillStyle = '#5dade2'
     ctx.fillRect(0, 0, 800, 400)
 
@@ -82,6 +128,7 @@ export function GameEmulatorBuilder({ open, onClose }: GameEmulatorBuilderProps)
     ctx.fillRect(marioX + 10, marioY + 20, 20, 15)
 
     for (let i = 0; i < 5; i++) {
+      if (collectedCoinIndexes.includes(i)) continue
       const coinX = 150 + i * 150
       const coinY = 200 + Math.sin(Date.now() / 500 + i) * 20
 
@@ -99,7 +146,8 @@ export function GameEmulatorBuilder({ open, onClose }: GameEmulatorBuilderProps)
     ctx.font = 'bold 20px "Press Start 2P", monospace'
     ctx.fillText(`COINS: ${coins}`, 10, 30)
     ctx.fillText(`SCORE: ${score}`, 10, 60)
-  }, [])
+    ctx.fillText(`GAME: ${selectedGame.title}`, 10, 90)
+  }, [selectedGame.title])
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -134,7 +182,7 @@ export function GameEmulatorBuilder({ open, onClose }: GameEmulatorBuilderProps)
 
     const gameLoop = () => {
       setGameState(prev => {
-        let { marioX, marioY, velocityY, isJumping, score, coins } = prev
+        let { marioX, marioY, velocityY, isJumping, score, coins, collectedCoinIndexes, coinWaveClearedAt } = prev
 
         if (keys.has('ArrowLeft') || keys.has('a')) marioX -= 5
         if (keys.has('ArrowRight') || keys.has('d')) marioX += 5
@@ -155,18 +203,29 @@ export function GameEmulatorBuilder({ open, onClose }: GameEmulatorBuilderProps)
 
         marioX = Math.max(0, Math.min(750, marioX))
 
+        if (coinWaveClearedAt !== null && Date.now() - coinWaveClearedAt >= COIN_RESPAWN_DELAY_MS) {
+          collectedCoinIndexes = []
+          coinWaveClearedAt = null
+        }
+
         for (let i = 0; i < 5; i++) {
+          if (collectedCoinIndexes.includes(i)) continue
           const coinX = 150 + i * 150
           const coinY = 200 + Math.sin(Date.now() / 500 + i) * 20
           if (Math.abs(marioX - coinX) < 30 && Math.abs(marioY - coinY) < 30) {
             coins += 1
             score += 100
+            collectedCoinIndexes = [...collectedCoinIndexes, i]
           }
         }
 
-        drawFrame(ctx, marioX, marioY, coins, score)
+        if (collectedCoinIndexes.length >= 5) {
+          coinWaveClearedAt = coinWaveClearedAt ?? Date.now()
+        }
 
-        return { marioX, marioY, velocityY, isJumping, score, coins }
+        drawFrame(ctx, marioX, marioY, coins, score, collectedCoinIndexes)
+
+        return { marioX, marioY, velocityY, isJumping, score, coins, collectedCoinIndexes, coinWaveClearedAt }
       })
 
       animationRef.current = requestAnimationFrame(gameLoop)
@@ -186,8 +245,36 @@ export function GameEmulatorBuilder({ open, onClose }: GameEmulatorBuilderProps)
     const ctx = canvasRef.current.getContext('2d')
     if (!ctx) return
 
-    drawFrame(ctx, gameState.marioX, gameState.marioY, gameState.coins, gameState.score)
+    drawFrame(ctx, gameState.marioX, gameState.marioY, gameState.coins, gameState.score, gameState.collectedCoinIndexes)
   }, [open, isPlaying, gameState, drawFrame])
+
+  useEffect(() => {
+    if (gameState.coins <= previousCoinCountRef.current) return
+
+    const keywords = tokenWords
+      .split(',')
+      .map(word => word.trim())
+      .filter(Boolean)
+      .slice(0, MAX_TOKEN_KEYWORDS)
+
+    const token: ResearchTokenDraft = {
+      id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      title: `${selectedGame.title} Coin #${gameState.coins}${keywords[0] ? ` • ${keywords[0]}` : ''}`,
+      description: `AI research token generated from ${selectedGame.title} gameplay.`,
+      gameTitle: selectedGame.title,
+      coinCount: gameState.coins,
+      score: gameState.score,
+      researchLinks: selectedGame.researchLinks,
+      keywords
+    }
+
+    setResearchFeed((prev) => [token, ...prev].slice(0, MAX_RESEARCH_FEED_SIZE))
+    onCollectResearchToken?.(token)
+    previousCoinCountRef.current = gameState.coins
+    toast.success('🪙 Research token generated', {
+      description: `${selectedGame.title} • Coin ${gameState.coins}`
+    })
+  }, [gameState.coins, gameState.score, onCollectResearchToken, selectedGame, tokenWords])
 
   const handleTogglePlay = () => {
     setIsPlaying(!isPlaying)
@@ -203,18 +290,22 @@ export function GameEmulatorBuilder({ open, onClose }: GameEmulatorBuilderProps)
       velocityY: 0,
       isJumping: false,
       score: 0,
-      coins: 0
+      coins: 0,
+      collectedCoinIndexes: [],
+      coinWaveClearedAt: null
     })
+    setResearchFeed([])
+    previousCoinCountRef.current = 0
     setIsPlaying(false)
     toast.info('Game Reset!')
   }
 
   const handleLoadFromGitHub = () => {
     toast.info('Loading from GitHub...', {
-      description: `Connecting to ${githubRepoFullName} repository`
+      description: `Connecting to ${selectedGame.repoFullName} repository`
     })
 
-    fetch(`https://api.github.com/repos/${githubRepoFullName}`)
+    fetch(`https://api.github.com/repos/${selectedGame.repoFullName}`)
       .then((response) => {
         if (!response.ok) {
           const remainingHeader = response.headers.get('X-RateLimit-Remaining')
@@ -266,7 +357,7 @@ You help users with:
 - Building custom Mario games and emulators
 - Understanding game mechanics and physics
 - Creating new levels and sprites
-- Integrating with the ${githubRepoFullName} GitHub repository
+- Integrating with the ${selectedGame.repoFullName} GitHub repository
 - Designing game features and power-ups
 - Optimizing game performance
 
@@ -307,7 +398,7 @@ Provide helpful, specific guidance related to game building, emulators, and Mari
             MARIO GAME EMULATOR BUILDER
           </DialogTitle>
           <DialogDescription>
-            Build and play Mario games • Powered by {githubRepoFullName} repo
+            Build and play real NES-inspired games and mint research tokens from collected coins
           </DialogDescription>
         </DialogHeader>
 
@@ -352,7 +443,7 @@ Provide helpful, specific guidance related to game building, emulators, and Mari
                 className="border-[oklch(0.65_0.15_155)]"
               >
                 <GithubLogo size={20} weight="fill" className="mr-2" />
-                Load from Mario-3 Repo
+                Load Selected Repo
               </Button>
             </div>
 
@@ -466,21 +557,66 @@ Provide helpful, specific guidance related to game building, emulators, and Mari
               <h3 className="font-bold text-[oklch(0.75_0.18_85)] mb-3 text-sm pixel-font">GITHUB INTEGRATION</h3>
               <div className="space-y-2">
                 <div>
-                  <Label className="text-xs text-white">Repository</Label>
+                  <Label className="text-xs text-white">Real NES Game</Label>
+                  <select
+                    value={selectedGameId}
+                    onChange={(event) => setSelectedGameId(event.target.value)}
+                    className="mt-1 w-full h-9 rounded-md border border-[oklch(0.75_0.18_85)] bg-[oklch(0.15_0.02_280)] px-3 text-sm text-white"
+                  >
+                    {NES_GAME_PRESETS.map((game) => (
+                      <option key={game.id} value={game.id}>
+                        {game.title}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <Label className="text-xs text-white">Token words (comma-separated)</Label>
                   <Input
-                    value={githubRepoFullName}
-                    readOnly
+                    value={tokenWords}
+                    onChange={(event) => setTokenWords(event.target.value)}
                     className="mt-1 bg-[oklch(0.15_0.02_280)] text-white border-[oklch(0.75_0.18_85)]"
                   />
                 </div>
                 <Button
                   size="sm"
                   className="w-full bg-[oklch(0.65_0.15_155)] hover:bg-[oklch(0.75_0.15_155)]"
-                  onClick={() => window.open(`https://github.com/${githubRepoFullName}`, '_blank')}
+                  onClick={() => window.open(`https://github.com/${selectedGame.repoFullName}`, '_blank')}
                 >
                   <GithubLogo size={16} className="mr-2" />
                   View on GitHub
                 </Button>
+              </div>
+            </Card>
+
+            <Card className="p-4 bg-[oklch(0.22_0.03_285)] border-2 border-[oklch(0.75_0.18_85)]">
+              <h3 className="font-bold text-[oklch(0.75_0.18_85)] mb-2 text-sm pixel-font">RESEARCH TOKENS</h3>
+              <div className="space-y-2 text-xs">
+                {researchFeed.length === 0 ? (
+                  <p className="text-[oklch(0.85_0.02_280)]">Collect coins to generate token titles and research links.</p>
+                ) : researchFeed.map((token) => (
+                  <div key={token.id} className="rounded border border-[oklch(0.35_0.05_285)] p-2 text-white">
+                    <p className="font-semibold">{token.title}</p>
+                    <p className="text-[oklch(0.85_0.02_280)]">{token.description}</p>
+                    <div className="mt-1 flex flex-wrap gap-1">
+                      {token.keywords.map((word) => (
+                        <span key={word} className="rounded bg-[oklch(0.75_0.18_85)] px-1 text-[oklch(0.15_0.02_280)]">{word}</span>
+                      ))}
+                    </div>
+                    <div className="mt-1 space-y-1">
+                      {token.researchLinks.map((link) => (
+                        <button
+                          key={link}
+                          type="button"
+                          onClick={() => window.open(link, '_blank', 'noopener,noreferrer')}
+                          className="block text-left text-[oklch(0.75_0.18_85)] underline"
+                        >
+                          {link}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
               </div>
             </Card>
 
