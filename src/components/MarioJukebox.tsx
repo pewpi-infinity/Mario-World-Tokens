@@ -64,10 +64,43 @@ export function MarioJukebox({ open, onClose, initialLevel }: MarioJukeboxProps)
   const [isAIThinking, setIsAIThinking] = useState(false)
   const [userActions, setUserActions] = useState<UserAction[]>([])
   const [clickSpeed, setClickSpeed] = useState<'slow' | 'normal' | 'fast'>('normal')
+  const [audioReady, setAudioReady] = useState(false)
   
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const chatEndRef = useRef<HTMLDivElement>(null)
   const lastClickTimeRef = useRef<number>(0)
+
+  useEffect(() => {
+    if (open && audioRef.current) {
+      const audio = audioRef.current
+      
+      const handleCanPlay = () => {
+        setAudioReady(true)
+        console.log('✅ Audio ready to play')
+      }
+
+      const handleWaiting = () => {
+        console.log('⏳ Audio buffering...')
+      }
+
+      audio.addEventListener('canplay', handleCanPlay)
+      audio.addEventListener('waiting', handleWaiting)
+
+      setTimeout(() => {
+        if (!audioReady) {
+          toast.info('🎵 Jukebox Ready!', { 
+            description: 'Tap the play button to start music',
+            duration: 3000
+          })
+        }
+      }, 500)
+
+      return () => {
+        audio.removeEventListener('canplay', handleCanPlay)
+        audio.removeEventListener('waiting', handleWaiting)
+      }
+    }
+  }, [open, audioReady])
 
   useEffect(() => {
     if (initialLevel) {
@@ -92,6 +125,19 @@ export function MarioJukebox({ open, onClose, initialLevel }: MarioJukeboxProps)
     const audio = audioRef.current
     if (!audio) return
 
+    const handleLoadedData = () => {
+      console.log('✅ Audio loaded:', currentSong.name)
+    }
+
+    const handleError = (e: Event) => {
+      console.error('❌ Audio loading error:', e)
+      toast.error('Failed to load audio', { description: 'Check internet connection or try another song' })
+      setIsPlaying(false)
+    }
+
+    audio.addEventListener('loadeddata', handleLoadedData)
+    audio.addEventListener('error', handleError)
+
     audio.load()
 
     if (isPlaying && open) {
@@ -106,12 +152,20 @@ export function MarioJukebox({ open, onClose, initialLevel }: MarioJukeboxProps)
           .catch((error) => {
             console.error('❌ Jukebox play failed:', error.message)
             setIsPlaying(false)
-            toast.error('Audio playback failed', { description: 'Click play to try again' })
+            toast.error('Audio playback failed', { 
+              description: 'Tap the play button to enable audio',
+              duration: 3000
+            })
           })
       }
     } else if (!open && audio) {
       audio.pause()
       setIsPlaying(false)
+    }
+
+    return () => {
+      audio.removeEventListener('loadeddata', handleLoadedData)
+      audio.removeEventListener('error', handleError)
     }
   }, [currentSong, isPlaying, open])
 
@@ -299,7 +353,11 @@ Keep your response friendly and concise (2-3 sentences max).`
   }
 
   const handlePlayPause = () => {
-    if (!audioRef.current) return
+    if (!audioRef.current) {
+      toast.error('Audio not ready', { description: 'Please wait a moment and try again' })
+      return
+    }
+    
     trackUserAction(isPlaying ? 'pause' : 'play', currentSong.name)
     
     if (isPlaying) {
@@ -307,16 +365,34 @@ Keep your response friendly and concise (2-3 sentences max).`
       setIsPlaying(false)
       toast.info('⏸️ Paused', { description: currentSong.name })
     } else {
+      audioRef.current.currentTime = 0
       const playPromise = audioRef.current.play()
       if (playPromise !== undefined) {
         playPromise
           .then(() => {
             setIsPlaying(true)
+            console.log('✅ Playback started successfully')
           })
           .catch((error) => {
-            console.error('Play failed:', error)
+            console.error('❌ Play failed:', error.name, error.message)
             setIsPlaying(false)
-            toast.error('Playback failed', { description: 'Please try again or select another song' })
+            
+            if (error.name === 'NotAllowedError') {
+              toast.error('🔊 Audio Blocked', { 
+                description: 'Browser blocked autoplay. Tap play again!',
+                duration: 4000
+              })
+            } else if (error.name === 'NotSupportedError') {
+              toast.error('Format not supported', { 
+                description: 'Try selecting a different song',
+                duration: 4000
+              })
+            } else {
+              toast.error('Playback failed', { 
+                description: 'Check connection or try another song',
+                duration: 4000
+              })
+            }
           })
       }
     }
