@@ -15,6 +15,7 @@ import { AIChatAssistant } from '@/components/AIChatAssistant'
 import { InfinitySpiritGenerator } from '@/components/InfinitySpiritGenerator'
 import { InfinityAIChat } from '@/components/InfinityAIChat'
 import { toast } from 'sonner'
+import { soundEffects } from '@/lib/sounds'
 
 export interface MintingInterfaceProps {
   open: boolean
@@ -109,6 +110,7 @@ Format as a JSON object with a "suggestions" array of 3 concise strings.`
         serialNumber
       }
 
+      soundEffects.playCoinCollect()
       onMint(newCoin)
       
       setValue('1.00')
