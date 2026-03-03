@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
-import { soundEffects } from '@/lib/sounds'
+import { playBrickBreak, playCoinSound, playPowerUp, playOneUp, playPipe, playJump } from '@/lib/sounds'
 
 interface AnimatedMarioButtonsProps {
   onTimeCapsule: (secret: string, releaseDate: Date) => void
@@ -36,7 +36,7 @@ export function AnimatedMarioButtons(props: AnimatedMarioButtonsProps) {
   const [poppedEmoji, setPoppedEmoji] = useState<{ emoji: string; index: number } | null>(null)
 
   const playBrickSound = useCallback(() => {
-    soundEffects.playBrickBreak()
+    playBrickBreak()
   }, [])
 
   const buttons: ButtonData[] = [

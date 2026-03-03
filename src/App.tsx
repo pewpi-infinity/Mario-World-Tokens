@@ -20,9 +20,11 @@ import { MarioRaceTrack } from '@/components/MarioRaceTrack'
 import { GameEmulatorBuilder } from '@/components/GameEmulatorBuilder'
 import { InfinityAIChat } from '@/components/InfinityAIChat'
 import { HomepageAIDesigner } from '@/components/HomepageAIDesigner'
+import { MarioJukebox } from '@/components/MarioJukebox'
 import { MarioCoin, TreasuryStats } from '@/lib/types'
 import { Toaster } from '@/components/ui/sonner'
 import { toast } from 'sonner'
+import { preloadAllSounds, playCoinSound, playOneUp, playPowerUp } from '@/lib/sounds'
 import marioImage from '@/assets/images/Screenshot_20260225-192747.png'
 
 function App() {
@@ -36,7 +38,12 @@ function App() {
   const [showRaceTrack, setShowRaceTrack] = useState(false)
   const [showGameBuilder, setShowGameBuilder] = useState(false)
   const [showAIAssistant, setShowAIAssistant] = useState(false)
+  const [showJukebox, setShowJukebox] = useState(false)
   const [currentUser] = useState(() => `user-${Math.random().toString(36).substr(2, 9)}`)
+  
+  useEffect(() => {
+    preloadAllSounds()
+  }, [])
   
   const getCurrentContext = () => {
     switch (activeTab) {
@@ -311,6 +318,11 @@ function App() {
         open={showAIAssistant}
         onClose={() => setShowAIAssistant(false)}
         initialBot="builder"
+      />
+
+      <MarioJukebox
+        open={showJukebox}
+        onClose={() => setShowJukebox(false)}
       />
 
       <Toaster />

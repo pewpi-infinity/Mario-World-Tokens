@@ -1,220 +1,70 @@
-export class SoundEffects {
-  private audioContext: AudioContext | null = null
-  private audioCache: Map<string, AudioBuffer> = new Map()
+export const MARIO_SOUNDS = {
+  coin: 'https://archive.org/download/marioSoundEffects/smb_coin.wav',
+  brick: 'https://archive.org/download/marioSoundEffects/smb_breakblock.wav',
+  bump: 'https://archive.org/download/marioSoundEffects/smb_bump.wav',
+  jump: 'https://archive.org/download/marioSoundEffects/smb_jump-small.wav',
+  powerUp: 'https://archive.org/download/marioSoundEffects/smb_powerup.wav',
+  oneUp: 'https://archive.org/download/marioSoundEffects/smb_1-up.wav',
+  pipe: 'https://archive.org/download/marioSoundEffects/smb_pipe.wav',
+  fireball: 'https://archive.org/download/marioSoundEffects/smb_fireball.wav',
+  kick: 'https://archive.org/download/marioSoundEffects/smb_kick.wav',
+  pause: 'https://archive.org/download/marioSoundEffects/smb_pause.wav',
+  stomp: 'https://archive.org/download/marioSoundEffects/smb_stomp.wav',
+  gameOver: 'https://archive.org/download/marioSoundEffects/smb_gameover.wav',
+  stageClear: 'https://archive.org/download/marioSoundEffects/smb_stage_clear.wav',
+  warning: 'https://archive.org/download/marioSoundEffects/smb_warning.wav',
+  bowserFall: 'https://archive.org/download/marioSoundEffects/smb_bowserfall.wav',
+  bowserFire: 'https://archive.org/download/marioSoundEffects/smb_bowserfire.wav',
+}
 
-  private getAudioContext(): AudioContext {
-    if (!this.audioContext) {
-      this.audioContext = new AudioContext()
+const audioCache: { [key: string]: HTMLAudioElement } = {}
+
+export function preloadSound(soundUrl: string) {
+  if (!audioCache[soundUrl]) {
+    const audio = new Audio(soundUrl)
+    audio.preload = 'auto'
+    audioCache[soundUrl] = audio
+  }
+  return audioCache[soundUrl]
+}
+
+export function playSound(soundUrl: string, volume = 0.5) {
+  try {
+    let audio = audioCache[soundUrl]
+    
+    if (!audio) {
+      audio = preloadSound(soundUrl)
     }
-    return this.audioContext
-  }
-
-  private async loadAudioFile(url: string): Promise<AudioBuffer | null> {
-    if (this.audioCache.has(url)) {
-      return this.audioCache.get(url)!
-    }
-
-    try {
-      const response = await fetch(url)
-      const arrayBuffer = await response.arrayBuffer()
-      const audioBuffer = await this.getAudioContext().decodeAudioData(arrayBuffer)
-      this.audioCache.set(url, audioBuffer)
-      return audioBuffer
-    } catch (error) {
-      console.warn('Failed to load audio file:', url, error)
-      return null
-    }
-  }
-
-  private async playAudioBuffer(buffer: AudioBuffer, volume: number = 0.3) {
-    const ctx = this.getAudioContext()
-    const source = ctx.createBufferSource()
-    const gainNode = ctx.createGain()
-
-    source.buffer = buffer
-    source.connect(gainNode)
-    gainNode.connect(ctx.destination)
-    gainNode.gain.value = volume
-
-    source.start(0)
-  }
-
-  async playCoinCollect() {
-    const buffer = await this.loadAudioFile('https://themushroomkingdom.net/sounds/wav/smb/smb_coin.wav')
     
-    if (buffer) {
-      await this.playAudioBuffer(buffer, 0.5)
-    } else {
-      this.playCoinCollectFallback()
-    }
-  }
-
-  private playCoinCollectFallback() {
-    const ctx = this.getAudioContext()
-    const oscillator = ctx.createOscillator()
-    const gainNode = ctx.createGain()
-
-    oscillator.connect(gainNode)
-    gainNode.connect(ctx.destination)
-
-    oscillator.type = 'square'
-    
-    const now = ctx.currentTime
-    oscillator.frequency.setValueAtTime(988, now)
-    oscillator.frequency.setValueAtTime(1319, now + 0.1)
-    
-    gainNode.gain.setValueAtTime(0.3, now)
-    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.3)
-
-    oscillator.start(now)
-    oscillator.stop(now + 0.3)
-  }
-
-  async playPowerUp() {
-    const buffer = await this.loadAudioFile('https://themushroomkingdom.net/sounds/wav/smb/smb_powerup.wav')
-    
-    if (buffer) {
-      await this.playAudioBuffer(buffer, 0.35)
-    } else {
-      this.playPowerUpFallback()
-    }
-  }
-
-  private playPowerUpFallback() {
-    const ctx = this.getAudioContext()
-    const oscillator = ctx.createOscillator()
-    const gainNode = ctx.createGain()
-
-    oscillator.connect(gainNode)
-    gainNode.connect(ctx.destination)
-
-    oscillator.type = 'square'
-    
-    const now = ctx.currentTime
-    const notes = [659, 784, 1047, 1319, 1568]
-    
-    notes.forEach((freq, i) => {
-      oscillator.frequency.setValueAtTime(freq, now + i * 0.08)
+    const soundClone = audio.cloneNode() as HTMLAudioElement
+    soundClone.volume = volume
+    soundClone.play().catch(() => {
+      console.warn('Sound playback failed:', soundUrl)
     })
-    
-    gainNode.gain.setValueAtTime(0.2, now)
-    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.5)
-
-    oscillator.start(now)
-    oscillator.stop(now + 0.5)
-  }
-
-  async playBrickBreak() {
-    const buffer = await this.loadAudioFile('https://themushroomkingdom.net/sounds/wav/smb/smb_breakblock.wav')
-    
-    if (buffer) {
-      await this.playAudioBuffer(buffer, 0.45)
-    } else {
-      this.playBrickBreakFallback()
-    }
-  }
-
-  private playBrickBreakFallback() {
-    const ctx = this.getAudioContext()
-    const oscillator = ctx.createOscillator()
-    const gainNode = ctx.createGain()
-    const noiseGain = ctx.createGain()
-
-    oscillator.connect(gainNode)
-    gainNode.connect(ctx.destination)
-
-    oscillator.type = 'sawtooth'
-    
-    const now = ctx.currentTime
-    oscillator.frequency.setValueAtTime(200, now)
-    oscillator.frequency.exponentialRampToValueAtTime(50, now + 0.15)
-    
-    gainNode.gain.setValueAtTime(0.3, now)
-    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.15)
-
-    const bufferSize = ctx.sampleRate * 0.15
-    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate)
-    const output = buffer.getChannelData(0)
-    
-    for (let i = 0; i < bufferSize; i++) {
-      output[i] = Math.random() * 2 - 1
-    }
-    
-    const noise = ctx.createBufferSource()
-    noise.buffer = buffer
-    noise.connect(noiseGain)
-    noiseGain.connect(ctx.destination)
-    
-    noiseGain.gain.setValueAtTime(0.1, now)
-    noiseGain.gain.exponentialRampToValueAtTime(0.01, now + 0.15)
-
-    oscillator.start(now)
-    oscillator.stop(now + 0.15)
-    noise.start(now)
-    noise.stop(now + 0.15)
-  }
-
-  async playJump() {
-    const buffer = await this.loadAudioFile('https://themushroomkingdom.net/sounds/wav/smb/smb_jump-small.wav')
-    
-    if (buffer) {
-      await this.playAudioBuffer(buffer, 0.3)
-    } else {
-      this.playJumpFallback()
-    }
-  }
-
-  private playJumpFallback() {
-    const ctx = this.getAudioContext()
-    const oscillator = ctx.createOscillator()
-    const gainNode = ctx.createGain()
-
-    oscillator.connect(gainNode)
-    gainNode.connect(ctx.destination)
-
-    oscillator.type = 'sine'
-    
-    const now = ctx.currentTime
-    oscillator.frequency.setValueAtTime(600, now)
-    oscillator.frequency.exponentialRampToValueAtTime(200, now + 0.2)
-    
-    gainNode.gain.setValueAtTime(0.3, now)
-    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.2)
-
-    oscillator.start(now)
-    oscillator.stop(now + 0.2)
-  }
-
-  async playBump() {
-    const buffer = await this.loadAudioFile('https://themushroomkingdom.net/sounds/wav/smb/smb_bump.wav')
-    
-    if (buffer) {
-      await this.playAudioBuffer(buffer, 0.4)
-    } else {
-      this.playBumpFallback()
-    }
-  }
-
-  private playBumpFallback() {
-    const ctx = this.getAudioContext()
-    const oscillator = ctx.createOscillator()
-    const gainNode = ctx.createGain()
-
-    oscillator.connect(gainNode)
-    gainNode.connect(ctx.destination)
-
-    oscillator.type = 'triangle'
-    
-    const now = ctx.currentTime
-    oscillator.frequency.setValueAtTime(250, now)
-    oscillator.frequency.setValueAtTime(200, now + 0.05)
-    
-    gainNode.gain.setValueAtTime(0.3, now)
-    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.15)
-
-    oscillator.start(now)
-    oscillator.stop(now + 0.15)
+  } catch (error) {
+    console.warn('Error playing sound:', error)
   }
 }
 
-export const soundEffects = new SoundEffects()
+export function preloadAllSounds() {
+  Object.values(MARIO_SOUNDS).forEach(soundUrl => {
+    preloadSound(soundUrl)
+  })
+}
+
+export const playBrickBreak = () => playSound(MARIO_SOUNDS.brick, 0.6)
+export const playCoinSound = () => playSound(MARIO_SOUNDS.coin, 0.5)
+export const playJump = () => playSound(MARIO_SOUNDS.jump, 0.4)
+export const playPowerUp = () => playSound(MARIO_SOUNDS.powerUp, 0.5)
+export const playOneUp = () => playSound(MARIO_SOUNDS.oneUp, 0.5)
+export const playPipe = () => playSound(MARIO_SOUNDS.pipe, 0.5)
+export const playFireball = () => playSound(MARIO_SOUNDS.fireball, 0.4)
+export const playKick = () => playSound(MARIO_SOUNDS.kick, 0.4)
+export const playPause = () => playSound(MARIO_SOUNDS.pause, 0.4)
+export const playStomp = () => playSound(MARIO_SOUNDS.stomp, 0.4)
+export const playGameOver = () => playSound(MARIO_SOUNDS.gameOver, 0.5)
+export const playStageClear = () => playSound(MARIO_SOUNDS.stageClear, 0.5)
+export const playWarning = () => playSound(MARIO_SOUNDS.warning, 0.4)
+export const playBowserFall = () => playSound(MARIO_SOUNDS.bowserFall, 0.5)
+export const playBowserFire = () => playSound(MARIO_SOUNDS.bowserFire, 0.4)
+export const playBump = () => playSound(MARIO_SOUNDS.bump, 0.5)
