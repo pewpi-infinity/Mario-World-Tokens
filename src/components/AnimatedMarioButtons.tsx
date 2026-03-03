@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
@@ -34,6 +34,30 @@ export function AnimatedMarioButtons(props: AnimatedMarioButtonsProps) {
   const [hitButton, setHitButton] = useState<number | null>(null)
   const [poppedEmoji, setPoppedEmoji] = useState<{ emoji: string; index: number } | null>(null)
 
+  const playBrickSound = useCallback(() => {
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
+    
+    const oscillator = audioContext.createOscillator()
+    const gainNode = audioContext.createGain()
+    
+    oscillator.connect(gainNode)
+    gainNode.connect(audioContext.destination)
+    
+    oscillator.type = 'square'
+    oscillator.frequency.setValueAtTime(800, audioContext.currentTime)
+    oscillator.frequency.exponentialRampToValueAtTime(400, audioContext.currentTime + 0.1)
+    
+    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime)
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15)
+    
+    oscillator.start(audioContext.currentTime)
+    oscillator.stop(audioContext.currentTime + 0.15)
+    
+    setTimeout(() => {
+      audioContext.close()
+    }, 200)
+  }, [])
+
   const buttons: ButtonData[] = [
     { emoji: '🟡', label: 'Mint', action: () => props.onMintToken() },
     { emoji: '🎵', label: 'Music', action: () => setActiveDialog('musicChoice') },
@@ -52,6 +76,7 @@ export function AnimatedMarioButtons(props: AnimatedMarioButtonsProps) {
   ]
 
   const handleButtonClick = (index: number) => {
+    playBrickSound()
     setHitButton(index)
     setPoppedEmoji({ emoji: buttons[index].emoji, index })
     
