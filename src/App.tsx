@@ -38,6 +38,11 @@ const createGuestUserId = () => {
   return `guest-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
 }
 
+interface SparkClient {
+  user?: () => Promise<{ login?: string }>
+  login?: () => Promise<void>
+}
+
 function App() {
   const [coins, setCoins] = useKV<MarioCoin[]>('mario-coins', [])
   const [globalCoins, setGlobalCoins] = useKV<MarioCoin[]>('global-mario-coins', [])
@@ -141,7 +146,7 @@ function App() {
   useEffect(() => {
     let mounted = true
     const attemptGithubUser = async () => {
-      const sparkClient = window.spark as { user?: () => Promise<{ login?: string }>, login?: () => Promise<void> }
+      const sparkClient = window.spark as SparkClient
       const resolveUser = async () => sparkClient.user ? sparkClient.user() : null
       let user = await resolveUser()
       if (!user?.login && sparkClient.login) {
