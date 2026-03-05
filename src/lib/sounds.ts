@@ -21,6 +21,7 @@ export const MARIO_SOUNDS = {
 const audioCache: Map<string, HTMLAudioElement[]> = new Map()
 let audioContext: AudioContext | null = null
 let isAudioInitialized = false
+let soundEffectsEnabled = false
 const AUDIO_POOL_SIZE = 5
 let unlockAttempts = 0
 const MAX_UNLOCK_ATTEMPTS = 10
@@ -108,6 +109,7 @@ export function preloadSound(soundUrl: string): HTMLAudioElement {
 }
 
 export function playSound(soundUrl: string, volume = 0.7): void {
+  if (!soundEffectsEnabled) return
   try {
     forceUnlockAudio()
     
@@ -167,6 +169,10 @@ export function playSound(soundUrl: string, volume = 0.7): void {
   } catch (e) {
     console.error('Sound error:', e)
   }
+}
+
+export function setSoundEffectsEnabled(enabled: boolean) {
+  soundEffectsEnabled = enabled
 }
 
 export function preloadAllSounds() {

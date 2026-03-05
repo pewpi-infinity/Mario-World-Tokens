@@ -21,7 +21,7 @@ const PAGE_MUSIC_MAP: Record<BackgroundMusicPage, string> = {
 let currentAudio: HTMLAudioElement | null = null
 let currentPage: BackgroundMusicPage = 'main'
 let volume = 0.5
-let isEnabled = true
+let isEnabled = false
 let synthMusicInterval: ReturnType<typeof setInterval> | null = null
 
 const PAGE_SYNTH_NOTES: Record<BackgroundMusicPage, number[]> = {
@@ -62,12 +62,11 @@ function playSynthBackgroundMusic(page: BackgroundMusicPage) {
 export function initBackgroundMusic(page: BackgroundMusicPage = 'main') {
   currentPage = page
   console.log('🎵 Background music initialized for:', page)
-  setTimeout(() => {
-    playBackgroundMusic(page)
-  }, 500)
 }
 
 export function playBackgroundMusic(page: BackgroundMusicPage) {
+  if (!isEnabled) return
+  currentPage = page
   const musicUrl = PAGE_MUSIC_MAP[page]
   
   if (currentAudio && currentPage === page && !currentAudio.paused) {
@@ -81,7 +80,6 @@ export function playBackgroundMusic(page: BackgroundMusicPage) {
     currentAudio = null
   }
   
-  currentPage = page
   currentAudio = new Audio(musicUrl)
   currentAudio.loop = true
   currentAudio.volume = volume

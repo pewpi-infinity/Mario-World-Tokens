@@ -26,7 +26,7 @@ import { MarioJukebox } from '@/components/MarioJukebox'
 import { MarioCoin, TreasuryStats } from '@/lib/types'
 import { Toaster } from '@/components/ui/sonner'
 import { toast } from 'sonner'
-import { preloadAllSounds, playCoinSound, playOneUp, playPowerUp, initializeAudioContext, playPipe, playFireball, playKick, playStageClear, playJump, playStomp, forceUnlockAudio } from '@/lib/sounds'
+import { preloadAllSounds, playCoinSound, playOneUp, playPowerUp, initializeAudioContext, playPipe, playFireball, playKick, playStageClear, playJump, playStomp, forceUnlockAudio, setSoundEffectsEnabled } from '@/lib/sounds'
 import { initBackgroundMusic, playBackgroundMusic, enableAutoPlay, BackgroundMusicPage } from '@/lib/background-music'
 import marioImage from '@/assets/images/Screenshot_20260225-192747.png'
 
@@ -52,6 +52,7 @@ function App() {
   const [showGameBuilder, setShowGameBuilder] = useState(false)
   const [showAIAssistant, setShowAIAssistant] = useState(false)
   const [showJukebox, setShowJukebox] = useState(false)
+  const [soundEnabled, setSoundEnabled] = useState(false)
   const [currentUser, setCurrentUser] = useState(() => {
     const storedUser = sanitizeUserId(localStorage.getItem('mario-current-user')?.trim() || '')
     if (storedUser) return storedUser
@@ -66,11 +67,17 @@ function App() {
     charts: 'charts',
     ledger: 'ledger'
   }
+  const disableAudioSystem = () => {
+    setSoundEffectsEnabled(false)
+    setSoundEnabled(false)
+  }
 
   const openGameEmulator = () => {
-    playJump()
+    disableAudioSystem()
     setShowGameBuilder(true)
-    toast.success('🕹️ Game Builder & Mario-3 Emulator activated!')
+    toast.success('🕹️ Game Builder & Mario-3 Emulator activated!', {
+      description: 'Sound effects are off while the emulator opens.'
+    })
   }
 
   const exportTreasuryNotes = () => {
@@ -94,7 +101,7 @@ function App() {
     const payload = {
       exportedAt: new Date().toISOString(),
       user: currentUser,
-      tokens: userCoins
+      tokens: walletCoins
     }
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
@@ -109,7 +116,10 @@ function App() {
 
   const activateAudioSystem = () => {
     initializeAudioContext()
+    preloadAllSounds()
     forceUnlockAudio()
+    setSoundEffectsEnabled(true)
+    setSoundEnabled(true)
     enableAutoPlay()
     playBackgroundMusic(pageMap[activeTab] || 'main')
     playCoinSound()
@@ -118,24 +128,9 @@ function App() {
   
   useEffect(() => {
     console.log('🎮 MARIO WORLD AUDIO SYSTEM INITIALIZING...')
-    
     initializeAudioContext()
-    preloadAllSounds()
+    disableAudioSystem()
     initBackgroundMusic('main')
-    
-    const events = ['click', 'keydown', 'touchstart', 'mousedown', 'pointerdown', 'touchend']
-    const handler = () => {
-      activateAudioSystem()
-      events.forEach(e => document.removeEventListener(e, handler, { capture: true }))
-    }
-    
-    events.forEach(e => {
-      document.addEventListener(e, handler, { capture: true })
-    })
-    
-    return () => {
-      events.forEach(e => document.removeEventListener(e, handler, { capture: true }))
-    }
   }, [])
   
   useEffect(() => {
@@ -177,18 +172,19 @@ function App() {
     }
   }
 
-  const userCoins = githubLogin
+  const walletCoins = githubLogin
     ? (coins || []).filter((coin) => coin.mintedBy === currentUser)
     : (coins || [])
+  const treasuryCoins = globalCoins || []
 
   const treasuryStats: TreasuryStats = {
-    totalValue: userCoins.reduce((sum, coin) => sum + coin.value, 0),
-    coinCount: userCoins.length,
-    contentBreakdown: userCoins.reduce((acc, coin) => {
+    totalValue: treasuryCoins.reduce((sum, coin) => sum + coin.value, 0),
+    coinCount: treasuryCoins.length,
+    contentBreakdown: treasuryCoins.reduce((acc, coin) => {
       acc[coin.content.type] = (acc[coin.content.type] || 0) + 1
       return acc
     }, {} as Record<string, number>),
-    mintingHistory: userCoins
+    mintingHistory: treasuryCoins
       .sort((a, b) => a.mintedAt - b.mintedAt)
       .map((coin, index, arr) => ({
         timestamp: coin.mintedAt,
@@ -208,7 +204,7 @@ function App() {
   }
 
   useEffect(() => {
-    if (userCoins.length === 0 && activeTab === 'treasury') {
+    if (walletCoins.length === 0 && activeTab === 'treasury') {
       const timer = setTimeout(() => {
         toast.info('Start Minting!', {
           description: 'Click "Mint New Coin" to create your first Mario Currency',
@@ -217,7 +213,7 @@ function App() {
       }, 1000)
       return () => clearTimeout(timer)
     }
-  }, [userCoins.length, activeTab])
+  }, [walletCoins.length, activeTab])
 
   const handleTransfer = (from: string, to: string, coin: MarioCoin) => {
     const updatedCoin = {
@@ -413,8 +409,8 @@ function App() {
           <Button onClick={openGameEmulator} className="bg-[oklch(0.70_0.24_190)] hover:bg-[oklch(0.75_0.26_190)]">
             🕹️ Open Emulator
           </Button>
-          <Button onClick={activateAudioSystem} variant="secondary">
-            🔊 Enable Sound & Music
+          <Button onClick={activateAudioSystem} variant="secondary" disabled={soundEnabled}>
+            {soundEnabled ? '🔊 Sound Enabled' : '🔇 Enable Sound & Music'}
           </Button>
           <Button onClick={exportTreasuryNotes} variant="outline">
             💾 Export Treasury Notes
@@ -427,7 +423,7 @@ function App() {
         <div className="mt-4 sm:mt-8">
           {activeTab === 'treasury' && (
             <>
-              {userCoins.length === 0 ? (
+              {treasuryCoins.length === 0 ? (
                 <Card className="p-6 sm:p-12 text-center bg-card border-2 border-border">
                   <div className="max-w-md mx-auto">
                     <Coins size={48} className="sm:w-16 sm:h-16 mx-auto mb-4 text-muted-foreground" weight="fill" />
@@ -446,7 +442,7 @@ function App() {
                 </Card>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
-                  {userCoins.map((coin) => (
+                  {treasuryCoins.map((coin) => (
                     <TokenCard
                       key={coin.id}
                       coin={coin}
@@ -462,7 +458,7 @@ function App() {
 
           {activeTab === 'marketplace' && (
             <Marketplace
-              userCoins={userCoins}
+              userCoins={walletCoins}
               currentUser={currentUser}
               onTransferComplete={handleTransfer}
             />
@@ -544,13 +540,19 @@ function App() {
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-60">
-          <DropdownMenuLabel>Jukebox</DropdownMenuLabel>
+          <DropdownMenuLabel>Web Pages</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => setShowJukebox(true)}>
-            🎧 Open Mario Jukebox
+          <DropdownMenuItem onClick={() => window.open('https://pewpi-infinity.github.io/MARIO-TOKENS/#bot-panel', '_blank', 'noopener,noreferrer')}>
+            🤖 Bot Panel
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => window.open('https://pewpi-infinity.github.io/MARIO-TOKENS/#treasury', '_blank', 'noopener,noreferrer')}>
+            🪙 Treasury Page
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => window.open('https://pewpi-infinity.github.io/MARIO-TOKENS/#marketplace', '_blank', 'noopener,noreferrer')}>
+            🛒 Marketplace Page
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => window.open('https://pewpi-infinity.github.io/smug_look/mario-jukebox.html', '_blank', 'noopener,noreferrer')}>
-            🔗 Open Classic Jukebox Page
+            🎼 Classic Jukebox Page
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

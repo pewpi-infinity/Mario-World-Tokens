@@ -77,11 +77,13 @@ const NES_GAME_PRESETS: NESGamePreset[] = [
   }
 ]
 const JUMP_KEY = ' '
+const FIRE_KEY = 'Enter'
 const GRAVITY = 0.8
 const DOWN_ACCELERATION = 1.2
 const MAX_TOKEN_KEYWORDS = 6
 const MAX_RESEARCH_FEED_SIZE = 8
 const COIN_RESPAWN_DELAY_MS = 1200
+const isPointerCoarse = () => typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches
 
 function isGitHubRepoResponse(value: unknown): value is GitHubRepoResponse {
   return !!value
@@ -106,6 +108,7 @@ export function GameEmulatorBuilder({ open, onClose, onCollectResearchToken }: G
   const [tokenWords, setTokenWords] = useState('hero, coin, retro')
   const [researchFeed, setResearchFeed] = useState<ResearchTokenDraft[]>([])
   const [isPlaying, setIsPlaying] = useState(false)
+  const [showRomEmbed, setShowRomEmbed] = useState(() => !isPointerCoarse())
   const [keys, setKeys] = useState<Set<string>>(new Set())
   const [showAIChat, setShowAIChat] = useState(false)
   const [aiMessages, setAIMessages] = useState<Array<{ type: 'user' | 'bot', content: string, timestamp: number }>>([])
@@ -116,9 +119,19 @@ export function GameEmulatorBuilder({ open, onClose, onCollectResearchToken }: G
   const chatScrollRef = useRef<HTMLDivElement>(null)
   const previousCoinCountRef = useRef(0)
   const selectedGame = NES_GAME_PRESETS.find(game => game.id === selectedGameId) ?? NES_GAME_PRESETS[0]
+  const handleFireSelectGame = useCallback(() => {
+    const currentIndex = NES_GAME_PRESETS.findIndex((game) => game.id === selectedGameId)
+    const nextGame = NES_GAME_PRESETS[(currentIndex + 1) % NES_GAME_PRESETS.length]
+    setSelectedGameId(nextGame.id)
+    toast.success('🔥 FIRE switched game', { description: nextGame.title })
+  }, [selectedGameId])
   useEffect(() => {
     setRomEmbedUrl(selectedGame.romEmbedUrl)
   }, [selectedGame.romEmbedUrl])
+  useEffect(() => {
+    if (!open) return
+    setShowRomEmbed(!isPointerCoarse())
+  }, [open])
   const setVirtualKey = useCallback((key: string, isPressed: boolean) => {
     setKeys(prev => {
       const alreadyPressed = prev.has(key)
@@ -174,6 +187,11 @@ export function GameEmulatorBuilder({ open, onClose, onCollectResearchToken }: G
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === FIRE_KEY && open) {
+        e.preventDefault()
+        handleFireSelectGame()
+        return
+      }
       setKeys(prev => new Set(prev).add(e.key))
     }
 
@@ -192,7 +210,7 @@ export function GameEmulatorBuilder({ open, onClose, onCollectResearchToken }: G
       window.removeEventListener('keydown', handleKeyDown)
       window.removeEventListener('keyup', handleKeyUp)
     }
-  }, [])
+  }, [handleFireSelectGame, open])
 
   useEffect(() => {
     if (!canvasRef.current) return
@@ -204,6 +222,7 @@ export function GameEmulatorBuilder({ open, onClose, onCollectResearchToken }: G
     if (!isPlaying) return
 
     const gameLoop = () => {
+      const now = Date.now()
       setGameState(prev => {
         let { marioX, marioY, velocityY, isJumping, score, coins, collectedCoinIndexes, coinWaveClearedAt } = prev
 
@@ -234,7 +253,7 @@ export function GameEmulatorBuilder({ open, onClose, onCollectResearchToken }: G
         for (let i = 0; i < 5; i++) {
           if (collectedCoinIndexes.includes(i)) continue
           const coinX = 150 + i * 150
-          const coinY = 200 + Math.sin(Date.now() / 500 + i) * 20
+          const coinY = 200 + Math.sin(now / 500 + i) * 20
           if (Math.abs(marioX - coinX) < 30 && Math.abs(marioY - coinY) < 30) {
             coins += 1
             score += 100
@@ -444,14 +463,22 @@ Provide helpful, specific guidance related to game building, emulators, and Mari
                 </Button>
               </div>
               <div className="mb-3 aspect-[4/3] overflow-hidden rounded-lg border border-[oklch(0.35_0.05_285)] bg-black">
-                <iframe
-                  title={`${selectedGame.title} NES Emulator`}
-                  src={romEmbedUrl}
-                  className="h-full w-full"
-                  allowFullScreen
-                  loading="lazy"
-                  sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-                />
+                {showRomEmbed ? (
+                  <iframe
+                    title={`${selectedGame.title} NES Emulator`}
+                    src={romEmbedUrl}
+                    className="h-full w-full"
+                    allowFullScreen
+                    loading="lazy"
+                    sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+                  />
+                ) : (
+                  <div className="h-full w-full flex items-center justify-center">
+                    <Button variant="outline" onClick={() => setShowRomEmbed(true)} className="border-[oklch(0.75_0.18_85)] text-white">
+                      Load ROM Player
+                    </Button>
+                  </div>
+                )}
               </div>
               <Input
                 value={romEmbedUrl}
@@ -460,6 +487,7 @@ Provide helpful, specific guidance related to game building, emulators, and Mari
                 placeholder="Paste a legal NES embed URL"
               />
               <p className="mb-2 text-[10px] sm:text-xs text-[oklch(0.85_0.02_280)]">Tap Collect Coin when you collect a coin in the ROM to generate a research token.</p>
+              <p className="mb-2 text-[10px] sm:text-xs text-[oklch(0.75_0.18_85)]">Press/tap FIRE to switch between Mario and other game presets.</p>
               <canvas
                 ref={canvasRef}
                 width={800}
@@ -502,7 +530,7 @@ Provide helpful, specific guidance related to game building, emulators, and Mari
               </Button>
             </div>
 
-            <Card className="p-4 bg-gradient-to-br from-[oklch(0.22_0.03_285)] to-[oklch(0.15_0.02_280)] border-2 border-[oklch(0.75_0.18_85)]">
+            <Card className="p-4 bg-gradient-to-br from-[oklch(0.22_0.03_285)] to-[oklch(0.15_0.02_280)] border-2 border-[oklch(0.75_0.18_85)] sticky bottom-2 z-20">
               <h3 className="font-bold text-[oklch(0.75_0.18_85)] mb-2 text-sm pixel-font">TOUCH CONTROLS</h3>
               <div className="mt-4">
                 <p className="text-xs text-[oklch(0.75_0.18_85)] mb-2 font-semibold">ANDROID JOYSTICK</p>
@@ -569,6 +597,14 @@ Provide helpful, specific guidance related to game building, emulators, and Mari
                     onMouseLeave={() => setVirtualKey(JUMP_KEY, false)}
                   >
                     JUMP
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="h-14 px-5 border-[oklch(0.75_0.18_85)] bg-[oklch(0.58_0.24_330)] text-white touch-none"
+                    onTouchStart={(e) => { e.preventDefault(); handleFireSelectGame() }}
+                    onMouseDown={handleFireSelectGame}
+                  >
+                    FIRE
                   </Button>
                 </div>
               </div>
