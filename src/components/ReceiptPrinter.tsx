@@ -11,10 +11,11 @@ interface ReceiptPrinterProps {
   transfer?: Transfer
   open: boolean
   onClose: () => void
+  onReceiptRecorded?: (coinId: string) => void
   type: 'minting' | 'transfer'
 }
 
-export function ReceiptPrinter({ coin, transfer, open, onClose, type }: ReceiptPrinterProps) {
+export function ReceiptPrinter({ coin, transfer, open, onClose, onReceiptRecorded, type }: ReceiptPrinterProps) {
   const receiptRef = useRef<HTMLDivElement>(null)
 
   const handlePrint = () => {
@@ -42,6 +43,7 @@ export function ReceiptPrinter({ coin, transfer, open, onClose, type }: ReceiptP
         printWindow.document.write('</body></html>')
         printWindow.document.close()
         printWindow.print()
+        onReceiptRecorded?.(coin.id)
       }
     }
   }
@@ -77,6 +79,7 @@ export function ReceiptPrinter({ coin, transfer, open, onClose, type }: ReceiptP
       a.download = `mario-coin-receipt-${coin.id}.html`
       a.click()
       URL.revokeObjectURL(url)
+      onReceiptRecorded?.(coin.id)
     }
   }
 
