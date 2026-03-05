@@ -36,6 +36,7 @@ export interface Transfer {
 export interface TreasuryStats {
   totalValue: number;
   coinCount: number;
+  printedUsableTokenCount: number;
   contentBreakdown: Record<ContentType, number>;
   mintingHistory: MintingEvent[];
 }

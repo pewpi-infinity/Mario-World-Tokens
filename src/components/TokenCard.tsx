@@ -10,6 +10,7 @@ import { ReceiptPrinter } from '@/components/ReceiptPrinter'
 export interface TokenCardProps {
   coin: MarioCoin
   onTransfer: (coinId: string) => void
+  onReceiptPrinted?: (coinId: string) => void
 }
 
 const contentIcons = {
@@ -21,7 +22,7 @@ const contentIcons = {
   text: FileText
 }
 
-export function TokenCard({ coin, onTransfer }: TokenCardProps) {
+export function TokenCard({ coin, onTransfer, onReceiptPrinted }: TokenCardProps) {
   const [showDetails, setShowDetails] = useState(false)
   const [showReceipt, setShowReceipt] = useState(false)
   const ContentIcon = contentIcons[coin.content.type] || FileText
@@ -130,6 +131,7 @@ export function TokenCard({ coin, onTransfer }: TokenCardProps) {
         coin={coin}
         open={showReceipt}
         onClose={() => setShowReceipt(false)}
+        onReceiptRecorded={onReceiptPrinted}
         type="minting"
       />
     </>

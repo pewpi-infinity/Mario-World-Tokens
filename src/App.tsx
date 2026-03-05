@@ -38,6 +38,11 @@ const createGuestUserId = () => {
   return `guest-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
 }
 
+interface SparkClient {
+  user?: () => Promise<{ login?: string }>
+  login?: () => Promise<void>
+}
+
 function App() {
   const [coins, setCoins] = useKV<MarioCoin[]>('mario-coins', [])
   const [globalCoins, setGlobalCoins] = useKV<MarioCoin[]>('global-mario-coins', [])
@@ -140,18 +145,28 @@ function App() {
 
   useEffect(() => {
     let mounted = true
-    window.spark.user()
-      .then((user) => {
-        if (!mounted || !user?.login) return
-        const safeLogin = sanitizeUserId(user.login)
-        if (!safeLogin) return
-        setGithubLogin(safeLogin)
-        setCurrentUser(safeLogin)
-        localStorage.setItem('mario-current-user', safeLogin)
-      })
-      .catch(() => {
-        // keep guest fallback user
-      })
+    const attemptGithubUser = async () => {
+      const sparkClient = window.spark as SparkClient
+      const resolveUser = async () => sparkClient.user ? sparkClient.user() : null
+      let user = await resolveUser()
+      if (!user?.login && sparkClient.login) {
+        try {
+          await sparkClient.login()
+          user = await resolveUser()
+        } catch {
+          // keep guest fallback user
+        }
+      }
+      if (!mounted || !user?.login) return
+      const safeLogin = sanitizeUserId(user.login)
+      if (!safeLogin) return
+      setGithubLogin(safeLogin)
+      setCurrentUser(safeLogin)
+      localStorage.setItem('mario-current-user', safeLogin)
+    }
+    attemptGithubUser().catch(() => {
+      // keep guest fallback user
+    })
     return () => {
       mounted = false
     }
@@ -172,14 +187,36 @@ function App() {
     }
   }
 
-  const walletCoins = githubLogin
-    ? (coins || []).filter((coin) => coin.mintedBy === currentUser)
-    : (coins || [])
+  const walletCoins = (coins || []).filter((coin) => coin.mintedBy === currentUser)
   const treasuryCoins = globalCoins || []
+
+  const markTokenAsPrinted = (coinId: string) => {
+    const applyPrintedUpdate = (coin: MarioCoin) => {
+      const alreadyPrinted = coin.transferHistory.some((entry) => entry.receiptPrinted)
+      if (alreadyPrinted) return coin
+      return {
+        ...coin,
+        transferHistory: [
+          ...coin.transferHistory,
+          {
+            from: coin.mintedBy,
+            to: coin.mintedBy,
+            timestamp: Date.now(),
+            note: 'Receipt printed and committed to wallet page records',
+            receiptPrinted: true
+          }
+        ]
+      }
+    }
+
+    setCoins((current) => (current || []).map((coin) => coin.id === coinId ? applyPrintedUpdate(coin) : coin))
+    setGlobalCoins((current) => (current || []).map((coin) => coin.id === coinId ? applyPrintedUpdate(coin) : coin))
+  }
 
   const treasuryStats: TreasuryStats = {
     totalValue: treasuryCoins.reduce((sum, coin) => sum + coin.value, 0),
     coinCount: treasuryCoins.length,
+    printedUsableTokenCount: treasuryCoins.filter((coin) => coin.transferHistory.some((entry) => entry.receiptPrinted)).length,
     contentBreakdown: treasuryCoins.reduce((acc, coin) => {
       acc[coin.content.type] = (acc[coin.content.type] || 0) + 1
       return acc
@@ -446,6 +483,7 @@ function App() {
                     <TokenCard
                       key={coin.id}
                       coin={coin}
+                      onReceiptPrinted={markTokenAsPrinted}
                       onTransfer={(coinId) => {
                         toast.info('Transfer feature coming soon!')
                       }}
