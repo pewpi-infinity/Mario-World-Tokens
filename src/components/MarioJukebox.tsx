@@ -142,6 +142,10 @@ export function MarioJukebox({ open, onClose, initialLevel, onPlayStateChange }:
   }, [isPlaying, currentSong])
 
   useEffect(() => {
+    onPlayStateChange?.(isPlaying, currentSong.name)
+  }, [isPlaying, currentSong])
+
+  useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = isMuted ? 0 : volume
     }
