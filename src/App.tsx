@@ -27,8 +27,8 @@ import { TreasuryFeed } from '@/components/TreasuryFeed'
 import { MarioCoin, TreasuryStats } from '@/lib/types'
 import { Toaster } from '@/components/ui/sonner'
 import { toast } from 'sonner'
-import { preloadAllSounds, playCoinSound, playOneUp, playPowerUp, initializeAudioContext, playPipe, playFireball, playKick, playStageClear, playJump, playStomp, playBrickBreak, forceUnlockAudio, setSoundEffectsEnabled } from '@/lib/sounds'
-import { initBackgroundMusic, playBackgroundMusic, enableAutoPlay, BackgroundMusicPage } from '@/lib/background-music'
+// Sound effects disabled - jukebox handles audio
+// Background music disabled - jukebox handles music
 import marioImage from '@/assets/images/Screenshot_20260225-192747.png'
 
 const sanitizeUserId = (value: string) => value.trim().replace(/[^a-zA-Z0-9-]/g, '').slice(0, 39)
@@ -60,7 +60,6 @@ function App() {
   const [showJukebox, setShowJukebox] = useState(false)
   const [jukeboxPlaying, setJukeboxPlaying] = useState(false)
   const [jukeboxSong, setJukeboxSong] = useState('')
-  const [soundEnabled, setSoundEnabled] = useState(false)
   const [currentUser, setCurrentUser] = useState(() => {
     const storedUser = sanitizeUserId(localStorage.getItem('mario-current-user')?.trim() || '')
     if (storedUser) return storedUser
@@ -69,22 +68,11 @@ function App() {
     return guestUser
   })
   const [githubLogin, setGithubLogin] = useState<string | null>(null)
-  const pageMap: Record<string, BackgroundMusicPage> = {
-    treasury: 'treasury',
-    marketplace: 'marketplace',
-    charts: 'charts',
-    ledger: 'ledger'
-  }
-  const disableAudioSystem = () => {
-    setSoundEffectsEnabled(false)
-    setSoundEnabled(false)
-  }
+
 
   const openGameEmulator = () => {
-    disableAudioSystem()
     setShowGameBuilder(true)
     toast.success('🕹️ Game Builder & Mario-3 Emulator activated!', {
-      description: 'Sound effects are off while the emulator opens.'
     })
   }
 
@@ -122,41 +110,10 @@ function App() {
     toast.success('🗂️ User tokens exported as JSON')
   }
 
-  const activateAudioSystem = () => {
-    initializeAudioContext()
-    preloadAllSounds()
-    forceUnlockAudio()
-    setSoundEffectsEnabled(true)
-    setSoundEnabled(true)
-    enableAutoPlay()
-    playBackgroundMusic(pageMap[activeTab] || 'main')
-    playCoinSound()
-    toast.success('🔊 Sound & music enabled!')
-  }
   
-  useEffect(() => {
-    console.log('🎮 MARIO WORLD AUDIO SYSTEM INITIALIZING...')
-    initializeAudioContext()
-    initBackgroundMusic('main')
-    const autoEnableSound = () => {
-      if (!soundEnabled) {
-        forceUnlockAudio()
-        preloadAllSounds()
-        setSoundEffectsEnabled(true)
-        setSoundEnabled(true)
-        enableAutoPlay()
-        playBackgroundMusic(pageMap[activeTab] || 'main')
-      }
-    }
-    const events = ['click', 'touchstart', 'keydown'] as const
-    events.forEach(evt => document.addEventListener(evt, autoEnableSound, { once: true, passive: true }))
-    return () => { events.forEach(evt => document.removeEventListener(evt, autoEnableSound)) }
-  }, [])
   
-  useEffect(() => {
-    const page = pageMap[activeTab] || 'main'
-    playBackgroundMusic(page)
-  }, [activeTab])
+  
+
 
   useEffect(() => {
     let mounted = true
@@ -226,7 +183,6 @@ function App() {
 
     setCoins((current) => (current || []).map((coin) => coin.id === coinId ? applyPrintedUpdate(coin) : coin))
     setGlobalCoins((current) => (current || []).map((coin) => coin.id === coinId ? applyPrintedUpdate(coin) : coin))
-    playBrickBreak()
   }
 
   const treasuryStats: TreasuryStats = {
@@ -250,7 +206,6 @@ function App() {
     setCoins((current) => [...(current || []), newCoin])
     setGlobalCoins((current) => [...(current || []), newCoin])
     setShowMinting(false)
-    playCoinSound()
     toast.success('Mario Coin Minted!', {
       description: `$${newCoin.value.toFixed(2)} backed by ${newCoin.content.type}`
     })
@@ -336,72 +291,56 @@ function App() {
 
   const handleActionButtons = {
     onTimeCapsule: (secret: string, releaseDate: Date) => {
-      playPipe()
       toast.success(`🧱 Time Capsule Created! Opens ${releaseDate.toLocaleDateString()}`)
     },
     onMintToken: () => {
-      playCoinSound()
       setShowMinting(true)
     },
     onUpgradeToken: (tokenId: string) => {
-      playPowerUp()
       toast.info('⚪ Platinum upgrade initiated - AI analyzing token...')
     },
     onVideoClip: () => {
-      playStomp()
       toast.success('🎬 AI just clipped a video of you in Mario World for a CentCom movie!')
     },
     onFilmRolling: () => {
-      playStomp()
       toast.info('📽️ The film is rolling! This is going to be a cool process.')
     },
     onSuperPower: () => {
-      playOneUp()
       toast.success('👻 Super powers activated! Become a faster runner or ship in other realms!')
     },
     onSocialShare: (tokenId: string) => {
-      playCoinSound()
       toast.success('🤑 Token shared to all logged and synced social media!')
     },
     onMemoryPull: (tokenId: string) => {
-      playKick()
       toast.info('🧲 Pulling token memory... Building new 🟡 and leaving platinum ⚪ behind')
     },
     onCreationZone: () => {
-      playPowerUp()
       setShowArtStudio(true)
       toast.success('👽 Creation Zone activated! Build anything you imagine!')
     },
     onFirePower: (offerId: string) => {
-      playFireball()
       toast.success('🌻 Fire power denied the bad offer! 🔥')
     },
     onMusicCreation: () => {
-      playJump()
       setShowMusicStudio(true)
     },
     onCollabMusic: () => {
-      playJump()
       setShowCollabMusic(true)
     },
     onValueJump: (fromValue: number, toValue: number) => {
       openGameEmulator()
     },
     onLivingToken: () => {
-      playStageClear()
       toast.success('⭐ Living Token created! Community + AI updates enabled')
     },
     onDoubleUp: () => {
-      playOneUp()
       toast.success('🍄 Luigi partner added! Currency doubled with partner system!')
     },
     onAIAssistant: () => {
-      playPipe()
       setShowAIAssistant(true)
       toast.success('♾️ Infinity AI Network activated!')
     },
     onJukebox: () => {
-      playJump()
       setShowJukebox(true)
       toast.success('🎧 Mario Jukebox activated! Enjoy classic tunes!')
     }
@@ -461,9 +400,6 @@ function App() {
         <div className="mt-3 flex flex-wrap gap-2 justify-center">
           <Button onClick={openGameEmulator} className="bg-[oklch(0.70_0.24_190)] hover:bg-[oklch(0.75_0.26_190)]">
             🕹️ Open Emulator
-          </Button>
-          <Button onClick={activateAudioSystem} variant="secondary" disabled={soundEnabled}>
-            {soundEnabled ? '🔊 Sound Enabled' : '🔇 Enable Sound & Music'}
           </Button>
           <Button onClick={exportTreasuryNotes} variant="outline">
             💾 Export Treasury Notes

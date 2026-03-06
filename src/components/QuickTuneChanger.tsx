@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { playBackgroundMusic } from '@/lib/background-music'
+// jukebox handles music
 
 interface QuickTuneChangerProps { activeTab: string }
 
@@ -17,7 +17,7 @@ const tunes = [
 export function QuickTuneChanger({ activeTab }: QuickTuneChangerProps) {
   const [activeEmoji, setActiveEmoji] = useState<string | null>(null)
   const handleTuneClick = (page: string, emoji: string) => {
-    setActiveEmoji(emoji); playBackgroundMusic(page as any)
+    setActiveEmoji(emoji); // jukebox handles music
     setTimeout(() => setActiveEmoji(null), 300)
   }
   return (
