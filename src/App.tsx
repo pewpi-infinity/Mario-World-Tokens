@@ -257,7 +257,7 @@ function App() {
           await sparkClient.login()
           user = await resolveUser()
         } catch {
-          // user can sign in manually
+          // User can sign in manually
         }
       }
       if (!mounted || !user?.login) return
@@ -268,7 +268,7 @@ function App() {
       localStorage.setItem('mario-current-user', safeLogin)
     }
     attemptGithubUser().catch(() => {
-      // user can sign in manually
+      // User can sign in manually
     }).finally(() => {
       if (mounted) {
         setIsGithubLoginPending(false)
