@@ -67,9 +67,10 @@ interface MarioJukeboxProps {
   open: boolean
   onClose: () => void
   initialLevel?: string
+  onPlayStateChange?: (playing: boolean, songName: string) => void
 }
 
-export function MarioJukebox({ open, onClose, initialLevel }: MarioJukeboxProps) {
+export function MarioJukebox({ open, onClose, initialLevel, onPlayStateChange }: MarioJukeboxProps) {
   const [songs, setSongs] = useState<Song[]>(MARIO_SONGS)
   const [currentSong, setCurrentSong] = useState<Song>(MARIO_SONGS[0])
   const [isPlaying, setIsPlaying] = useState(false)
@@ -137,6 +138,10 @@ export function MarioJukebox({ open, onClose, initialLevel }: MarioJukeboxProps)
   }, [chatMessages])
 
   useEffect(() => {
+    onPlayStateChange?.(isPlaying, currentSong.name)
+  }, [isPlaying, currentSong])
+
+  useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = isMuted ? 0 : volume
     }
@@ -173,9 +178,6 @@ export function MarioJukebox({ open, onClose, initialLevel }: MarioJukeboxProps)
             setIsPlaying(false)
           })
       }
-    } else if (!open && audio) {
-      audio.pause()
-      setIsPlaying(false)
     }
 
     return () => {
@@ -670,7 +672,6 @@ Keep your response friendly and concise (2-3 sentences max).`
           onEnded={handleSongEnd}
           loop={false}
           preload="auto"
-          crossOrigin="anonymous"
           playsInline
         />
       </DialogContent>

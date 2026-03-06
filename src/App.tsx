@@ -24,11 +24,10 @@ import { InfinityAIChat } from '@/components/InfinityAIChat'
 import { HomepageAIDesigner } from '@/components/HomepageAIDesigner'
 import { MarioJukebox } from '@/components/MarioJukebox'
 import { TreasuryFeed } from '@/components/TreasuryFeed'
-import { TreasuryFeed } from '@/components/TreasuryFeed'
 import { MarioCoin, TreasuryStats } from '@/lib/types'
 import { Toaster } from '@/components/ui/sonner'
 import { toast } from 'sonner'
-import { preloadAllSounds, playCoinSound, playOneUp, playPowerUp, initializeAudioContext, playPipe, playFireball, playKick, playStageClear, playJump, playStomp, forceUnlockAudio, setSoundEffectsEnabled } from '@/lib/sounds'
+import { preloadAllSounds, playCoinSound, playOneUp, playPowerUp, initializeAudioContext, playPipe, playFireball, playKick, playStageClear, playJump, playStomp, playBrickBreak, forceUnlockAudio, setSoundEffectsEnabled } from '@/lib/sounds'
 import { initBackgroundMusic, playBackgroundMusic, enableAutoPlay, BackgroundMusicPage } from '@/lib/background-music'
 import marioImage from '@/assets/images/Screenshot_20260225-192747.png'
 
@@ -59,6 +58,8 @@ function App() {
   const [showGameBuilder, setShowGameBuilder] = useState(false)
   const [showAIAssistant, setShowAIAssistant] = useState(false)
   const [showJukebox, setShowJukebox] = useState(false)
+  const [jukeboxPlaying, setJukeboxPlaying] = useState(false)
+  const [jukeboxSong, setJukeboxSong] = useState('')
   const [soundEnabled, setSoundEnabled] = useState(false)
   const [currentUser, setCurrentUser] = useState(() => {
     const storedUser = sanitizeUserId(localStorage.getItem('mario-current-user')?.trim() || '')
@@ -225,6 +226,7 @@ function App() {
 
     setCoins((current) => (current || []).map((coin) => coin.id === coinId ? applyPrintedUpdate(coin) : coin))
     setGlobalCoins((current) => (current || []).map((coin) => coin.id === coinId ? applyPrintedUpdate(coin) : coin))
+    playBrickBreak()
   }
 
   const treasuryStats: TreasuryStats = {
@@ -562,38 +564,46 @@ function App() {
       <MarioJukebox
         open={showJukebox}
         onClose={() => setShowJukebox(false)}
+        onPlayStateChange={(playing, song) => {
+          setJukeboxPlaying(playing)
+          setJukeboxSong(song)
+        }}
       />
+
+            <button onClick={() => setShowJukebox(true)}
+        className="fixed bottom-6 left-6 flex items-center gap-2 px-3 py-2 z-50 transition-all cursor-pointer"
+        style={{
+          background: jukeboxPlaying ? 'linear-gradient(135deg, oklch(0.58 0.24 330), oklch(0.70 0.24 190))' : 'linear-gradient(135deg, oklch(0.30 0.05 260), oklch(0.25 0.03 260))',
+          borderRadius: '12px', boxShadow: '0 4px 16px oklch(0 0 0 / 0.4)',
+          border: jukeboxPlaying ? '2px solid oklch(0.75 0.18 85)' : '2px solid oklch(0.40 0.05 260)', maxWidth: '180px',
+        }}>
+        <span className="text-xl">{jukeboxPlaying ? "🎵" : "❓"}</span>
+        <span className="text-xs text-white font-bold truncate">{jukeboxPlaying ? jukeboxSong : 'Jukebox'}</span>
+      </button>
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <button
-            aria-label="Jukebox menu"
-            className="fixed bottom-6 right-6 w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center transition-all cursor-pointer overflow-hidden z-50 animate-bounce"
-            style={{
-              background: 'linear-gradient(135deg, oklch(0.75 0.18 85) 0%, oklch(0.70 0.16 80) 100%)',
-              borderRadius: '8px',
-              boxShadow: '0 6px 0 oklch(0.55 0.14 75), 0 8px 20px oklch(0 0 0 / 0.3)',
-              border: '3px solid oklch(0.85 0.20 85)',
-            }}
-          >
-            <span className="text-3xl sm:text-4xl">☰</span>
+          <button aria-label="Menu" className="fixed bottom-6 right-6 w-14 h-14 flex items-center justify-center transition-all cursor-pointer z-50"
+            style={{ background: 'linear-gradient(135deg, oklch(0.58 0.24 330), oklch(0.50 0.20 330))', borderRadius: '50%', boxShadow: '0 4px 16px oklch(0 0 0 / 0.3)', border: '2px solid oklch(0.70 0.20 330)' }}>
+            <span className="text-2xl">☰</span>
           </button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-60">
-          <DropdownMenuLabel>Web Pages</DropdownMenuLabel>
+        <DropdownMenuContent align="end" className="w-64">
+          <DropdownMenuLabel>Tools</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => window.open('https://pewpi-infinity.github.io/MARIO-TOKENS/#bot-panel', '_blank', 'noopener,noreferrer')}>
-            🤖 Bot Panel
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => window.open('https://pewpi-infinity.github.io/MARIO-TOKENS/#treasury', '_blank', 'noopener,noreferrer')}>
-            🪙 Treasury Page
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => window.open('https://pewpi-infinity.github.io/MARIO-TOKENS/#marketplace', '_blank', 'noopener,noreferrer')}>
-            🛒 Marketplace Page
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => window.open('https://pewpi-infinity.github.io/smug_look/mario-jukebox.html', '_blank', 'noopener,noreferrer')}>
-            🎼 Classic Jukebox Page
-          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setShowJukebox(true)}>{"🎵"} Jukebox</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setShowMusicStudio(true)}>{"🎹"} Music Studio</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setShowCollabMusic(true)}>{"🎸"} Collab Music</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setShowArtStudio(true)}>{"🎨"} Art Studio</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setShowRaceTrack(true)}>{"🏎"} Race Track</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => openGameEmulator()}>{"🕹"} Emulator</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setShowAIAssistant(true)}>{"♾"} AI Assistant</DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuLabel>Pages</DropdownMenuLabel>
+          <DropdownMenuItem onClick={() => window.open('https://pewpi-infinity.github.io/MARIO-TOKENS/#bot-panel','_blank','noopener,noreferrer')}>{"🤖"} Bot Panel</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => window.open('https://pewpi-infinity.github.io/MARIO-TOKENS/#treasury','_blank','noopener,noreferrer')}>{"🪙"} Treasury</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => window.open('https://pewpi-infinity.github.io/MARIO-TOKENS/#marketplace','_blank','noopener,noreferrer')}>{"🛒"} Marketplace</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => window.open('https://pewpi-infinity.github.io/smug_look/mario-jukebox.html','_blank','noopener,noreferrer')}>{"🎼"} Classic Jukebox</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
 
