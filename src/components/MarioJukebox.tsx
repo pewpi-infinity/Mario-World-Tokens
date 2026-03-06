@@ -169,7 +169,7 @@ export function MarioJukebox({ open, onClose, initialLevel, onPlayStateChange }:
 
     audio.load()
 
-    if (isPlaying) {
+    if (isPlaying && open) {
       audio.currentTime = 0
       const playPromise = audio.play()
       if (playPromise !== undefined) {
@@ -188,7 +188,7 @@ export function MarioJukebox({ open, onClose, initialLevel, onPlayStateChange }:
       audio.removeEventListener('loadeddata', handleLoadedData)
       audio.removeEventListener('error', handleError)
     }
-  }, [currentSong, isPlaying])
+  }, [currentSong, isPlaying, open])
 
   useEffect(() => {
     const recentActions = userActions.slice(-5)
@@ -469,16 +469,13 @@ Keep your response friendly and concise (2-3 sentences max).`
   }
 
   return (
-    <>
-      <audio
-        ref={audioRef}
-        src={currentSong.url}
-        onEnded={handleSongEnd}
-        loop={false}
-        preload="auto"
-        playsInline
-      />
-    <Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && onClose()}>
+    <Dialog open={open} onOpenChange={(nextOpen) => {
+      if (!nextOpen) {
+        if (audioRef.current) { audioRef.current.pause(); audioRef.current.currentTime = 0 }
+        setIsPlaying(false)
+        onClose()
+      }
+    }}>
       <DialogContent className="max-w-[98vw] sm:max-w-4xl h-[95vh] sm:max-h-[90vh] overflow-hidden bg-card border-4 border-[oklch(0.75_0.18_85)] flex flex-col p-3 sm:p-6">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle className="text-lg sm:text-2xl pixel-font text-[oklch(0.75_0.18_85)] text-center">
@@ -679,8 +676,15 @@ Keep your response friendly and concise (2-3 sentences max).`
           </div>
         </div>
 
+        <audio
+          ref={audioRef}
+          src={currentSong.url}
+          onEnded={handleSongEnd}
+          loop={false}
+          preload="auto"
+          playsInline
+        />
       </DialogContent>
     </Dialog>
-    </>
   )
 }
