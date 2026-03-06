@@ -37,6 +37,7 @@ import marioImage from '@/assets/images/Screenshot_20260225-192747.png'
 const sanitizeUserId = (value: string) => value.trim().replace(/[^a-zA-Z0-9-]/g, '').slice(0, 39)
 const sanitizeRepoName = (value: string) => value.trim().replace(/[^a-zA-Z0-9._-]/g, '')
 const encodeBase64 = (value: string) => btoa(unescape(encodeURIComponent(value)))
+const decodeBase64 = (value: string) => decodeURIComponent(escape(atob(value)))
 interface TokenScriptEvent {
   coinId: string
   mintedBy: string
@@ -64,6 +65,10 @@ const DEFAULT_GITHUB_SYNC_SETTINGS: GitHubSyncSettings = {
 
 interface SparkClient {
   user?: () => Promise<{ login?: string }>
+  getUser?: () => Promise<{ login?: string }>
+  auth?: {
+    user?: () => Promise<{ login?: string }>
+  }
   login?: () => Promise<void>
 }
 
@@ -129,6 +134,48 @@ function App() {
       ...events.map((event) => `window.__MARIO_TOKEN_SCRIPT__.push(${JSON.stringify(event)});`)
     ].join('\n')
 
+  const parseTokenScriptEvents = (content: string): TokenScriptEvent[] => {
+    const events: TokenScriptEvent[] = []
+    const pushMatches = content.matchAll(/window\.__MARIO_TOKEN_SCRIPT__\.push\((.*)\);/g)
+    for (const match of pushMatches) {
+      const payload = match[1]?.trim()
+      if (!payload) continue
+      try {
+        const parsed = JSON.parse(payload) as TokenScriptEvent
+        if (parsed?.coinId) {
+          events.push(parsed)
+        }
+      } catch {
+        // Ignore malformed historical lines
+      }
+    }
+    return events
+  }
+
+  const mergeTokenScriptEvents = (sourceEvents: TokenScriptEvent[]) => {
+    const byCoinId = new Map<string, TokenScriptEvent>()
+    sourceEvents.forEach((event) => {
+      if (!event?.coinId) return
+      byCoinId.set(event.coinId, event)
+    })
+    return Array.from(byCoinId.values()).sort((a, b) => a.mintedAt - b.mintedAt)
+  }
+
+  const resolveGithubLogin = async (sparkClient: SparkClient): Promise<string> => {
+    const providers = [sparkClient.user, sparkClient.getUser, sparkClient.auth?.user]
+    for (const provider of providers) {
+      if (!provider) continue
+      try {
+        const user = await provider()
+        const safeLogin = sanitizeUserId(user?.login || '')
+        if (safeLogin) return safeLogin
+      } catch {
+        // Try next provider
+      }
+    }
+    return ''
+  }
+
   const exportUserTokens = () => {
     const events = tokenScriptEvents || []
     const scriptBody = buildTokenScriptBody(events)
@@ -160,21 +207,32 @@ function App() {
     }
 
     let sha: string | undefined
+    let remoteEvents: TokenScriptEvent[] = []
     const currentFileResponse = await fetch(`${endpoint}?ref=${encodeURIComponent(branch)}`, { headers })
     if (currentFileResponse.ok) {
       const currentFile = await currentFileResponse.json()
       sha = currentFile.sha
+      if (typeof currentFile.content === 'string') {
+        try {
+          const decodedContent = decodeBase64(currentFile.content.replace(/\n/g, ''))
+          remoteEvents = parseTokenScriptEvents(decodedContent)
+        } catch {
+          remoteEvents = []
+        }
+      }
     } else if (currentFileResponse.status !== 404) {
       const errorText = await currentFileResponse.text()
       throw new Error(`Unable to read token script file (${currentFileResponse.status}): ${errorText || currentFileResponse.statusText}`)
     }
+
+    const mergedEvents = mergeTokenScriptEvents([...remoteEvents, ...events])
 
     const putResponse = await fetch(endpoint, {
       method: 'PUT',
       headers,
       body: JSON.stringify({
         message: `chore(tokens): append ${mintedCoin.id} by ${mintedCoin.mintedBy}`,
-        content: encodeBase64(buildTokenScriptBody(events)),
+        content: encodeBase64(buildTokenScriptBody(mergedEvents)),
         branch,
         sha
       })
@@ -249,20 +307,17 @@ function App() {
     let mounted = true
     const attemptGithubUser = async () => {
       const sparkClient = window.spark as SparkClient
-      const resolveUser = async () => sparkClient.user ? sparkClient.user() : null
       setIsGithubLoginPending(true)
-      let user = await resolveUser()
-      if (!user?.login && sparkClient.login) {
+      let safeLogin = await resolveGithubLogin(sparkClient)
+      if (!safeLogin && sparkClient.login) {
         try {
           await sparkClient.login()
-          user = await resolveUser()
+          safeLogin = await resolveGithubLogin(sparkClient)
         } catch {
           // User can sign in manually
         }
       }
-      if (!mounted || !user?.login) return
-      const safeLogin = sanitizeUserId(user.login)
-      if (!safeLogin) return
+      if (!mounted || !safeLogin) return
       setGithubLogin(safeLogin)
       setCurrentUser(safeLogin)
       localStorage.setItem('mario-current-user', safeLogin)
@@ -281,7 +336,7 @@ function App() {
 
   const handleGithubLogin = async () => {
     const sparkClient = window.spark as SparkClient
-    if (!sparkClient.login || !sparkClient.user) {
+    if (!sparkClient.login) {
       toast.error('GitHub login is unavailable in this environment.')
       return
     }
@@ -289,8 +344,7 @@ function App() {
     try {
       setIsGithubLoginPending(true)
       await sparkClient.login()
-      const user = await sparkClient.user()
-      const safeLogin = sanitizeUserId(user?.login || '')
+      const safeLogin = await resolveGithubLogin(sparkClient)
       if (!safeLogin) {
         toast.error('GitHub login did not return a valid username.')
         return
@@ -599,6 +653,31 @@ function App() {
           {activeTab === 'treasury' && (
             <>
               <TreasuryFeed globalCoins={treasuryCoins} stats={treasuryStats} />
+
+              <Card className="p-4 sm:p-6 bg-card border-2 border-border mt-4">
+                <h3 className="text-lg sm:text-xl font-bold mb-4">My Wallet</h3>
+                {walletCoins.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">
+                    {githubLogin
+                      ? 'No wallet tokens yet. Mint a token to start your personal wallet history.'
+                      : 'Sign in with GitHub to connect your wallet profile and token history.'}
+                  </p>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
+                    {walletCoins.map((coin) => (
+                      <TokenCard
+                        key={`wallet-${coin.id}`}
+                        coin={coin}
+                        onReceiptPrinted={markTokenAsPrinted}
+                        onTransfer={(coinId) => {
+                          toast.info('Transfer feature coming soon!')
+                        }}
+                      />
+                    ))}
+                  </div>
+                )}
+              </Card>
+
               {treasuryCoins.length === 0 ? (
                 <Card className="p-6 sm:p-12 text-center bg-card border-2 border-border mt-4">
                   <div className="max-w-md mx-auto">
@@ -617,17 +696,20 @@ function App() {
                   </div>
                 </Card>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 mt-6">
-                  {treasuryCoins.map((coin) => (
-                    <TokenCard
-                      key={coin.id}
-                      coin={coin}
-                      onReceiptPrinted={markTokenAsPrinted}
-                      onTransfer={(coinId) => {
-                        toast.info('Transfer feature coming soon!')
-                      }}
-                    />
-                  ))}
+                <div className="mt-6">
+                  <h3 className="text-lg sm:text-xl font-bold mb-4">Treasury (All Users)</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
+                    {treasuryCoins.map((coin) => (
+                      <TokenCard
+                        key={coin.id}
+                        coin={coin}
+                        onReceiptPrinted={markTokenAsPrinted}
+                        onTransfer={(coinId) => {
+                          toast.info('Transfer feature coming soon!')
+                        }}
+                      />
+                    ))}
+                  </div>
                 </div>
               )}
             </>
