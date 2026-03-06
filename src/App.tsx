@@ -32,11 +32,36 @@ import { toast } from 'sonner'
 import marioImage from '@/assets/images/Screenshot_20260225-192747.png'
 
 const sanitizeUserId = (value: string) => value.trim().replace(/[^a-zA-Z0-9-]/g, '').slice(0, 39)
+const encodeBase64 = (value: string) => {
+  const bytes = new TextEncoder().encode(value)
+  let binary = ''
+  bytes.forEach((byte) => {
+    binary += String.fromCharCode(byte)
+  })
+  return btoa(binary)
+}
 const createGuestUserId = () => {
   if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
     return `guest-${crypto.randomUUID()}`
   }
   return `guest-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
+}
+
+interface TokenScriptEvent {
+  coinId: string
+  mintedBy: string
+  mintedAt: number
+  source: 'manual' | 'research'
+  recordedAt: string
+  coin: MarioCoin
+}
+
+interface GitHubSyncSettings {
+  owner: string
+  repo: string
+  branch: string
+  filePath: string
+  token: string
 }
 
 interface SparkClient {
@@ -60,6 +85,14 @@ function App() {
   const [showJukebox, setShowJukebox] = useState(false)
   const [jukeboxPlaying, setJukeboxPlaying] = useState(false)
   const [jukeboxSong, setJukeboxSong] = useState('')
+  const [tokenScriptEvents, setTokenScriptEvents] = useKV<TokenScriptEvent[]>('token-script-events', [])
+  const [githubSyncSettings, setGitHubSyncSettings] = useKV<GitHubSyncSettings>('github-sync-settings', {
+    owner: 'pewpi-infinity',
+    repo: 'Mario-World-Tokens',
+    branch: 'main',
+    filePath: 'data/token-mint-script.js',
+    token: ''
+  })
   const [currentUser, setCurrentUser] = useState(() => {
     const storedUser = sanitizeUserId(localStorage.getItem('mario-current-user')?.trim() || '')
     if (storedUser) return storedUser
@@ -94,20 +127,132 @@ function App() {
   }
 
   const exportUserTokens = () => {
-    const payload = {
-      exportedAt: new Date().toISOString(),
-      user: currentUser,
-      tokens: walletCoins
-    }
-    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
+    const events = tokenScriptEvents || []
+    const scriptBody = [
+      '/**',
+      ' * Mario World Tokens - Auto-generated token mint script.',
+      ' * This file grows whenever a new token is minted.',
+      ' */',
+      'window.__MARIO_TOKEN_SCRIPT__ = window.__MARIO_TOKEN_SCRIPT__ || [];',
+      ...events.map((event) => `window.__MARIO_TOKEN_SCRIPT__.push(${JSON.stringify(event)});`)
+    ].join('\n')
+    const blob = new Blob([scriptBody], { type: 'text/javascript' })
     const url = URL.createObjectURL(blob)
     const anchor = document.createElement('a')
     anchor.href = url
     const safeFileUser = sanitizeUserId(currentUser) || 'user'
-    anchor.download = `${safeFileUser}-tokens.json`
+    anchor.download = `${safeFileUser}-token-script.js`
     anchor.click()
     URL.revokeObjectURL(url)
-    toast.success('🗂️ User tokens exported as JSON')
+    toast.success('🗂️ Token script exported')
+  }
+
+  const buildTokenScriptBody = (events: TokenScriptEvent[]) => [
+    '/**',
+    ' * Mario World Tokens - Auto-generated token mint script.',
+    ' * This file grows whenever a new token is minted.',
+    ' */',
+    'window.__MARIO_TOKEN_SCRIPT__ = window.__MARIO_TOKEN_SCRIPT__ || [];',
+    ...events.map((event) => `window.__MARIO_TOKEN_SCRIPT__.push(${JSON.stringify(event)});`)
+  ].join('\n')
+
+  const syncTokenScriptToGitHub = async (events: TokenScriptEvent[], mintedCoin: MarioCoin) => {
+    if (!githubSyncSettings?.token?.trim()) return
+
+    const owner = sanitizeUserId(githubSyncSettings.owner || '')
+    const repo = (githubSyncSettings.repo || '').trim()
+    const branch = (githubSyncSettings.branch || '').trim() || 'main'
+    const path = (githubSyncSettings.filePath || '').trim()
+    if (!owner || !repo || !path) return
+
+    const endpoint = `https://api.github.com/repos/${owner}/${repo}/contents/${path.split('/').map(encodeURIComponent).join('/')}`
+    const headers = {
+      Authorization: `Bearer ${githubSyncSettings.token.trim()}`,
+      Accept: 'application/vnd.github+json',
+      'Content-Type': 'application/json'
+    }
+
+    let sha: string | undefined
+    const currentFileResponse = await fetch(`${endpoint}?ref=${encodeURIComponent(branch)}`, { headers })
+    if (currentFileResponse.ok) {
+      const currentFile = await currentFileResponse.json()
+      sha = currentFile.sha
+    } else if (currentFileResponse.status !== 404) {
+      throw new Error('Unable to read existing GitHub token script file')
+    }
+
+    const putResponse = await fetch(endpoint, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify({
+        message: `chore(tokens): append ${mintedCoin.id} by ${mintedCoin.mintedBy}`,
+        content: encodeBase64(buildTokenScriptBody(events)),
+        branch,
+        sha
+      })
+    })
+
+    if (!putResponse.ok) {
+      throw new Error('GitHub commit failed')
+    }
+  }
+
+  const recordTokenScriptEvent = (coin: MarioCoin, source: 'manual' | 'research') => {
+    const event: TokenScriptEvent = {
+      coinId: coin.id,
+      mintedBy: coin.mintedBy,
+      mintedAt: coin.mintedAt,
+      source,
+      recordedAt: new Date().toISOString(),
+      coin
+    }
+
+    let nextEvents: TokenScriptEvent[] = tokenScriptEvents || []
+    let appended = false
+    setTokenScriptEvents((current) => {
+      const existing = current || []
+      if (existing.some((item) => item.coinId === coin.id)) {
+        nextEvents = existing
+        return existing
+      }
+      appended = true
+      nextEvents = [...existing, event]
+      return nextEvents
+    })
+
+    if (!appended) return
+
+    if (githubSyncSettings?.token?.trim()) {
+      void syncTokenScriptToGitHub(nextEvents, coin)
+        .then(() => {
+          toast.success('✅ Token script synced to GitHub')
+        })
+        .catch(() => {
+          toast.error('GitHub sync failed. Token is still saved locally.')
+        })
+    }
+  }
+
+  const configureGitHubSync = () => {
+    const ownerInput = window.prompt('GitHub owner/org for token script commits:', githubSyncSettings?.owner || 'pewpi-infinity')
+    if (ownerInput === null) return
+    const repoInput = window.prompt('GitHub repository:', githubSyncSettings?.repo || 'Mario-World-Tokens')
+    if (repoInput === null) return
+    const branchInput = window.prompt('GitHub branch:', githubSyncSettings?.branch || 'main')
+    if (branchInput === null) return
+    const fileInput = window.prompt('Repository file path for growing token script:', githubSyncSettings?.filePath || 'data/token-mint-script.js')
+    if (fileInput === null) return
+    const tokenInput = window.prompt('GitHub token (repo contents write permission):', githubSyncSettings?.token || '')
+    if (tokenInput === null) return
+
+    setGitHubSyncSettings({
+      owner: ownerInput.trim() || 'pewpi-infinity',
+      repo: repoInput.trim() || 'Mario-World-Tokens',
+      branch: branchInput.trim() || 'main',
+      filePath: fileInput.trim() || 'data/token-mint-script.js',
+      token: tokenInput.trim()
+    })
+    toast.success(tokenInput.trim() ? '🔐 GitHub sync secret saved' : 'GitHub sync disabled (no token)')
   }
 
   
@@ -162,6 +307,20 @@ function App() {
   const walletCoins = (coins || []).filter((coin) => coin.mintedBy === currentUser)
   const treasuryCoins = globalCoins || []
 
+  useEffect(() => {
+    if ((tokenScriptEvents || []).length > 0 || treasuryCoins.length === 0) return
+    setTokenScriptEvents(
+      treasuryCoins.map((coin) => ({
+        coinId: coin.id,
+        mintedBy: coin.mintedBy,
+        mintedAt: coin.mintedAt,
+        source: 'manual',
+        recordedAt: new Date(coin.mintedAt).toISOString(),
+        coin
+      }))
+    )
+  }, [tokenScriptEvents, treasuryCoins, setTokenScriptEvents])
+
   const markTokenAsPrinted = (coinId: string) => {
     const applyPrintedUpdate = (coin: MarioCoin) => {
       const alreadyPrinted = coin.transferHistory.some((entry) => entry.receiptPrinted)
@@ -205,6 +364,7 @@ function App() {
   const handleMint = (newCoin: MarioCoin) => {
     setCoins((current) => [...(current || []), newCoin])
     setGlobalCoins((current) => [...(current || []), newCoin])
+    recordTokenScriptEvent(newCoin, 'manual')
     setShowMinting(false)
     toast.success('Mario Coin Minted!', {
       description: `$${newCoin.value.toFixed(2)} backed by ${newCoin.content.type}`
@@ -287,6 +447,7 @@ function App() {
 
     setCoins((current) => [...(current || []), newCoin])
     setGlobalCoins((current) => [...(current || []), newCoin])
+    recordTokenScriptEvent(newCoin, 'research')
   }
 
   const handleActionButtons = {
@@ -340,10 +501,6 @@ function App() {
       setShowAIAssistant(true)
       toast.success('♾️ Infinity AI Network activated!')
     },
-    onJukebox: () => {
-      setShowJukebox(true)
-      toast.success('🎧 Mario Jukebox activated! Enjoy classic tunes!')
-    }
   }
 
   return (
@@ -385,7 +542,6 @@ function App() {
             onLivingToken={handleActionButtons.onLivingToken}
             onDoubleUp={handleActionButtons.onDoubleUp}
             onAIAssistant={handleActionButtons.onAIAssistant}
-            onJukebox={handleActionButtons.onJukebox}
           />
         </div>
       </header>
@@ -430,19 +586,6 @@ function App() {
                     </Button>
                   </div>
                 </Card>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 mt-6">
-                  {treasuryCoins.map((coin) => (
-                    <TokenCard
-                      key={coin.id}
-                      coin={coin}
-                      onReceiptPrinted={markTokenAsPrinted}
-                      onTransfer={(coinId) => {
-                        toast.info('Transfer feature coming soon!')
-                      }}
-                    />
-                  ))}
-                </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 mt-6">
                   {treasuryCoins.map((coin) => (
@@ -570,6 +713,9 @@ function App() {
           <DropdownMenuItem onClick={() => setShowRaceTrack(true)}>{'🏎'} Race Track</DropdownMenuItem>
           <DropdownMenuItem onClick={() => openGameEmulator()}>{'🕹'} Emulator</DropdownMenuItem>
           <DropdownMenuItem onClick={() => setShowAIAssistant(true)}>{'♾'} AI Assistant</DropdownMenuItem>
+          <DropdownMenuItem onClick={configureGitHubSync}>
+            {'🔐'} GitHub Sync Secret
+          </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuLabel className="pixel-font text-xs">Pages</DropdownMenuLabel>
           <DropdownMenuItem onClick={() => window.open('https://pewpi-infinity.github.io/MARIO-TOKENS/#bot-panel','_blank','noopener,noreferrer')}>{'🤖'} Bot Panel</DropdownMenuItem>
