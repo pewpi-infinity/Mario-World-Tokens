@@ -1,9 +1,12 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useKV } from '@github/spark/hooks'
 import { TabsContent } from '@/components/ui/tabs'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { Coins } from '@phosphor-icons/react'
 import { MintingInterface } from '@/components/MintingInterface'
 import { WalletBalance } from '@/components/WalletBalance'
@@ -32,14 +35,8 @@ import { toast } from 'sonner'
 import marioImage from '@/assets/images/Screenshot_20260225-192747.png'
 
 const sanitizeUserId = (value: string) => value.trim().replace(/[^a-zA-Z0-9-]/g, '').slice(0, 39)
-const encodeBase64 = (value: string) => {
-  const bytes = new TextEncoder().encode(value)
-  let binary = ''
-  bytes.forEach((byte) => {
-    binary += String.fromCharCode(byte)
-  })
-  return btoa(binary)
-}
+const sanitizeRepoName = (value: string) => value.trim().replace(/[^a-zA-Z0-9._-]/g, '')
+const encodeBase64 = (value: string) => btoa(unescape(encodeURIComponent(value)))
 const createGuestUserId = () => {
   if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
     return `guest-${crypto.randomUUID()}`
@@ -51,7 +48,7 @@ interface TokenScriptEvent {
   coinId: string
   mintedBy: string
   mintedAt: number
-  source: 'manual' | 'research'
+  source: 'manual' | 'research' | 'historical'
   recordedAt: string
   coin: MarioCoin
 }
@@ -62,6 +59,14 @@ interface GitHubSyncSettings {
   branch: string
   filePath: string
   token: string
+}
+
+const DEFAULT_GITHUB_SYNC_SETTINGS: GitHubSyncSettings = {
+  owner: 'pewpi-infinity',
+  repo: 'Mario-World-Tokens',
+  branch: 'main',
+  filePath: 'data/token-mint-script.js',
+  token: ''
 }
 
 interface SparkClient {
@@ -83,16 +88,13 @@ function App() {
   const [showGameBuilder, setShowGameBuilder] = useState(false)
   const [showAIAssistant, setShowAIAssistant] = useState(false)
   const [showJukebox, setShowJukebox] = useState(false)
+  const [showGitHubSyncConfig, setShowGitHubSyncConfig] = useState(false)
+  const hasBackfilledTokenScriptRef = useRef(false)
   const [jukeboxPlaying, setJukeboxPlaying] = useState(false)
   const [jukeboxSong, setJukeboxSong] = useState('')
   const [tokenScriptEvents, setTokenScriptEvents] = useKV<TokenScriptEvent[]>('token-script-events', [])
-  const [githubSyncSettings, setGitHubSyncSettings] = useKV<GitHubSyncSettings>('github-sync-settings', {
-    owner: 'pewpi-infinity',
-    repo: 'Mario-World-Tokens',
-    branch: 'main',
-    filePath: 'data/token-mint-script.js',
-    token: ''
-  })
+  const [githubSyncSettings, setGitHubSyncSettings] = useKV<GitHubSyncSettings>('github-sync-settings', DEFAULT_GITHUB_SYNC_SETTINGS)
+  const [githubSyncDraft, setGitHubSyncDraft] = useState<GitHubSyncSettings>(DEFAULT_GITHUB_SYNC_SETTINGS)
   const [currentUser, setCurrentUser] = useState(() => {
     const storedUser = sanitizeUserId(localStorage.getItem('mario-current-user')?.trim() || '')
     if (storedUser) return storedUser
@@ -126,9 +128,7 @@ function App() {
     toast.success('📁 Treasury notes exported for repository commit')
   }
 
-  const exportUserTokens = () => {
-    const events = tokenScriptEvents || []
-    const scriptBody = [
+  const buildTokenScriptBody = (events: TokenScriptEvent[]) => [
       '/**',
       ' * Mario World Tokens - Auto-generated token mint script.',
       ' * This file grows whenever a new token is minted.',
@@ -136,6 +136,10 @@ function App() {
       'window.__MARIO_TOKEN_SCRIPT__ = window.__MARIO_TOKEN_SCRIPT__ || [];',
       ...events.map((event) => `window.__MARIO_TOKEN_SCRIPT__.push(${JSON.stringify(event)});`)
     ].join('\n')
+
+  const exportUserTokens = () => {
+    const events = tokenScriptEvents || []
+    const scriptBody = buildTokenScriptBody(events)
     const blob = new Blob([scriptBody], { type: 'text/javascript' })
     const url = URL.createObjectURL(blob)
     const anchor = document.createElement('a')
@@ -147,20 +151,11 @@ function App() {
     toast.success('🗂️ Token script exported')
   }
 
-  const buildTokenScriptBody = (events: TokenScriptEvent[]) => [
-    '/**',
-    ' * Mario World Tokens - Auto-generated token mint script.',
-    ' * This file grows whenever a new token is minted.',
-    ' */',
-    'window.__MARIO_TOKEN_SCRIPT__ = window.__MARIO_TOKEN_SCRIPT__ || [];',
-    ...events.map((event) => `window.__MARIO_TOKEN_SCRIPT__.push(${JSON.stringify(event)});`)
-  ].join('\n')
-
   const syncTokenScriptToGitHub = async (events: TokenScriptEvent[], mintedCoin: MarioCoin) => {
     if (!githubSyncSettings?.token?.trim()) return
 
     const owner = sanitizeUserId(githubSyncSettings.owner || '')
-    const repo = (githubSyncSettings.repo || '').trim()
+    const repo = sanitizeRepoName(githubSyncSettings.repo || '')
     const branch = (githubSyncSettings.branch || '').trim() || 'main'
     const path = (githubSyncSettings.filePath || '').trim()
     if (!owner || !repo || !path) return
@@ -178,7 +173,8 @@ function App() {
       const currentFile = await currentFileResponse.json()
       sha = currentFile.sha
     } else if (currentFileResponse.status !== 404) {
-      throw new Error('Unable to read existing GitHub token script file')
+      const errorText = await currentFileResponse.text()
+      throw new Error(`Unable to read token script file (${currentFileResponse.status}): ${errorText || currentFileResponse.statusText}`)
     }
 
     const putResponse = await fetch(endpoint, {
@@ -193,7 +189,8 @@ function App() {
     })
 
     if (!putResponse.ok) {
-      throw new Error('GitHub commit failed')
+      const errorText = await putResponse.text()
+      throw new Error(`GitHub commit failed (${putResponse.status}): ${errorText || putResponse.statusText}`)
     }
   }
 
@@ -227,32 +224,28 @@ function App() {
         .then(() => {
           toast.success('✅ Token script synced to GitHub')
         })
-        .catch(() => {
-          toast.error('GitHub sync failed. Token is still saved locally.')
+        .catch((error) => {
+          console.error('GitHub sync failed:', error)
+          toast.error('GitHub sync failed. Check sync settings and token permissions. Token is still saved locally.')
         })
     }
   }
 
-  const configureGitHubSync = () => {
-    const ownerInput = window.prompt('GitHub owner/org for token script commits:', githubSyncSettings?.owner || 'pewpi-infinity')
-    if (ownerInput === null) return
-    const repoInput = window.prompt('GitHub repository:', githubSyncSettings?.repo || 'Mario-World-Tokens')
-    if (repoInput === null) return
-    const branchInput = window.prompt('GitHub branch:', githubSyncSettings?.branch || 'main')
-    if (branchInput === null) return
-    const fileInput = window.prompt('Repository file path for growing token script:', githubSyncSettings?.filePath || 'data/token-mint-script.js')
-    if (fileInput === null) return
-    const tokenInput = window.prompt('GitHub token (repo contents write permission):', githubSyncSettings?.token || '')
-    if (tokenInput === null) return
+  const openGitHubSyncConfig = () => {
+    setGitHubSyncDraft(githubSyncSettings || DEFAULT_GITHUB_SYNC_SETTINGS)
+    setShowGitHubSyncConfig(true)
+  }
 
+  const saveGitHubSyncConfig = () => {
     setGitHubSyncSettings({
-      owner: ownerInput.trim() || 'pewpi-infinity',
-      repo: repoInput.trim() || 'Mario-World-Tokens',
-      branch: branchInput.trim() || 'main',
-      filePath: fileInput.trim() || 'data/token-mint-script.js',
-      token: tokenInput.trim()
+      owner: githubSyncDraft.owner.trim() || DEFAULT_GITHUB_SYNC_SETTINGS.owner,
+      repo: githubSyncDraft.repo.trim() || DEFAULT_GITHUB_SYNC_SETTINGS.repo,
+      branch: githubSyncDraft.branch.trim() || DEFAULT_GITHUB_SYNC_SETTINGS.branch,
+      filePath: githubSyncDraft.filePath.trim() || DEFAULT_GITHUB_SYNC_SETTINGS.filePath,
+      token: githubSyncDraft.token.trim()
     })
-    toast.success(tokenInput.trim() ? '🔐 GitHub sync secret saved' : 'GitHub sync disabled (no token)')
+    setShowGitHubSyncConfig(false)
+    toast.success(githubSyncDraft.token.trim() ? '🔐 GitHub sync secret saved' : 'GitHub sync disabled (no token)')
   }
 
   
@@ -308,14 +301,16 @@ function App() {
   const treasuryCoins = globalCoins || []
 
   useEffect(() => {
+    if (hasBackfilledTokenScriptRef.current) return
     if ((tokenScriptEvents || []).length > 0 || treasuryCoins.length === 0) return
+    hasBackfilledTokenScriptRef.current = true
     setTokenScriptEvents(
       treasuryCoins.map((coin) => ({
         coinId: coin.id,
         mintedBy: coin.mintedBy,
         mintedAt: coin.mintedAt,
-        source: 'manual',
-        recordedAt: new Date(coin.mintedAt).toISOString(),
+        source: 'historical',
+        recordedAt: new Date().toISOString(),
         coin
       }))
     )
@@ -713,8 +708,8 @@ function App() {
           <DropdownMenuItem onClick={() => setShowRaceTrack(true)}>{'🏎'} Race Track</DropdownMenuItem>
           <DropdownMenuItem onClick={() => openGameEmulator()}>{'🕹'} Emulator</DropdownMenuItem>
           <DropdownMenuItem onClick={() => setShowAIAssistant(true)}>{'♾'} AI Assistant</DropdownMenuItem>
-          <DropdownMenuItem onClick={configureGitHubSync}>
-            {'🔐'} GitHub Sync Secret
+          <DropdownMenuItem onClick={openGitHubSyncConfig}>
+            {'🔐'} Configure GitHub Sync
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuLabel className="pixel-font text-xs">Pages</DropdownMenuLabel>
@@ -724,6 +719,69 @@ function App() {
           <DropdownMenuItem onClick={() => window.open('https://pewpi-infinity.github.io/smug_look/mario-jukebox.html','_blank','noopener,noreferrer')}>{'🎼'} Classic Jukebox</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      <Dialog open={showGitHubSyncConfig} onOpenChange={setShowGitHubSyncConfig}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>GitHub Sync Secret</DialogTitle>
+            <DialogDescription>
+              Configure where token script updates are committed whenever new tokens are minted.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <div className="space-y-1">
+              <Label htmlFor="github-owner">Owner</Label>
+              <Input
+                id="github-owner"
+                value={githubSyncDraft.owner}
+                onChange={(event) => setGitHubSyncDraft((current) => ({ ...current, owner: event.target.value }))}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="github-repo">Repository</Label>
+              <Input
+                id="github-repo"
+                value={githubSyncDraft.repo}
+                onChange={(event) => setGitHubSyncDraft((current) => ({ ...current, repo: event.target.value }))}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="github-branch">Branch</Label>
+              <Input
+                id="github-branch"
+                value={githubSyncDraft.branch}
+                onChange={(event) => setGitHubSyncDraft((current) => ({ ...current, branch: event.target.value }))}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="github-file">File Path</Label>
+              <Input
+                id="github-file"
+                value={githubSyncDraft.filePath}
+                onChange={(event) => setGitHubSyncDraft((current) => ({ ...current, filePath: event.target.value }))}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="github-token">GitHub Token</Label>
+              <Input
+                id="github-token"
+                type="password"
+                value={githubSyncDraft.token}
+                onChange={(event) => setGitHubSyncDraft((current) => ({ ...current, token: event.target.value }))}
+                placeholder="ghp_..."
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setShowGitHubSyncConfig(false)}>
+              Cancel
+            </Button>
+            <Button type="button" onClick={saveGitHubSyncConfig}>
+              Save Sync Settings
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Toaster />
       
