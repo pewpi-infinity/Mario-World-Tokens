@@ -231,7 +231,7 @@ function App() {
       method: 'PUT',
       headers,
       body: JSON.stringify({
-        message: `chore(tokens): append ${mintedCoin.id} by ${mintedCoin.mintedBy}`,
+        message: `chore(tokens): merge ${mintedCoin.id} by ${mintedCoin.mintedBy}`,
         content: encodeBase64(buildTokenScriptBody(mergedEvents)),
         branch,
         sha
