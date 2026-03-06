@@ -128,7 +128,6 @@ export function MarioJukebox({ open, onClose, initialLevel, onPlayStateChange }:
 
   useEffect(() => {
     if (open) {
-      setCurrentSong(songs[0])
       setIsPlaying(true)
     }
   }, [open, songs])
@@ -169,7 +168,7 @@ export function MarioJukebox({ open, onClose, initialLevel, onPlayStateChange }:
 
     audio.load()
 
-    if (isPlaying && open) {
+    if (isPlaying) {
       audio.currentTime = 0
       const playPromise = audio.play()
       if (playPromise !== undefined) {
@@ -434,9 +433,7 @@ Keep your response friendly and concise (2-3 sentences max).`
     const nextIndex = (currentIndex + 1) % songs.length
     setCurrentSong(songs[nextIndex])
     trackUserAction('next', songs[nextIndex].name)
-    if (open) {
-      setIsPlaying(true)
-    }
+    setIsPlaying(true)
   }
 
   const handlePrevious = () => {
@@ -444,17 +441,13 @@ Keep your response friendly and concise (2-3 sentences max).`
     const prevIndex = currentIndex === 0 ? songs.length - 1 : currentIndex - 1
     setCurrentSong(songs[prevIndex])
     trackUserAction('previous', songs[prevIndex].name)
-    if (open) {
-      setIsPlaying(true)
-    }
+    setIsPlaying(true)
   }
 
   const handleSongSelect = (song: Song) => {
     setCurrentSong(song)
     trackUserAction('song_select', song.name)
-    if (open) {
-      setIsPlaying(true)
-    }
+    setIsPlaying(true)
   }
 
   const handleSongEnd = () => {
@@ -469,10 +462,17 @@ Keep your response friendly and concise (2-3 sentences max).`
   }
 
   return (
+    <>
+    <audio
+      ref={audioRef}
+      src={currentSong.url}
+      onEnded={handleSongEnd}
+      loop={false}
+      preload="auto"
+      playsInline
+    />
     <Dialog open={open} onOpenChange={(nextOpen) => {
       if (!nextOpen) {
-        if (audioRef.current) { audioRef.current.pause(); audioRef.current.currentTime = 0 }
-        setIsPlaying(false)
         onClose()
       }
     }}>
@@ -676,15 +676,8 @@ Keep your response friendly and concise (2-3 sentences max).`
           </div>
         </div>
 
-        <audio
-          ref={audioRef}
-          src={currentSong.url}
-          onEnded={handleSongEnd}
-          loop={false}
-          preload="auto"
-          playsInline
-        />
       </DialogContent>
     </Dialog>
+    </>
   )
 }
