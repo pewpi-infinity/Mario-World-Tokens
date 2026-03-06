@@ -477,7 +477,7 @@ function App() {
           {activeTab === 'treasury' && (
             <>
               <TreasuryFeed globalCoins={treasuryCoins} stats={treasuryStats} />
-              {treasuryCoins.length === 0 && (
+              {treasuryCoins.length === 0 ? (
                 <Card className="p-6 sm:p-12 text-center bg-card border-2 border-border mt-4">
                   <div className="max-w-md mx-auto">
                     <Coins size={48} className="sm:w-16 sm:h-16 mx-auto mb-4 text-muted-foreground" weight="fill" />
@@ -494,6 +494,19 @@ function App() {
                     </Button>
                   </div>
                 </Card>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 mt-6">
+                  {treasuryCoins.map((coin) => (
+                    <TokenCard
+                      key={coin.id}
+                      coin={coin}
+                      onReceiptPrinted={markTokenAsPrinted}
+                      onTransfer={(coinId) => {
+                        toast.info('Transfer feature coming soon!')
+                      }}
+                    />
+                  ))}
+                </div>
               )}
             </>
           )}
