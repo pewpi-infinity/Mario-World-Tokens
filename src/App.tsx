@@ -23,6 +23,7 @@ import { GameEmulatorBuilder, type ResearchTokenDraft } from '@/components/GameE
 import { InfinityAIChat } from '@/components/InfinityAIChat'
 import { HomepageAIDesigner } from '@/components/HomepageAIDesigner'
 import { MarioJukebox } from '@/components/MarioJukebox'
+import { TreasuryFeed } from '@/components/TreasuryFeed'
 import { MarioCoin, TreasuryStats } from '@/lib/types'
 import { Toaster } from '@/components/ui/sonner'
 import { toast } from 'sonner'
@@ -134,8 +135,20 @@ function App() {
   useEffect(() => {
     console.log('🎮 MARIO WORLD AUDIO SYSTEM INITIALIZING...')
     initializeAudioContext()
-    disableAudioSystem()
     initBackgroundMusic('main')
+    const autoEnableSound = () => {
+      if (!soundEnabled) {
+        forceUnlockAudio()
+        preloadAllSounds()
+        setSoundEffectsEnabled(true)
+        setSoundEnabled(true)
+        enableAutoPlay()
+        playBackgroundMusic(pageMap[activeTab] || 'main')
+      }
+    }
+    const events = ['click', 'touchstart', 'keydown'] as const
+    events.forEach(evt => document.addEventListener(evt, autoEnableSound, { once: true, passive: true }))
+    return () => { events.forEach(evt => document.removeEventListener(evt, autoEnableSound)) }
   }, [])
   
   useEffect(() => {
@@ -460,8 +473,9 @@ function App() {
         <div className="mt-4 sm:mt-8">
           {activeTab === 'treasury' && (
             <>
-              {treasuryCoins.length === 0 ? (
-                <Card className="p-6 sm:p-12 text-center bg-card border-2 border-border">
+              <TreasuryFeed globalCoins={treasuryCoins} stats={treasuryStats} />
+              {treasuryCoins.length === 0 && (
+                <Card className="p-6 sm:p-12 text-center bg-card border-2 border-border mt-4">
                   <div className="max-w-md mx-auto">
                     <Coins size={48} className="sm:w-16 sm:h-16 mx-auto mb-4 text-muted-foreground" weight="fill" />
                     <h3 className="text-xl sm:text-2xl font-bold mb-2">No Coins Yet</h3>
@@ -477,19 +491,6 @@ function App() {
                     </Button>
                   </div>
                 </Card>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
-                  {treasuryCoins.map((coin) => (
-                    <TokenCard
-                      key={coin.id}
-                      coin={coin}
-                      onReceiptPrinted={markTokenAsPrinted}
-                      onTransfer={(coinId) => {
-                        toast.info('Transfer feature coming soon!')
-                      }}
-                    />
-                  ))}
-                </div>
               )}
             </>
           )}

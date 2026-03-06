@@ -20,7 +20,7 @@ const PAGE_MUSIC_MAP: Record<BackgroundMusicPage, string> = {
 
 let currentAudio: HTMLAudioElement | null = null
 let currentPage: BackgroundMusicPage = 'main'
-let volume = 0.5
+let volume = 0.4
 let isEnabled = false
 let synthMusicInterval: ReturnType<typeof setInterval> | null = null
 
@@ -66,41 +66,40 @@ export function initBackgroundMusic(page: BackgroundMusicPage = 'main') {
 
 export function playBackgroundMusic(page: BackgroundMusicPage) {
   if (!isEnabled) return
-  currentPage = page
   const musicUrl = PAGE_MUSIC_MAP[page]
-  
   if (currentAudio && currentPage === page && !currentAudio.paused) {
-    console.log('🎵 Music already playing for:', page)
     return
   }
-  
+  currentPage = page
   if (currentAudio) {
     currentAudio.pause()
     currentAudio.remove()
     currentAudio = null
   }
-  
   currentAudio = new Audio(musicUrl)
   currentAudio.loop = true
   currentAudio.volume = volume
   currentAudio.preload = 'auto'
-  currentAudio.crossOrigin = 'anonymous'
-  
-  currentAudio.play().then(() => {
-    stopSynthBackgroundMusic()
-    console.log('🎵 BACKGROUND MUSIC PLAYING:', page)
-  }).catch(error => {
-    console.log('Music play attempt:', error.message)
-    forceUnlockAudio()
-    playSynthBackgroundMusic(page)
-    setTimeout(() => {
-      if (currentAudio) {
-        currentAudio.play().then(() => {
-          stopSynthBackgroundMusic()
-        }).catch(() => {})
-      }
-    }, 1000)
-  })
+  const attemptPlay = () => {
+    if (!currentAudio) return
+    currentAudio.play().then(() => {
+      stopSynthBackgroundMusic()
+      console.log('🎵 BACKGROUND MUSIC PLAYING:', page)
+    }).catch(error => {
+      console.log('Music play attempt:', error.message)
+      forceUnlockAudio()
+      playSynthBackgroundMusic(page)
+      setTimeout(() => {
+        if (currentAudio && currentAudio.paused) {
+          currentAudio.play().then(() => {
+            stopSynthBackgroundMusic()
+          }).catch(() => {})
+        }
+      }, 800)
+    })
+  }
+  currentAudio.addEventListener('canplay', attemptPlay, { once: true })
+  currentAudio.load()
 }
 
 export function stopBackgroundMusic() {
@@ -110,34 +109,25 @@ export function stopBackgroundMusic() {
     currentAudio = null
   }
   stopSynthBackgroundMusic()
-  console.log('🔇 Background music stopped')
 }
 
 export function setBackgroundMusicVolume(newVolume: number) {
   volume = Math.max(0, Math.min(1, newVolume))
-  if (currentAudio) {
-    currentAudio.volume = volume
-  }
-  console.log('🔊 Background music volume:', volume)
+  if (currentAudio) { currentAudio.volume = volume }
 }
 
 export function enableAutoPlay() {
   isEnabled = true
-  console.log('🎵 AUTO-PLAY ENABLED')
   forceUnlockAudio()
-  
   if (!currentAudio) {
     playBackgroundMusic(currentPage)
   } else if (currentAudio.paused) {
     currentAudio.play().then(() => {
       stopSynthBackgroundMusic()
-      console.log('🎵 Music resumed!')
     }).catch(() => {
       playSynthBackgroundMusic(currentPage)
       setTimeout(() => {
-        if (currentAudio) {
-          currentAudio.play().catch(() => {})
-        }
+        if (currentAudio) { currentAudio.play().catch(() => {}) }
       }, 500)
     })
   }

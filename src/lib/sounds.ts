@@ -99,7 +99,6 @@ export function preloadSound(soundUrl: string): HTMLAudioElement {
       const audio = new Audio()
       audio.src = soundUrl
       audio.preload = 'auto'
-      audio.crossOrigin = 'anonymous'
       audio.load()
       pool.push(audio)
     }
@@ -121,7 +120,6 @@ export function playSound(soundUrl: string, volume = 0.7): void {
       audio.currentTime = 0
     } else {
       audio = new Audio(soundUrl)
-      audio.crossOrigin = 'anonymous'
     }
     
     audio.volume = volume
