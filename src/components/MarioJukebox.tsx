@@ -169,7 +169,7 @@ export function MarioJukebox({ open, onClose, initialLevel, onPlayStateChange }:
 
     audio.load()
 
-    if (isPlaying && open) {
+    if (isPlaying) {
       audio.currentTime = 0
       const playPromise = audio.play()
       if (playPromise !== undefined) {
@@ -188,7 +188,7 @@ export function MarioJukebox({ open, onClose, initialLevel, onPlayStateChange }:
       audio.removeEventListener('loadeddata', handleLoadedData)
       audio.removeEventListener('error', handleError)
     }
-  }, [currentSong, isPlaying, open])
+  }, [currentSong, isPlaying])
 
   useEffect(() => {
     const recentActions = userActions.slice(-5)
@@ -469,6 +469,15 @@ Keep your response friendly and concise (2-3 sentences max).`
   }
 
   return (
+    <>
+      <audio
+        ref={audioRef}
+        src={currentSong.url}
+        onEnded={handleSongEnd}
+        loop={false}
+        preload="auto"
+        playsInline
+      />
     <Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && onClose()}>
       <DialogContent className="max-w-[98vw] sm:max-w-4xl h-[95vh] sm:max-h-[90vh] overflow-hidden bg-card border-4 border-[oklch(0.75_0.18_85)] flex flex-col p-3 sm:p-6">
         <DialogHeader className="flex-shrink-0">
@@ -670,15 +679,8 @@ Keep your response friendly and concise (2-3 sentences max).`
           </div>
         </div>
 
-        <audio
-          ref={audioRef}
-          src={currentSong.url}
-          onEnded={handleSongEnd}
-          loop={false}
-          preload="auto"
-          playsInline
-        />
       </DialogContent>
     </Dialog>
+    </>
   )
 }

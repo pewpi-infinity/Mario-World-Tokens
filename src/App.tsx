@@ -60,8 +60,6 @@ function App() {
   const [showJukebox, setShowJukebox] = useState(false)
   const [jukeboxPlaying, setJukeboxPlaying] = useState(false)
   const [jukeboxSong, setJukeboxSong] = useState('')
-  const [jukeboxPlaying, setJukeboxPlaying] = useState(false)
-  const [jukeboxSong, setJukeboxSong] = useState('')
   const [soundEnabled, setSoundEnabled] = useState(false)
   const [currentUser, setCurrentUser] = useState(() => {
     const storedUser = sanitizeUserId(localStorage.getItem('mario-current-user')?.trim() || '')
