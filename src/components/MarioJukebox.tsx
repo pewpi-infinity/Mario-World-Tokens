@@ -16,18 +16,40 @@ interface Song {
   tempo?: 'normal' | 'fast' | 'star'
 }
 
-const MARIO_SONGS: Song[] = [
-  { id: '1', name: 'Main Theme', level: 'Level 1-1', url: 'https://ia600208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/06%20Super%20Mario%20Bros.%20-%20Ground%20Theme%20BGM.mp3', tempo: 'normal' },
-  { id: '2', name: 'Underground', level: 'Level 1-2', url: 'https://ia600208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/01%20Super%20Mario%20Bros.%20-%20Underground%20BGM.mp3', tempo: 'normal' },
-  { id: '3', name: 'Star Theme', level: 'Level 1-3', url: 'https://ia600208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/07%20Super%20Mario%20Bros.%20-%20Starman%20BGM.mp3', tempo: 'star' },
-  { id: '4', name: 'Water World', level: 'Level 2-1', url: 'https://ia600208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/09%20Super%20Mario%20Bros.%20-%20Underwater%20BGM.mp3', tempo: 'normal' },
-  { id: '5', name: 'Castle', level: 'Level 2-2', url: 'https://ia600208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/03%20Super%20Mario%20Bros.%20-%20Castle%20BGM.mp3', tempo: 'normal' },
-  { id: '6', name: 'Hurry Up', level: 'Level 2-3', url: 'https://ia600208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/02%20Super%20Mario%20Bros.%20-%20Hurry%21.mp3', tempo: 'fast' },
-  { id: '7', name: 'Game Over', level: 'Level 3-1', url: 'https://ia600208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/05%20Super%20Mario%20Bros.%20-%20Game%20Over.mp3', tempo: 'normal' },
-  { id: '8', name: 'World Clear', level: 'Level 3-2', url: 'https://ia600208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/08%20Super%20Mario%20Bros.%20-%20World%20Clear%20Fanfare.mp3', tempo: 'normal' },
-  { id: '9', name: 'Ending', level: 'Level 3-3', url: 'https://ia600208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/04%20Super%20Mario%20Bros.%20-%20Ending.mp3', tempo: 'normal' },
-  { id: '10', name: 'Bonus Stage', level: 'Bonus', url: 'https://ia600208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/10%20Super%20Mario%20Bros.%202%20-%20Invincibility%20BGM.mp3', tempo: 'star' }
-]
+const UPLOADED_MARIO_SONGS: Song[] = Object.entries(
+  import.meta.glob('../../*.{mp3,flac}', { eager: true, import: 'default' }) as Record<string, string>
+)
+  .sort(([a], [b]) => {
+    const fileA = a.split('/').pop() || a
+    const fileB = b.split('/').pop() || b
+    return fileA.localeCompare(fileB, undefined, { numeric: true, sensitivity: 'base' })
+  })
+  .map(([path, url], index) => {
+    const rawName = path.split('/').pop() || `Track ${index + 1}`
+    const name = rawName.replace(/\.(mp3|flac)$/i, '')
+    return {
+      id: `uploaded-${index + 1}`,
+      name,
+      level: 'Uploaded',
+      url,
+      tempo: 'normal' as const,
+    }
+  })
+
+const MARIO_SONGS: Song[] = UPLOADED_MARIO_SONGS.length > 0
+  ? UPLOADED_MARIO_SONGS
+  : [
+      { id: '1', name: 'Main Theme', level: 'Level 1-1', url: 'https://ia600208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/06%20Super%20Mario%20Bros.%20-%20Ground%20Theme%20BGM.mp3', tempo: 'normal' },
+      { id: '2', name: 'Underground', level: 'Level 1-2', url: 'https://ia600208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/01%20Super%20Mario%20Bros.%20-%20Underground%20BGM.mp3', tempo: 'normal' },
+      { id: '3', name: 'Star Theme', level: 'Level 1-3', url: 'https://ia600208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/07%20Super%20Mario%20Bros.%20-%20Starman%20BGM.mp3', tempo: 'star' },
+      { id: '4', name: 'Water World', level: 'Level 2-1', url: 'https://ia600208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/09%20Super%20Mario%20Bros.%20-%20Underwater%20BGM.mp3', tempo: 'normal' },
+      { id: '5', name: 'Castle', level: 'Level 2-2', url: 'https://ia600208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/03%20Super%20Mario%20Bros.%20-%20Castle%20BGM.mp3', tempo: 'normal' },
+      { id: '6', name: 'Hurry Up', level: 'Level 2-3', url: 'https://ia600208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/02%20Super%20Mario%20Bros.%20-%20Hurry%21.mp3', tempo: 'fast' },
+      { id: '7', name: 'Game Over', level: 'Level 3-1', url: 'https://ia600208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/05%20Super%20Mario%20Bros.%20-%20Game%20Over.mp3', tempo: 'normal' },
+      { id: '8', name: 'World Clear', level: 'Level 3-2', url: 'https://ia600208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/08%20Super%20Mario%20Bros.%20-%20World%20Clear%20Fanfare.mp3', tempo: 'normal' },
+      { id: '9', name: 'Ending', level: 'Level 3-3', url: 'https://ia600208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/04%20Super%20Mario%20Bros.%20-%20Ending.mp3', tempo: 'normal' },
+      { id: '10', name: 'Bonus Stage', level: 'Bonus', url: 'https://ia600208.us.archive.org/29/items/Super_Mario_Bros_The_30_Greatest_SFX/10%20Super%20Mario%20Bros.%202%20-%20Invincibility%20BGM.mp3', tempo: 'star' }
+    ]
 
 interface ChatMessage {
   role: 'user' | 'assistant' | 'system'
@@ -105,10 +127,10 @@ export function MarioJukebox({ open, onClose, initialLevel }: MarioJukeboxProps)
 
   useEffect(() => {
     if (open) {
-      setCurrentSong(MARIO_SONGS[0])
+      setCurrentSong(songs[0])
       setIsPlaying(true)
     }
-  }, [open])
+  }, [open, songs])
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -447,7 +469,7 @@ Keep your response friendly and concise (2-3 sentences max).`
           <DialogTitle className="text-lg sm:text-2xl pixel-font text-[oklch(0.75_0.18_85)] text-center">
             🎵 MARIO JUKEBOX 🎵
           </DialogTitle>
-          <p className="text-center text-xs text-[oklch(0.85_0.02_280)]">Internet Archive playlist of Koji Kondo-era Mario tracks</p>
+          <p className="text-center text-xs text-[oklch(0.85_0.02_280)]">Uploaded Mario audio playlist (falls back to Internet Archive tracks)</p>
         </DialogHeader>
 
         <div className="flex flex-col gap-3 sm:gap-4 overflow-hidden flex-1">
