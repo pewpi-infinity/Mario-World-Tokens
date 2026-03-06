@@ -61,7 +61,7 @@ function playSynthBackgroundMusic(page: BackgroundMusicPage) {
 
 export function initBackgroundMusic(page: BackgroundMusicPage = 'main') {
   currentPage = page
-  console.log('🎵 Background music initialized for:', page)
+  console.log('Background music initialized for:', page)
 }
 
 export function playBackgroundMusic(page: BackgroundMusicPage) {
@@ -84,9 +84,7 @@ export function playBackgroundMusic(page: BackgroundMusicPage) {
     if (!currentAudio) return
     currentAudio.play().then(() => {
       stopSynthBackgroundMusic()
-      console.log('🎵 BACKGROUND MUSIC PLAYING:', page)
     }).catch(error => {
-      console.log('Music play attempt:', error.message)
       forceUnlockAudio()
       playSynthBackgroundMusic(page)
       setTimeout(() => {
