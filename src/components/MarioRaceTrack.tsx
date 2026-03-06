@@ -69,7 +69,7 @@ export function MarioRaceTrack({ open, onClose }: MarioRaceTrackProps) {
   const [showPhysicsGraph, setShowPhysicsGraph] = useState(false)
   const [physicsData, setPhysicsData] = useState<PhysicsSnapshot[]>([])
   
-  const chatScrollRef = useRef<HTMLDivElement>(null)
+  const chatEndRef = useRef<HTMLDivElement>(null)
   const [racers, setRacers] = useState<Racer[]>([
     { 
       id: 'player', 
@@ -376,9 +376,7 @@ export function MarioRaceTrack({ open, onClose }: MarioRaceTrackProps) {
   }
 
   useEffect(() => {
-    if (chatScrollRef.current) {
-      chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight
-    }
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
   }, [aiMessages])
 
   const handleSendAIMessage = async () => {
@@ -718,7 +716,7 @@ Be educational, conversational, and relate physics concepts to the actual race m
 
                   {showAIChat && (
                     <div className="space-y-3">
-                      <ScrollArea className="h-48 sm:h-64 bg-[oklch(0.18_0.02_280)] rounded p-3" ref={chatScrollRef}>
+                      <ScrollArea className="h-48 sm:h-64 bg-[oklch(0.18_0.02_280)] rounded p-3">
                         {aiMessages.length === 0 ? (
                           <div className="text-center text-[oklch(0.65_0.02_280)] py-8 text-xs sm:text-sm">
                             <Robot size={32} weight="fill" className="mx-auto mb-2 opacity-50" />
@@ -759,6 +757,7 @@ Be educational, conversational, and relate physics concepts to the actual race m
                                 </div>
                               </div>
                             )}
+                            <div ref={chatEndRef} />
                           </div>
                         )}
                       </ScrollArea>

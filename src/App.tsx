@@ -37,13 +37,6 @@ import marioImage from '@/assets/images/Screenshot_20260225-192747.png'
 const sanitizeUserId = (value: string) => value.trim().replace(/[^a-zA-Z0-9-]/g, '').slice(0, 39)
 const sanitizeRepoName = (value: string) => value.trim().replace(/[^a-zA-Z0-9._-]/g, '')
 const encodeBase64 = (value: string) => btoa(unescape(encodeURIComponent(value)))
-const createGuestUserId = () => {
-  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
-    return `guest-${crypto.randomUUID()}`
-  }
-  return `guest-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
-}
-
 interface TokenScriptEvent {
   coinId: string
   mintedBy: string
@@ -97,12 +90,11 @@ function App() {
   const [githubSyncDraft, setGitHubSyncDraft] = useState<GitHubSyncSettings>(DEFAULT_GITHUB_SYNC_SETTINGS)
   const [currentUser, setCurrentUser] = useState(() => {
     const storedUser = sanitizeUserId(localStorage.getItem('mario-current-user')?.trim() || '')
-    if (storedUser) return storedUser
-    const guestUser = createGuestUserId()
-    localStorage.setItem('mario-current-user', guestUser)
-    return guestUser
+    if (!storedUser || storedUser.startsWith('guest-')) return ''
+    return storedUser
   })
   const [githubLogin, setGithubLogin] = useState<string | null>(null)
+  const [isGithubLoginPending, setIsGithubLoginPending] = useState(false)
 
 
   const openGameEmulator = () => {
@@ -258,13 +250,14 @@ function App() {
     const attemptGithubUser = async () => {
       const sparkClient = window.spark as SparkClient
       const resolveUser = async () => sparkClient.user ? sparkClient.user() : null
+      setIsGithubLoginPending(true)
       let user = await resolveUser()
       if (!user?.login && sparkClient.login) {
         try {
           await sparkClient.login()
           user = await resolveUser()
         } catch {
-          // keep guest fallback user
+          // user can sign in manually
         }
       }
       if (!mounted || !user?.login) return
@@ -275,12 +268,44 @@ function App() {
       localStorage.setItem('mario-current-user', safeLogin)
     }
     attemptGithubUser().catch(() => {
-      // keep guest fallback user
+      // user can sign in manually
+    }).finally(() => {
+      if (mounted) {
+        setIsGithubLoginPending(false)
+      }
     })
     return () => {
       mounted = false
     }
   }, [])
+
+  const handleGithubLogin = async () => {
+    const sparkClient = window.spark as SparkClient
+    if (!sparkClient.login || !sparkClient.user) {
+      toast.error('GitHub login is unavailable in this environment.')
+      return
+    }
+
+    try {
+      setIsGithubLoginPending(true)
+      await sparkClient.login()
+      const user = await sparkClient.user()
+      const safeLogin = sanitizeUserId(user?.login || '')
+      if (!safeLogin) {
+        toast.error('GitHub login did not return a valid username.')
+        return
+      }
+
+      setGithubLogin(safeLogin)
+      setCurrentUser(safeLogin)
+      localStorage.setItem('mario-current-user', safeLogin)
+      toast.success(`Signed in as @${safeLogin}`)
+    } catch {
+      toast.error('GitHub login failed. Please try again.')
+    } finally {
+      setIsGithubLoginPending(false)
+    }
+  }
   
   const getCurrentContext = () => {
     switch (activeTab) {
@@ -515,8 +540,18 @@ function App() {
                 People's Treasury 🪙
               </p>
               <p className="text-xs text-white/90 font-medium drop-shadow truncate">
-                {githubLogin ? `Signed in with GitHub as @${githubLogin}` : `Using local user: ${currentUser}`}
+                {githubLogin ? `Signed in with GitHub as @${githubLogin}` : 'Sign in with GitHub to access your wallet'}
               </p>
+              {!githubLogin && (
+                <Button
+                  size="sm"
+                  onClick={handleGithubLogin}
+                  disabled={isGithubLoginPending}
+                  className="mt-2 h-7 text-xs bg-[oklch(0.75_0.18_85)] text-[oklch(0.15_0.02_280)] hover:bg-[oklch(0.80_0.20_85)]"
+                >
+                  {isGithubLoginPending ? 'Connecting...' : 'Sign in with GitHub'}
+                </Button>
+              )}
             </div>
           </div>
           
