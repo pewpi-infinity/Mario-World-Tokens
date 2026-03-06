@@ -507,6 +507,19 @@ function App() {
                     />
                   ))}
                 </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 mt-6">
+                  {treasuryCoins.map((coin) => (
+                    <TokenCard
+                      key={coin.id}
+                      coin={coin}
+                      onReceiptPrinted={markTokenAsPrinted}
+                      onTransfer={(coinId) => {
+                        toast.info('Transfer feature coming soon!')
+                      }}
+                    />
+                  ))}
+                </div>
               )}
             </>
           )}
@@ -583,40 +596,50 @@ function App() {
         }}
       />
 
-            <button onClick={() => setShowJukebox(true)}
-        className="fixed bottom-6 left-6 flex items-center gap-2 px-3 py-2 z-50 transition-all cursor-pointer"
-        style={{
-          background: jukeboxPlaying ? 'linear-gradient(135deg, oklch(0.58 0.24 330), oklch(0.70 0.24 190))' : 'linear-gradient(135deg, oklch(0.30 0.05 260), oklch(0.25 0.03 260))',
-          borderRadius: '12px', boxShadow: '0 4px 16px oklch(0 0 0 / 0.4)',
-          border: jukeboxPlaying ? '2px solid oklch(0.75 0.18 85)' : '2px solid oklch(0.40 0.05 260)', maxWidth: '180px',
-        }}>
-        <span className="text-xl">{jukeboxPlaying ? "🎵" : "❓"}</span>
-        <span className="text-xs text-white font-bold truncate">{jukeboxPlaying ? jukeboxSong : 'Jukebox'}</span>
-      </button>
-
+      {/* Mario ? Block */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <button aria-label="Menu" className="fixed bottom-6 right-6 w-14 h-14 flex items-center justify-center transition-all cursor-pointer z-50"
-            style={{ background: 'linear-gradient(135deg, oklch(0.58 0.24 330), oklch(0.50 0.20 330))', borderRadius: '50%', boxShadow: '0 4px 16px oklch(0 0 0 / 0.3)', border: '2px solid oklch(0.70 0.20 330)' }}>
-            <span className="text-2xl">☰</span>
+          <button
+            aria-label="Question Block"
+            className="fixed bottom-5 right-5 w-16 h-16 flex items-center justify-center cursor-pointer z-50 transition-transform hover:scale-105 active:scale-95"
+            style={{
+              background: 'linear-gradient(180deg, oklch(0.82 0.19 85) 0%, oklch(0.68 0.17 80) 100%)',
+              borderRadius: '6px',
+              border: '3px solid oklch(0.55 0.14 75)',
+              boxShadow: '0 5px 0 oklch(0.50 0.13 70), inset 0 2px 0 oklch(0.90 0.15 88), inset 0 -2px 0 oklch(0.55 0.14 75), 0 8px 24px oklch(0 0 0 / 0.35)',
+            }}
+          >
+            <div className="absolute inset-0 rounded" style={{
+              background: 'repeating-linear-gradient(0deg, transparent 0px, transparent 6px, oklch(0 0 0 / 0.06) 6px, oklch(0 0 0 / 0.06) 7px), repeating-linear-gradient(90deg, transparent 0px, transparent 6px, oklch(0 0 0 / 0.06) 6px, oklch(0 0 0 / 0.06) 7px)',
+              pointerEvents: 'none',
+            }} />
+            <span className="relative z-10 text-3xl font-black drop-shadow-lg" style={{
+              color: 'oklch(0.98 0.01 90)',
+              textShadow: '1px 1px 0 oklch(0.45 0.12 75), -1px -1px 0 oklch(0.45 0.12 75), 1px -1px 0 oklch(0.45 0.12 75), -1px 1px 0 oklch(0.45 0.12 75)',
+              fontFamily: "'Press Start 2P', monospace",
+            }}>?</span>
           </button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-64">
-          <DropdownMenuLabel>Tools</DropdownMenuLabel>
+        <DropdownMenuContent align="end" side="top" className="w-64 mb-2">
+          <DropdownMenuLabel className="pixel-font text-xs">Tools</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => setShowJukebox(true)}>{"🎵"} Jukebox</DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setShowMusicStudio(true)}>{"🎹"} Music Studio</DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setShowCollabMusic(true)}>{"🎸"} Collab Music</DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setShowArtStudio(true)}>{"🎨"} Art Studio</DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setShowRaceTrack(true)}>{"🏎"} Race Track</DropdownMenuItem>
-          <DropdownMenuItem onClick={() => openGameEmulator()}>{"🕹"} Emulator</DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setShowAIAssistant(true)}>{"♾"} AI Assistant</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setShowJukebox(true)}>
+            <span className="mr-2">{jukeboxPlaying ? '🎵' : '🎧'}</span>
+            {jukeboxPlaying ? 'Jukebox: ' + jukeboxSong : 'Jukebox'}
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setShowMinting(true)}>{'🟡'} Mint Token</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setShowMusicStudio(true)}>{'🎹'} Music Studio</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setShowCollabMusic(true)}>{'🎸'} Collab Music</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setShowArtStudio(true)}>{'🎨'} Art Studio</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setShowRaceTrack(true)}>{'🏎'} Race Track</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => openGameEmulator()}>{'🕹'} Emulator</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setShowAIAssistant(true)}>{'♾'} AI Assistant</DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuLabel>Pages</DropdownMenuLabel>
-          <DropdownMenuItem onClick={() => window.open('https://pewpi-infinity.github.io/MARIO-TOKENS/#bot-panel','_blank','noopener,noreferrer')}>{"🤖"} Bot Panel</DropdownMenuItem>
-          <DropdownMenuItem onClick={() => window.open('https://pewpi-infinity.github.io/MARIO-TOKENS/#treasury','_blank','noopener,noreferrer')}>{"🪙"} Treasury</DropdownMenuItem>
-          <DropdownMenuItem onClick={() => window.open('https://pewpi-infinity.github.io/MARIO-TOKENS/#marketplace','_blank','noopener,noreferrer')}>{"🛒"} Marketplace</DropdownMenuItem>
-          <DropdownMenuItem onClick={() => window.open('https://pewpi-infinity.github.io/smug_look/mario-jukebox.html','_blank','noopener,noreferrer')}>{"🎼"} Classic Jukebox</DropdownMenuItem>
+          <DropdownMenuLabel className="pixel-font text-xs">Pages</DropdownMenuLabel>
+          <DropdownMenuItem onClick={() => window.open('https://pewpi-infinity.github.io/MARIO-TOKENS/#bot-panel','_blank','noopener,noreferrer')}>{'🤖'} Bot Panel</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => window.open('https://pewpi-infinity.github.io/MARIO-TOKENS/#treasury','_blank','noopener,noreferrer')}>{'🪙'} Treasury</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => window.open('https://pewpi-infinity.github.io/MARIO-TOKENS/#marketplace','_blank','noopener,noreferrer')}>{'🛒'} Marketplace</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => window.open('https://pewpi-infinity.github.io/smug_look/mario-jukebox.html','_blank','noopener,noreferrer')}>{'🎼'} Classic Jukebox</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
 
